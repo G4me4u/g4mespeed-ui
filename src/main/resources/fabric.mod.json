@@ -14,16 +14,16 @@
   },
 
   "license": "MIT License",
-  "icon": "assets/g4mespeedui/icon.png",
+  "icon": "assets/g4mespeed/ui/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.g4mesoft.G4mespeedUIMod"
+      "com.g4mesoft.ui.G4mespeedUIMod"
     ]
   },
   "mixins": [
-    "g4mespeedui.mixins.json"
+    "g4mespeed.ui.mixins.json"
   ],
 
   "depends": {

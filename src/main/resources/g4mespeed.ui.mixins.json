@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "package": "com.g4mesoft.ui.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "client.GSMinecraftClientMixin",
+    "client.GSKeyboardMixin",
+    "client.GSMouseMixin",
+    "client.GSBufferBuilderMixin",
+    "client.GSIVertexFormatElementAccess",
+    "client.GSWorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
