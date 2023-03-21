@@ -1,4 +1,4 @@
-package com.g4mesoft.ui.panel.legend;
+package com.g4mesoft.ui.panel.legacy;
 
 import com.g4mesoft.ui.panel.GSIActionListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
