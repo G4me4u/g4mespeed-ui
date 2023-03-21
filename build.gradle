@@ -3,13 +3,6 @@ plugins {
 	id 'maven-publish'
 }
 
-repositories {
-	maven {
-		name = 'TerraformersMC'
-		url = 'https://maven.terraformersmc.com/'
-	}
-}
-
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
