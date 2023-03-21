@@ -9,7 +9,8 @@
     "client.GSKeyboardMixin",
     "client.GSMouseMixin",
     "client.GSBufferBuilderMixin",
-    "client.GSIVertexFormatElementAccess"
+    "client.GSIVertexFormatElementAccess",
+    "client.GSWorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
