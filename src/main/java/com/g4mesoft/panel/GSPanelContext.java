@@ -8,8 +8,6 @@ import java.util.Queue;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryUtil;
 
-import com.g4mesoft.core.client.GSClientController;
-import com.g4mesoft.module.translation.GSTranslationModule;
 import com.g4mesoft.panel.event.GSEventDispatcher;
 import com.g4mesoft.panel.event.GSKeyEvent;
 import com.g4mesoft.panel.event.GSLayoutEvent;
@@ -26,7 +24,7 @@ import net.minecraft.util.Identifier;
 
 public final class GSPanelContext {
 
-	private static final Identifier UI_TEXTURE_IDENTIFIER = new Identifier("g4mespeed", "textures/ui.png");
+	private static final Identifier UI_TEXTURE_IDENTIFIER = new Identifier("g4mespeedui", "textures/ui.png");
 	
 	private static GSPanelContext instance;
 	
@@ -253,19 +251,16 @@ public final class GSPanelContext {
 	}
 
 	private boolean hasI18nTranslationImpl(String key) {
-		return getTranslationModule().hasTranslation(key);
+		// TODO: add translations
+		return false;
 	}
 	
 	private String i18nTranslateImpl(String key) {
-		return getTranslationModule().getTranslation(key);
+		return key;
 	}
 
 	private String i18nTranslateFormattedImpl(String key, Object... args) {
-		return getTranslationModule().getFormattedTranslation(key, args);
-	}
-	
-	private GSTranslationModule getTranslationModule() {
-		return GSClientController.getInstance().getTranslationModule();
+		return key;
 	}
 	
 	private GSIRenderer2D getRendererImpl() {

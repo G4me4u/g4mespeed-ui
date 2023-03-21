@@ -4,52 +4,29 @@
   "version": "${version}",
 
   "name": "G4mespeed",
-  "description": "A mod for easing the development of redstone builds in minecraft.",
+  "description": "A complete UI framework used for G4mespeed mods",
   "authors": [
     "G4me4u"
   ],
   "contact": {
     "homepage": "https://youtube.com/user/G4me4u",
-    "sources": "https://github.com/G4me4u/g4mespeed"
+    "sources": "https://github.com/G4me4u/g4mespeed-ui"
   },
 
-  "license": "CC-BY-ND-4.0",
-  "icon": "assets/g4mespeed/icon.png",
+  "license": "MIT License",
+  "icon": "assets/g4mespeedui/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.g4mesoft.G4mespeedMod"
-    ],
-    "modmenu": [
-      "com.g4mesoft.modmenu.GSModMenuApi"
-    ],
-    "g4mespeed": [
-      "com.g4mesoft.core.GSCoreExtension"
+      "com.g4mesoft.G4mespeedUIMod"
     ]
   },
   "mixins": [
-    "g4mespeed.mixins.json"
+    "g4mespeedui.mixins.json"
   ],
 
   "depends": {
   	"minecraft": "1.16.x"
-  },
-  
-  "custom": {
-    "lithium:options": {
-      "mixin.block.moving_block_shapes": false
-    },
-    "modmenu": {
-      "links": {
-        "g4mespeed.modmenu.discord": "https://discord.gg/5yCsMbC"
-      }
-    },
-    "multiconnect": {
-      "custom_payloads": {
-        "allowed_clientbound": "minecraft:mod/g4mespeed",
-        "allowed_serverbound": "minecraft:mod/g4mespeed"
-      }
-    }
   }
 }

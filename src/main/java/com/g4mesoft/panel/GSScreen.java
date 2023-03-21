@@ -4,7 +4,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.g4mesoft.access.client.GSIKeyboardAccess;
 import com.g4mesoft.access.client.GSIMouseAccess;
-import com.g4mesoft.core.GSCoreOverride;
 import com.g4mesoft.renderer.GSBasicRenderer2D;
 import com.g4mesoft.renderer.GSIRenderer2D;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -29,7 +28,6 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	@GSCoreOverride
 	protected void init() {
 		super.init();
 	
@@ -40,7 +38,6 @@ final class GSScreen extends Screen {
 	}
 	
 	@Override
-	@GSCoreOverride
 	public void removed() {
 		super.removed();
 
@@ -57,7 +54,6 @@ final class GSScreen extends Screen {
 	}
 	
 	@Override
-	@GSCoreOverride
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		// Execute scheduled tasks (validate panels etc.)
 		// before rendering.
@@ -88,13 +84,11 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	@GSCoreOverride
 	public void mouseMoved(double mouseX, double mouseY) {
 		GSPanelContext.getEventDispatcher().mouseMoved((float)mouseX, (float)mouseY);
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		int modifiers = ((GSIMouseAccess)client.mouse).gs_getPreviousEventModifiers();
 		GSPanelContext.getEventDispatcher().mousePressed(button, (float)mouseX, (float)mouseY, modifiers);
@@ -102,7 +96,6 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		int modifiers = ((GSIMouseAccess)client.mouse).gs_getPreviousEventModifiers();
 		GSPanelContext.getEventDispatcher().mouseReleased(button, (float)mouseX, (float)mouseY, modifiers);
@@ -110,14 +103,12 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
 		GSPanelContext.getEventDispatcher().mouseDragged(button, (float)mouseX, (float)mouseY, (float)deltaX, (float)deltaY);
 		return true;
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
 		float scrollX = (float)((GSIMouseAccess)client.mouse).gs_getPreviousEventScrollX();
 		GSPanelContext.getEventDispatcher().mouseScroll((float)mouseX, (float)mouseY, scrollX, (float)scrollY);
@@ -125,7 +116,6 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		if (((GSIKeyboardAccess)client.keyboard).gs_isPreviousEventRepeating()) {
 			GSPanelContext.getEventDispatcher().keyRepeated(keyCode, scanCode, modifiers);
@@ -136,14 +126,12 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
 		GSPanelContext.getEventDispatcher().keyReleased(keyCode, scanCode, modifiers);
 		return true;
 	}
 
 	@Override
-	@GSCoreOverride
 	public boolean charTyped(char chr, int keyCode) {
 		GSPanelContext.getEventDispatcher().keyTyped((int)chr);
 		return true;

@@ -31,15 +31,15 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	// Include resource loader for loading custom ui textures
 	includeMod fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
-
-	// ModMenu integration
-	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
 	inputs.property "version", project.version
 
 	filesMatching("fabric.mod.json") {
+		expand "version": project.mod_version
+	}
+	filesMatching("G4mespeedUIMod.java") {
 		expand "version": project.mod_version
 	}
 }

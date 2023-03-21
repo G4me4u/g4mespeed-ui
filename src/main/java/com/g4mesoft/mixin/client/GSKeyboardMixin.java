@@ -9,10 +9,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.g4mesoft.GSDebugTestingGUI;
 import com.g4mesoft.access.client.GSIKeyboardAccess;
-import com.g4mesoft.core.client.GSClientController;
-import com.g4mesoft.hotkey.GSEKeyEventType;
-import com.g4mesoft.hotkey.GSKeyManager;
+import com.g4mesoft.panel.GSPanelContext;
 
 import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
@@ -33,49 +32,9 @@ public class GSKeyboardMixin implements GSIKeyboardAccess {
 		if (windowHandle == client.getWindow().getHandle()) {
 			gs_prevEventRepeating = (action == GLFW.GLFW_REPEAT);
 
-			GSKeyManager keyManager = GSClientController.getInstance().getKeyManager();
-
-			keyManager.clearEventQueue();
-			if (action == GLFW.GLFW_RELEASE) {
-				keyManager.onKeyReleased(key, scancode, mods);
-			} else if (action == GLFW.GLFW_PRESS) {
-				keyManager.onKeyPressed(key, scancode, mods);
-			}
+			if (key == GLFW.GLFW_KEY_O && (mods & GLFW.GLFW_MOD_CONTROL) != 0)
+				GSPanelContext.openContent(new GSDebugTestingGUI());
 		}
-	}
-
-	
-	@Inject(
-		method="onKey(JIIII)V",
-		at = @At(
-			value = "INVOKE",
-			ordinal = 0,
-			shift = At.Shift.AFTER, 
-			target =
-				"Lnet/minecraft/client/options/KeyBinding;setKeyPressed(" +
-					"Lnet/minecraft/client/util/InputUtil$Key;" +
-					"Z" +
-				")V"
-		)
-	)
-	private void onKeyReleased(long windowHandle, int key, int scancode, int action, int mods, CallbackInfo ci) {
-		GSClientController.getInstance().getKeyManager().dispatchEvents(GSEKeyEventType.RELEASE);
-	}
-
-	@Inject(
-		method="onKey(JIIII)V",
-		at = @At(
-			value = "INVOKE",
-			shift = At.Shift.BEFORE, 
-			target =
-				"Lnet/minecraft/client/options/KeyBinding;onKeyPressed(" +
-					"Lnet/minecraft/client/util/InputUtil$Key;" +
-				")V"
-		)
-	)
-	private void onKeyPressRepeat(long windowHandle, int key, int scancode, int action, int mods, CallbackInfo ci) {
-		if (action == GLFW.GLFW_PRESS)
-			GSClientController.getInstance().getKeyManager().dispatchEvents(GSEKeyEventType.PRESS);
 	}
 	
 	@Override
