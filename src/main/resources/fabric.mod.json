@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "g4mespeed",
+  "id": "g4mespeed-ui",
   "version": "${version}",
 
-  "name": "G4mespeed",
+  "name": "G4mespeed UI",
   "description": "A complete UI framework used for G4mespeed mods",
   "authors": [
     "G4me4u"
