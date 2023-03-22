@@ -14,7 +14,7 @@
   },
 
   "license": "MIT License",
-  "icon": "assets/g4mespeed/ui/icon.png",
+  "icon": "assets/g4mespeed-ui/icon.png",
 
   "environment": "*",
   "entrypoints": {
@@ -27,6 +27,7 @@
   ],
 
   "depends": {
-  	"minecraft": "1.16.x"
+  	"minecraft": "1.16.x",
+  	"fabric-resource-loader-v0": "*"
   }
 }

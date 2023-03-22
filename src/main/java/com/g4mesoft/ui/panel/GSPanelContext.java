@@ -21,10 +21,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Language;
 
 public final class GSPanelContext {
 
-	private static final Identifier UI_TEXTURE_IDENTIFIER = new Identifier("g4mespeed", "ui/textures/ui.png");
+	private static final Identifier UI_TEXTURE_IDENTIFIER = new Identifier("g4mespeed-ui", "textures/ui.png");
 	
 	private static GSPanelContext instance;
 	
@@ -251,16 +252,18 @@ public final class GSPanelContext {
 	}
 
 	private boolean hasI18nTranslationImpl(String key) {
-		// TODO: add translations
-		return false;
+		return Language.getInstance().hasTranslation(key);
 	}
 	
 	private String i18nTranslateImpl(String key) {
-		return key;
+		return Language.getInstance().get(key);
 	}
 
 	private String i18nTranslateFormattedImpl(String key, Object... args) {
-		return key;
+		// Note: String#format does more than just replace the %s with
+		//       relevant arguments, and %% with literal %s. Consider
+		//       an algorithm which matches that of TranslatableText.
+		return String.format(i18nTranslate(key), args);
 	}
 	
 	private GSIRenderer2D getRendererImpl() {

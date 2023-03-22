@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.GSDebugTestingGUI;
 import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 import com.g4mesoft.ui.panel.GSPanelContext;
@@ -32,7 +33,7 @@ public class GSKeyboardMixin implements GSIKeyboardAccess {
 		if (windowHandle == client.getWindow().getHandle()) {
 			gs_prevEventRepeating = (action == GLFW.GLFW_REPEAT);
 
-			if (key == GLFW.GLFW_KEY_O && (mods & GLFW.GLFW_MOD_CONTROL) != 0)
+			if (G4mespeedUIMod.IS_DEV_ENV && key == GLFW.GLFW_KEY_O && (mods & GLFW.GLFW_MOD_CONTROL) != 0)
 				GSPanelContext.openContent(new GSDebugTestingGUI());
 		}
 	}

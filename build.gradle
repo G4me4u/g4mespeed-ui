@@ -32,9 +32,6 @@ processResources {
 	filesMatching("fabric.mod.json") {
 		expand "version": project.mod_version
 	}
-	filesMatching("G4mespeedUIMod.java") {
-		expand "version": project.mod_version
-	}
 }
 
 tasks.withType(JavaCompile).configureEach {
