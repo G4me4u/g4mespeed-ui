@@ -444,6 +444,14 @@ public final class GSPanelUtil {
 		if (scrollPanel != null)
 			scrollPanel.getVerticalScrollBar().setScroll(scrollY);
 	}
+	
+	public static void setScroll(GSPanel panel, int scrollX, int scrollY) {
+		GSScrollPanel scrollPanel = getScrollPanel(panel);
+		if (scrollPanel != null) {
+			scrollPanel.getHorizontalScrollBar().setScroll(scrollX);
+			scrollPanel.getVerticalScrollBar().setScroll(scrollY);
+		}
+	}
 
 	public static void scrollToVisible(GSPanel panel, GSRectangle bounds) {
 		GSScrollPanel scrollPanel = getScrollPanel(panel);
