@@ -23,5 +23,27 @@
   "panel.date.tomorrowAt": "Tomorrow at",
   "panel.date.today": "Today",
   "panel.date.yesterday": "Yesterday",
-  "panel.date.tomorrow": "Tomorrow"
+  "panel.date.tomorrow": "Tomorrow",
+  
+  "panel.fileDialog.name": "File Name",
+  "panel.fileDialog.modified": "Date Modified",
+  "panel.fileDialog.type": "Type",
+  "panel.fileDialog.size": "Size",
+  "panel.fileDialog.cancel": "Cancel",
+  "panel.fileDialog.mode.open": "Open",
+  "panel.fileDialog.mode.save": "Save",
+  "panel.fileDialog.fileName": "File name:",
+  "panel.fileDialog.currentPath": "Path:",
+  "panel.fileDialog.directoryType": "File folder",
+  "panel.fileDialog.unknownType": "Unknown file",
+  "panel.fileDialog.regularFile": "%s File",
+  "panel.fileDialog.size.bytes": "%s B",
+  "panel.fileDialog.size.kib": "%s KB",
+  "panel.fileDialog.size.mib": "%s MB",
+  "panel.fileDialog.size.gib": "%s GB",
+  "panel.fileDialog.size.tib": "%s TB",
+  "panel.fileDialog.size.pib": "%s PB",
+  "panel.fileDialog.size.eib": "%s EB",
+  "panel.fileDialog.size.zib": "%s ZB",
+  "panel.fileDialog.size.yib": "%s YB"
 }
