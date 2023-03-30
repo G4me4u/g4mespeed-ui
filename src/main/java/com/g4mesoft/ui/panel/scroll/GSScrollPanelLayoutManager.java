@@ -23,8 +23,7 @@ public class GSScrollPanelLayoutManager implements GSILayoutManager {
 		
 		GSViewport contentViewport = scrollPanel.getContentViewport();
 		GSDimension contentSize = contentViewport.getProperty(sizeProperty);
-		long wl = contentSize.getWidth();
-		long hl = contentSize.getHeight();
+		long wl = contentSize.getWidth(), hl = contentSize.getHeight();
 		
 		GSViewport columnHeaderViewport = scrollPanel.getColumnHeaderViewport();
 		if (!columnHeaderViewport.isEmpty()) {
@@ -42,7 +41,17 @@ public class GSScrollPanelLayoutManager implements GSILayoutManager {
 				hl = rowHeaderSize.getHeight();
 		}
 		
-		if (scrollPanel.getVerticalScrollBarPolicy() == GSEScrollBarPolicy.SCROLLBAR_ALWAYS) {
+		GSDimension scrollableSize = GSDimension.ZERO;
+		GSPanel content = contentViewport.getContent();
+		if (content != null) {
+			// Retrieve the size allocated by the viewport.
+			scrollableSize = content.getProperty(sizeProperty);
+		}
+
+		GSEScrollBarPolicy vsbp = scrollPanel.getVerticalScrollBarPolicy();
+		if (vsbp == GSEScrollBarPolicy.SCROLLBAR_ALWAYS ||
+				(vsbp == GSEScrollBarPolicy.SCROLLBAR_AS_NEEDED &&
+				scrollableSize.getHeight() > contentSize.getHeight())) {
 			GSScrollBar verticalScrollBar = scrollPanel.getVerticalScrollBar();
 			GSDimension vsbSize = verticalScrollBar.getProperty(sizeProperty);
 			wl += vsbSize.getWidth();
@@ -50,7 +59,10 @@ public class GSScrollPanelLayoutManager implements GSILayoutManager {
 				hl = vsbSize.getHeight();
 		}
 
-		if (scrollPanel.getHorizontalScrollBarPolicy() == GSEScrollBarPolicy.SCROLLBAR_ALWAYS) {
+		GSEScrollBarPolicy hsbp = scrollPanel.getHorizontalScrollBarPolicy();
+		if (hsbp == GSEScrollBarPolicy.SCROLLBAR_ALWAYS ||
+				(hsbp == GSEScrollBarPolicy.SCROLLBAR_AS_NEEDED &&
+				scrollableSize.getWidth() > contentSize.getWidth())) {
 			GSScrollBar horizontalScrollBar = scrollPanel.getHorizontalScrollBar();
 			GSDimension hsbSize = horizontalScrollBar.getProperty(sizeProperty);
 			if (hsbSize.getWidth() > wl)
