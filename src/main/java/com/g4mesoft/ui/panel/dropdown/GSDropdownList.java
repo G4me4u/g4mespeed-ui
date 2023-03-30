@@ -27,6 +27,7 @@ import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.panel.scroll.GSIScrollable;
+import com.g4mesoft.ui.panel.scroll.GSScrollBar;
 import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
@@ -45,9 +46,9 @@ public class GSDropdownList<T> extends GSPanel implements GSIDropdownListModelLi
 	 */
 	public static final int EMPTY_SELECTION = -1;
 	
-	private static final GSIcon DOWN_ARROW_ICON          = GSPanelContext.getIcon(30, 62, 10, 10);
-	private static final GSIcon HOVERED_DOWN_ARROW_ICON  = GSPanelContext.getIcon(40, 62, 10, 10);
-	private static final GSIcon DISABLED_DOWN_ARROW_ICON = GSPanelContext.getIcon(50, 62, 10, 10);
+	private static final GSIcon DOWN_ARROW_ICON          = GSPanelContext.getIcon(30, 63, 10, 8);
+	private static final GSIcon HOVERED_DOWN_ARROW_ICON  = GSPanelContext.getIcon(40, 63, 10, 8);
+	private static final GSIcon DISABLED_DOWN_ARROW_ICON = GSPanelContext.getIcon(50, 63, 10, 8);
 	
 	private static final int DEFAULT_BACKGROUND_COLOR = 0xFF202020;
 	private static final int DEFAULT_HOVERED_BACKGROUND_COLOR = 0xFF094771;
@@ -595,6 +596,7 @@ public class GSDropdownList<T> extends GSPanel implements GSIDropdownListModelLi
 			GSPopup popup = new GSPopup(new GSScrollPanel(itemList), true);
 			popup.setHiddenOnFocusLost(true);
 			popup.show(this, 0, height - borderWidth, GSEPopupPlacement.RELATIVE);
+			popup.setBackgroundColor(backgroundColor);
 			// Note: the popup attempts to focus the scroll panel, but
 			//       we want focus to the item list.
 			itemList.requestFocus();
@@ -744,17 +746,7 @@ public class GSDropdownList<T> extends GSPanel implements GSIDropdownListModelLi
 			GSRectangle clipBounds = renderer.getClipBounds()
 					.intersection(0, 0, width, height);
 			
-			drawBackground(renderer, clipBounds);
 			drawItemList(renderer, clipBounds);
-		}
-		
-		private void drawBackground(GSIRenderer2D renderer, GSRectangle clipBounds) {
-			// Note: no need to handle disabled background color, since
-			//       this popup UI is never shown when that is the case.
-			int color = dropdown.getBackgroundColor();
-			if (GSColorUtil.unpackA(color) != 0x00)
-				renderer.fillRect(clipBounds.x, clipBounds.y,
-						clipBounds.width, clipBounds.height, color);
 		}
 		
 		private void drawItemList(GSIRenderer2D renderer, GSRectangle clipBounds) {
@@ -804,7 +796,7 @@ public class GSDropdownList<T> extends GSPanel implements GSIDropdownListModelLi
 			int iw = is.getWidth() + (dropdown.getBorderWidth() +
 					dropdown.getHorizontalMargin()) * 2;
 			int cnt = Math.min(rowCount, model.getCount());
-			if (dropdown.isEmptySelectionAllowed() && cnt + 1 < rowCount) {
+			if (dropdown.isEmptySelectionAllowed() && cnt + 1 <= rowCount) {
 				// Include the empty element.
 				cnt++;
 			}
@@ -891,7 +883,18 @@ public class GSDropdownList<T> extends GSPanel implements GSIDropdownListModelLi
 			int prefRowCount = dropdown.getPreferredItemListRowCount();
 			GSDimension ps = calculatePreferredSize(prefRowCount);
 			// Attempt to receive the same width as the dropdown.
-			int w = Math.max(dropdown.getWidth(), ps.getWidth());
+			int dw = dropdown.getWidth();
+			int cnt = dropdown.isEmptySelectionAllowed() ?
+					(model.getCount() + 1) : model.getCount();
+			if (cnt > prefRowCount) {
+				// The scroll panel will show a vertical scroll bar.
+				GSScrollPanel scrollPanel = GSPanelUtil.getScrollPanel(this);
+				if (scrollPanel != null) {
+					GSScrollBar vsb = scrollPanel.getVerticalScrollBar();
+					dw -= vsb.getProperty(PREFERRED_WIDTH);
+				}
+			}
+			int w = Math.max(dw, ps.getWidth());
 			return new GSDimension(w, ps.getHeight());
 		}
 		
