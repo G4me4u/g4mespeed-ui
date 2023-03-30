@@ -34,21 +34,19 @@ public class GSTableRowHeaderPanel extends GSPanel implements GSIScrollable {
 	}
 	
 	private void drawBackground(GSIRenderer2D renderer, GSRectangle clipBounds) {
-		GSCellContext context = initCellContext(null, GSTablePanel.INVALID_HEADER_INDEX, null);
-		if (GSColorUtil.unpackA(context.backgroundColor) != 0x00) {
+		int tbgc = table.isEnabled() ? table.getBackgroundColor() :
+		                               table.getDisabledBackgroundColor();
+		if (GSColorUtil.unpackA(tbgc) != 0x00) {
 			renderer.fillRect(clipBounds.x, clipBounds.y, clipBounds.width,
-					clipBounds.height, context.backgroundColor);
+					clipBounds.height, GSColorUtil.darker(tbgc));
 		}
 		// Check if we have a selection and draw its background
 		if (table.getRowSelectionPolicy() != GSEHeaderSelectionPolicy.DISABLED &&
 				table.hasSelection()) {
-			GSRectangle bounds = new GSRectangle();
-			bounds.x = 0;
-			bounds.width = width;
-			table.computeRowSelectionBounds(bounds);
-			int selectionColor = GSColorUtil.darker(table.getSelectionBackgroundColor());
-			renderer.fillRect(bounds.x, bounds.y, bounds.width, bounds.height,
-					selectionColor);
+			GSRectangle sb = new GSRectangle(0, 0, width, 0);
+			table.computeRowSelectionBounds(sb);
+			int sc = GSColorUtil.darker(table.getSelectionBackgroundColor());
+			renderer.fillRect(sb.x, sb.y, sb.width, sb.height, sc);
 		}
 	}
 	

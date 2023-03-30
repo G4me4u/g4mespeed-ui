@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.g4mesoft.ui.panel.GSDimension;
+import com.g4mesoft.ui.panel.GSETextAlignment;
 
 public class GSBasicTableModel implements GSITableModel {
 
@@ -360,11 +361,13 @@ public class GSBasicTableModel implements GSITableModel {
 	private class GSBasicTableColumn extends GSAbstractHeaderElement implements GSITableColumn {
 
 		private int width;
+		private GSETextAlignment textAlignment;
 		
 		public GSBasicTableColumn(int columnIndex) {
 			super(columnIndex);
 			
 			width = 0;
+			textAlignment = GSETextAlignment.CENTER;
 		}
 		
 		@Override
@@ -378,6 +381,18 @@ public class GSBasicTableModel implements GSITableModel {
 				throw new IllegalArgumentException("width must be non-negative");
 			this.width = width;
 			dispatchSizeChanged();
+		}
+		
+		@Override
+		public GSETextAlignment getTextAlignment() {
+			return textAlignment;
+		}
+
+		@Override
+		public void setTextAlignment(GSETextAlignment textAlignment) {
+			if (textAlignment == null)
+				throw new IllegalArgumentException("textAlignment is null");
+			this.textAlignment = textAlignment;
 		}
 
 		@Override

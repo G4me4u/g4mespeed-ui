@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.g4mesoft.ui.panel.GSDimension;
+import com.g4mesoft.ui.panel.GSETextAlignment;
+import com.g4mesoft.ui.panel.GSIActionListener;
 import com.g4mesoft.ui.panel.GSILayoutManager;
 import com.g4mesoft.ui.panel.GSIModelListener;
 import com.g4mesoft.ui.panel.GSPanel;
@@ -14,18 +16,24 @@ import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.panel.cell.GSCellContext;
 import com.g4mesoft.ui.panel.cell.GSCellRendererRegistry;
 import com.g4mesoft.ui.panel.cell.GSICellRenderer;
+import com.g4mesoft.ui.panel.event.GSIKeyListener;
 import com.g4mesoft.ui.panel.event.GSIMouseListener;
+import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.panel.scroll.GSIScrollable;
 import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
+import com.g4mesoft.ui.util.GSMathUtil;
 
 public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
+                                                           GSIKeyListener,
                                                            GSIScrollable,
-                                                           GSITableModelListener {
+                                                           GSITableModelListener,
+                                                           GSIHeaderSelectionListener {
 
 	public static final int PREFERRED_COUNT_UNSPECIFIED = 0;
+	public static final int INVALID_HEADER_INDEX = -1;
 	
 	private static final int DEFAULT_PREFERRED_COLUMN_COUNT = PREFERRED_COUNT_UNSPECIFIED;
 	private static final int DEFAULT_PREFERRED_ROW_COUNT = 10;
@@ -33,6 +41,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 
 	private static final int DEFAULT_BACKGROUND_COLOR = 0xFF202020;
 	private static final int DEFAULT_SELECTION_BACKGROUND_COLOR = 0xFF094771;
+	private static final int DEFAULT_HOVERED_BACKGROUND_COLOR = 0xFF4D4D4D;
 	private static final int DEFAULT_DISABLED_BACKGROUND_COLOR = 0xFF0A0A0A;
 
 	private static final int DEFAULT_TEXT_COLOR = 0xFFCCCCCC;
@@ -44,7 +53,9 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 	private static final int DEFAULT_SELECTION_BORDER_COLOR = 0xFF06314F;
 	private static final int DEFAULT_DISABLED_BORDER_COLOR = 0xFF060606;
 	
-	public static final int INVALID_HEADER_INDEX = -1;
+	private static final long INVALID_CLICK_TIMESTAMP = 0L;
+	private static final long CLICK_RATE_MILLIS = 500L;
+	private static final int ACTION_CLICK_COUNT = 2;
 
 	private GSITableModel model;
 	
@@ -60,6 +71,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 
 	private int backgroundColor;
 	private int selectionBackgroundColor;
+	private int hoveredBackgroundColor;
 	private int disabledBackgroundColor;
 	
 	private int textColor;
@@ -75,13 +87,24 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 	private int selectionBorderColor;
 	private int disabledBorderColor;
 
+	private GSETextAlignment columnHeaderTextAlignment;
+	private GSETextAlignment rowHeaderTextAlignment;
+	
 	private GSTableColumnHeaderPanel columnHeader;
 	private GSTableRowHeaderPanel rowHeader;
 	
 	private final GSIHeaderSelectionModel columnSelectionModel;
 	private final GSIHeaderSelectionModel rowSelectionModel;
+
+	private long lastClickTimestamp;
+	private int clickCount;
 	
 	private final List<GSIModelListener> modelListeners;
+	private final List<GSIActionListener> actionListeners;
+
+	public GSTablePanel() {
+		this(0, 0);
+	}
 	
 	public GSTablePanel(int columnCount, int rowCount) {
 		this(new GSBasicTableModel(columnCount, rowCount));
@@ -102,6 +125,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		
 		backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		selectionBackgroundColor = DEFAULT_SELECTION_BACKGROUND_COLOR;
+		hoveredBackgroundColor = DEFAULT_HOVERED_BACKGROUND_COLOR;
 		disabledBackgroundColor = DEFAULT_DISABLED_BACKGROUND_COLOR;
 		
 		textColor = DEFAULT_TEXT_COLOR;
@@ -115,10 +139,20 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		selectionBorderColor = DEFAULT_SELECTION_BORDER_COLOR;
 		disabledBorderColor = DEFAULT_DISABLED_BORDER_COLOR;
 		
+		columnHeaderTextAlignment = null;
+		rowHeaderTextAlignment = GSETextAlignment.CENTER;
+		
 		columnSelectionModel = new GSBasicHeaderSelectionModel();
 		rowSelectionModel = new GSBasicHeaderSelectionModel();
 		
+		columnSelectionModel.addListener(this);
+		rowSelectionModel.addListener(this);
+		
+		lastClickTimestamp = INVALID_CLICK_TIMESTAMP;
+		clickCount = 0;
+		
 		modelListeners = new ArrayList<>();
+		actionListeners = new ArrayList<>();
 		
 		setModel(model);
 		
@@ -126,6 +160,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		setRowSelectionPolicy(GSEHeaderSelectionPolicy.SINGLE_INTERVAL_SELECTION);
 		
 		addMouseEventListener(this);
+		addKeyEventListener(this);
 	}
 	
 	@Override
@@ -208,6 +243,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		if (context == null)
 			context = new GSCellContext();
 		if (isEnabled()) {
+			// TODO: check if cell is in table, and is hovered...
 			// Check if cell is selected and update accordingly
 			if (isCellSelected(columnIndex, rowIndex)) {
 				context.backgroundColor = selectionBackgroundColor;
@@ -220,7 +256,16 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			context.backgroundColor = disabledBackgroundColor;
 			context.textColor = disabledTextColor;
 		}
-		// TODO: modify context text alignment based on row and column index.
+		if (columnIndex != INVALID_HEADER_INDEX) {
+			if (rowIndex == INVALID_HEADER_INDEX && columnHeaderTextAlignment != null) {
+				context.textAlignment = columnHeaderTextAlignment;
+			} else {
+				//assert(0 <= columnIndex <= model.getColumnCount())
+				context.textAlignment = model.getColumn(columnIndex).getTextAlignment();
+			}
+		} else {
+			context.textAlignment = rowHeaderTextAlignment;
+		}
 		if (bounds == null) {
 			if (columnIndex != INVALID_HEADER_INDEX && rowIndex != INVALID_HEADER_INDEX)
 				getInnerCellBounds(columnIndex, rowIndex, context.bounds);
@@ -231,16 +276,39 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 	}
 
 	private void drawBackground(GSIRenderer2D renderer, GSRectangle clipBounds) {
-		GSCellContext context = initCellContext(null, INVALID_HEADER_INDEX, INVALID_HEADER_INDEX);
-		if (GSColorUtil.unpackA(context.backgroundColor) != 0x00) {
-			renderer.fillRect(clipBounds.x, clipBounds.y, clipBounds.width,
-					clipBounds.height, context.backgroundColor);
+		int bgc = isEnabled() ? backgroundColor : disabledBackgroundColor;
+		if (GSColorUtil.unpackA(bgc) != 0x00) {
+			renderer.fillRect(clipBounds.x, clipBounds.y,
+					clipBounds.width, clipBounds.height, bgc);
 		}
 		// Check if we have a selection and draw its background
-		GSRectangle bounds = getSelectionBounds();
-		if (bounds != null) {
-			renderer.fillRect(bounds.x, bounds.y, bounds.width, bounds.height,
-					selectionBackgroundColor);
+		if (isEnabled() && isSelectionEnabled()) {
+			GSRectangle bounds = getSelectionBounds();
+			if (bounds != null) {
+				renderer.fillRect(bounds.x, bounds.y, bounds.width,
+						bounds.height, selectionBackgroundColor);
+			}
+			// Draw hovered cell background
+			int mx = renderer.getMouseX(), my = renderer.getMouseY();
+			if (clipBounds.contains(mx, my)) {
+				int c = getColumnIndexAtX(mx), r = getRowIndexAtY(my);
+				// Get the bounds of the hovered cell, row, or column.
+				GSRectangle hb = getCellBounds(c, r);
+				if (getColumnSelectionPolicy() == GSEHeaderSelectionPolicy.DISABLED) {
+					hb.x = 0;
+					hb.width = width;
+				} else if (getRowSelectionPolicy() == GSEHeaderSelectionPolicy.DISABLED) {
+					hb.y = 0;
+					hb.height = height;
+				}
+				int hc;
+				if (isCellSelected(c, r)) {
+					hc = GSColorUtil.brighter(selectionBackgroundColor);
+				} else {
+					hc = hoveredBackgroundColor;
+				}
+				renderer.fillRect(hb.x, hb.y, hb.width, hb.height, hc);
+			}
 		}
 	}
 	
@@ -290,15 +358,6 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			if (bounds != null) {
 				bounds = bounds.intersection(clipBounds);
 				drawBorder(renderer, bounds, selectionBorderColor);
-			}
-			if (isSelectionEnabled()) {
-				// Draw border around hovered cell
-				int mx = renderer.getMouseX(), my = renderer.getMouseY();
-				if (clipBounds.contains(mx, my)) {
-					int c = getColumnIndexAtX(mx), r = getRowIndexAtY(my);
-					int hoverColor = GSColorUtil.brighter(selectionBackgroundColor);
-					drawBorder(renderer, getCellBounds(c, r), hoverColor);
-				}
 			}
 		}
 	}
@@ -486,6 +545,20 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 	private void dispatchModelChangedEvent() {
 		modelListeners.forEach(GSIModelListener::modelChanged);
 	}
+
+	public void addActionListener(GSIActionListener listener) {
+		if (listener == null)
+			throw new IllegalArgumentException("listener is null!");
+		actionListeners.add(listener);
+	}
+	
+	public void removeActionListener(GSIActionListener listener) {
+		actionListeners.remove(listener);
+	}
+	
+	private void dispatchActionPerformedEvent() {
+		actionListeners.forEach(GSIActionListener::actionPerformed);
+	}
 	
 	public int getPreferredColumnCount() {
 		return preferredColumnCount;
@@ -551,6 +624,65 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			throw new IllegalArgumentException("resizePolicy is null!");
 		rowHeaderResizePolicy = resizePolicy;
 		invalidate();
+	}
+	
+	public GSETextAlignment getColumnTextAlignment(int columnIndex) {
+		return model.getColumn(columnIndex).getTextAlignment();
+	}
+
+	/**
+	 * Sets the text alignment of all columns in the table. Since the
+	 * text alignment is stored in the table model, this must be changed
+	 * every time the model is changed.
+	 * 
+	 * @param textAlignment - the text alignment to apply to all columns
+	 */
+	public void setAllColumnTextAlignment(GSETextAlignment textAlignment) {
+		for (int i = 0; i < model.getColumnCount(); i++)
+			model.getColumn(i).setTextAlignment(textAlignment);
+		setRowHeaderTextAlignment(textAlignment);
+	}
+
+	/**
+	 * Sets the text alignment of the given column index. Since the
+	 * text alignment is stored in the table model, this must be changed
+	 * every time the model is changed.
+	 * 
+	 * @param columnIndex - the index of the column
+	 * @param textAlignment - the text alignment to apply to the given column
+	 */
+	public void setColumnTextAlignment(int columnIndex, GSETextAlignment textAlignment) {
+		// Note: bounds check handled by model.
+		model.getColumn(columnIndex).setTextAlignment(textAlignment);
+	}
+	
+	/**
+	 * @return The column header text alignment or {@code null} if the
+	 *         column specific text alignment should be used instead.
+	 */
+	public GSETextAlignment getColumnHeaderTextAlignment() {
+		return columnHeaderTextAlignment;
+	}
+	
+	/**
+	 * Sets the column header text alignment that will be applied to all
+	 * column headers. When the given text alignment is null, then the
+	 * column specific text alignment is applied instead.
+	 * 
+	 * @param textAlignment - the text alignment to apply to column headers.
+	 */
+	public void setColumnHeaderTextAlignment(GSETextAlignment textAlignment) {
+		this.columnHeaderTextAlignment = textAlignment;
+	}
+	
+	public GSETextAlignment getRowHeaderTextAlignment() {
+		return rowHeaderTextAlignment;
+	}
+	
+	public void setRowHeaderTextAlignment(GSETextAlignment textAlignment) {
+		if (textAlignment == null)
+			throw new IllegalArgumentException("textAlignment is null!");
+		this.rowHeaderTextAlignment = textAlignment;
 	}
 	
 	public GSIHeaderSelectionModel getColumnSelectionModel() {
@@ -728,6 +860,14 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		this.selectionBackgroundColor = selectionBackgroundColor;
 	}
 
+	public int getHoveredBackgroundColor() {
+		return hoveredBackgroundColor;
+	}
+	
+	public void setHoveredBackgroundColor(int hoveredBackgroundColor) {
+		this.hoveredBackgroundColor = hoveredBackgroundColor;
+	}
+
 	public int getDisabledBackgroundColor() {
 		return disabledBackgroundColor;
 	}
@@ -834,6 +974,18 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			setSelectedCells(c, r, c, r);
 			columnSelectionModel.setAnchor(c);
 			rowSelectionModel.setAnchor(r);
+			// Check for multiple clicks
+			long now = System.currentTimeMillis();
+			if (lastClickTimestamp == INVALID_CLICK_TIMESTAMP ||
+					now - lastClickTimestamp >= CLICK_RATE_MILLIS) {
+				// The user clicked too slow
+				clickCount = 0;
+			}
+			lastClickTimestamp = now;
+			clickCount++;
+			// Check if we should perform an action
+			if (clickCount == ACTION_CLICK_COUNT)
+				dispatchActionPerformedEvent();
 			event.consume();
 		}
 	}
@@ -848,6 +1000,58 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			int c0 = columnSelectionModel.getAnchor();
 			int r0 = rowSelectionModel.getAnchor();
 			setSelectedCells(c0, r0, c1, r1);
+			event.consume();
+		}
+	}
+	
+	@Override
+	public void keyPressed(GSKeyEvent event) {
+		if (event.isConsumed())
+			return;
+		switch (event.getKeyCode()) {
+		case GSKeyEvent.KEY_UP:
+			incrementSelection(event, rowSelectionModel, -1, model.getRowCount());
+			break;
+		case GSKeyEvent.KEY_DOWN:
+			incrementSelection(event, rowSelectionModel, 1, model.getRowCount());
+			break;
+		case GSKeyEvent.KEY_LEFT:
+			incrementSelection(event, columnSelectionModel, -1, model.getColumnCount());
+			break;
+		case GSKeyEvent.KEY_RIGHT:
+			incrementSelection(event, columnSelectionModel, 1, model.getColumnCount());
+			break;
+		case GSKeyEvent.KEY_ENTER:
+		case GSKeyEvent.KEY_KP_ENTER:
+			if (hasSelection() && !event.isRepeating())
+				dispatchActionPerformedEvent();
+			event.consume();
+			break;
+		case GSKeyEvent.KEY_ESCAPE:
+			unfocus();
+			event.consume();
+			break;
+		}
+	}
+
+	private void incrementSelection(GSKeyEvent event,
+			GSIHeaderSelectionModel selectionModel, int sign,
+			int selectionUpperBound) {
+		if (selectionModel.getSelectionPolicy() != GSEHeaderSelectionPolicy.DISABLED &&
+				selectionUpperBound != 0 /* always invalid selection */) {
+			// Compute the lead index of the selection
+			int i0 = selectionModel.getIntervalMin();
+			int i1 = selectionModel.getIntervalMax();
+			int lead = (i0 != selectionModel.getAnchor()) ? i0 : i1;
+			// Increment with sign, ensure we are in bounds. Note: a
+			// currently invalid selection will go to zero.
+			lead = GSMathUtil.clamp(lead + sign, 0, selectionUpperBound - 1);
+			if (event.isModifierHeld(GSKeyEvent.MODIFIER_SHIFT)) {
+				selectionModel.setInterval(selectionModel.getAnchor(), lead);
+			} else {
+				selectionModel.set(lead);
+			}
+			GSPanelUtil.scrollToVisible(this, getSelectionBounds());
 			event.consume();
 		}
 	}
@@ -944,5 +1148,12 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 	@Override
 	public void headerVisibilityChanged() {
 		updateHeaderVisibility();
+	}
+
+	@Override
+	public void selectionChanged(int firstIndex, int lastIndex) {
+		// Only perform action when clicking the same selection
+		lastClickTimestamp = INVALID_CLICK_TIMESTAMP;
+		clickCount = 0;
 	}
 }
