@@ -42,8 +42,8 @@ public class GSDropdownAction extends GSDropdownItem implements GSIMouseListener
 		
 		boolean hovered = renderer.isMouseInside(0, 0, width, height);
 		
-		int backgroundColor = (isEnabled() && hovered) ? HOVERED_BACKGROUND_COLOR : BACKGROUND_COLOR;
-		renderer.fillRect(0, 0, width, height, backgroundColor);
+		if (isEnabled() && hovered)
+			renderer.fillRect(0, 0, width, height, HOVERED_BACKGROUND_COLOR);
 
 		if (icon != null) {
 			// Force allowed icon size to that predefined in GSDropdownItem

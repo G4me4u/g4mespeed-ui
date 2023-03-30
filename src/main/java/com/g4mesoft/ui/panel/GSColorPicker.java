@@ -3,14 +3,11 @@ package com.g4mesoft.ui.panel;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 
 public class GSColorPicker extends GSParentPanel {
 
 	private static final int SLIDER_MARGIN = 3;
-	
-	protected static final int BACKGROUND_COLOR = 0xFF252526;
 	
 	private final GSColorWheel colorWheel;
 	private final GSColorBrightnessSlider brightnessSlider;
@@ -51,13 +48,6 @@ public class GSColorPicker extends GSParentPanel {
 		brightnessSlider.setBounds(bsx, (height - bsh) / 2, bsw, bsh);
 	}
 
-	@Override
-	public void render(GSIRenderer2D renderer) {
-		renderer.fillRect(0, 0, width, height, BACKGROUND_COLOR);
-		
-		super.render(renderer);
-	}
-	
 	@Override
 	protected GSDimension calculatePreferredSize() {
 		GSDimension cws = colorWheel.getProperty(PREFERRED_SIZE);

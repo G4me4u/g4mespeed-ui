@@ -11,11 +11,9 @@ import com.g4mesoft.ui.panel.GSParentPanel;
 import com.g4mesoft.ui.panel.GSPopup;
 import com.g4mesoft.ui.panel.event.GSIKeyListener;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
-import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
 public class GSDropdown extends GSParentPanel implements GSIKeyListener {
 
-	protected static final int BACKGROUND_COLOR = 0xFF202020;
 	protected static final int VERTICAL_PADDING = 4;
 	
 	private final List<GSIActionListener> actionListeners;
@@ -62,13 +60,6 @@ public class GSDropdown extends GSParentPanel implements GSIKeyListener {
 
 			y += h;
 		}
-	}
-	
-	@Override
-	public void render(GSIRenderer2D renderer) {
-		renderer.fillRect(0, 0, width, height, BACKGROUND_COLOR);
-
-		super.render(renderer);
 	}
 	
 	@Override

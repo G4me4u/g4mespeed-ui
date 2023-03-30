@@ -3,6 +3,7 @@ package com.g4mesoft.ui.panel;
 import com.g4mesoft.ui.panel.event.GSILayoutEventListener;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.util.GSColorUtil;
 
 import net.minecraft.client.render.VertexFormats;
 
@@ -12,6 +13,8 @@ public class GSPopup extends GSParentPanel {
 	private static final int SHADOW_OFFSET_X = 1;
 	private static final int SHADOW_OFFSET_Y = 2;
 	private static final int SHADOW_COLOR = 0x80000000;
+	
+	private static final int DEFAULT_BACKGROUND_COLOR = 0xFF252526;
 	
 	protected final GSPanel content;
 	protected final boolean stealingFocus;
@@ -23,6 +26,8 @@ public class GSPopup extends GSParentPanel {
 	private int relX;
 	private int relY;
 	private boolean sourceFocusedOnHide;
+	
+	private int backgroundColor;
 	
 	private GSILayoutEventListener sourceLayoutListener;
 
@@ -42,6 +47,8 @@ public class GSPopup extends GSParentPanel {
 		placement = GSEPopupPlacement.ABSOLUTE;
 		relX = relY = 0;
 		sourceFocusedOnHide = true;
+		
+		backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		
 		sourceLayoutListener = null;
 	}
@@ -65,7 +72,6 @@ public class GSPopup extends GSParentPanel {
 			source.removeLayoutEventListener(sourceLayoutListener);
 			sourceLayoutListener = null;
 		}
-
 	}
 	
 	@Override
@@ -80,17 +86,30 @@ public class GSPopup extends GSParentPanel {
 	
 	@Override
 	protected void layout() {
-		content.setBounds(0, 0, width, height);
+		GSMargin margin = content.getProperty(GSLayoutProperties.MARGIN);
+		int w = Math.max(0, width - margin.getHorizMargin());
+		int h = Math.max(0, height - margin.getVertMargin());
+		content.setBounds(margin.left, margin.right, w, h);
 	}
 	
 	@Override
 	public GSDimension calculateMinimumSize() {
-		return content.getProperty(MINIMUM_SIZE);
+		return calculateSize(MINIMUM_SIZE);
 	}
 
 	@Override
 	protected GSDimension calculatePreferredSize() {
-		return content.getProperty(PREFERRED_SIZE);
+		return calculateSize(PREFERRED_SIZE);
+	}
+	
+	private GSDimension calculateSize(GSILayoutProperty<GSDimension> sizeProperty) {
+		GSDimension size = content.getProperty(sizeProperty);
+		GSMargin margin = content.getProperty(GSLayoutProperties.MARGIN);
+		// Limit the popup size to the rootPanel size.
+		GSRootPanel rootPanel = GSPanelContext.getRootPanel();
+		int w = (int)Math.min(rootPanel.getWidth(), (long)size.getWidth() + margin.getHorizMargin());
+		int h = (int)Math.min(rootPanel.getHeight(), (long)size.getHeight() + margin.getVertMargin());
+		return new GSDimension(w, h);
 	}
 
 	public void show(GSPanel source, GSLocation location) {
@@ -222,7 +241,8 @@ public class GSPopup extends GSParentPanel {
 	@Override
 	public void render(GSIRenderer2D renderer) {
 		renderShadow(renderer);
-	
+		renderBackground(renderer);
+		
 		// Fix issues with text rendering (depth enabled)
 		renderer.pushMatrix();
 		renderer.translateDepth(0.1f);
@@ -258,6 +278,11 @@ public class GSPopup extends GSParentPanel {
 		renderer.popMatrix();
 	}
 	
+	protected void renderBackground(GSIRenderer2D renderer) {
+		if (GSColorUtil.unpackA(backgroundColor) != 0x00)
+			renderer.fillRect(0, 0, width, height, backgroundColor);
+	}
+	
 	public boolean isSourceFocusedOnHide() {
 		return sourceFocusedOnHide;
 	}
@@ -281,6 +306,14 @@ public class GSPopup extends GSParentPanel {
 			if (flag && isAdded() && !GSPanelUtil.isFocusWithin(this))
 				hide();
 		}
+	}
+	
+	public int getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	public void setBackgroundColor(int backgroundColor) {
+		this.backgroundColor = backgroundColor;
 	}
 
 	private class GSSourceLayoutListener implements GSILayoutEventListener {
