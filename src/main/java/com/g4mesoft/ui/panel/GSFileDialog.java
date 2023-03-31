@@ -636,6 +636,10 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}, GSPanelContext.getIcon(60, 84, 12, 12));
 		// PDF files
 		addFileIcon("pdf", GSPanelContext.getIcon(72, 84, 12, 12));
+		// Configuration files
+		addFileIcons(new String[] {
+			"cfg", "conf", "config", "ini"
+		}, GSPanelContext.getIcon(0, 96, 12, 12));
 	}
 
 	public static boolean addFileIcons(String[] fileExts, GSIcon icon) {
