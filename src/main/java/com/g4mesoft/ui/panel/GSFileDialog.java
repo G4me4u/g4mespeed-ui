@@ -39,8 +39,6 @@ import com.g4mesoft.ui.panel.table.GSITableModel;
 import com.g4mesoft.ui.panel.table.GSTablePanel;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.LiteralText;
@@ -97,9 +95,8 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		"panel.fileDialog.size.gib",   // 1024^3 B
 		"panel.fileDialog.size.tib",   // 1024^4 B
 		"panel.fileDialog.size.pib",   // 1024^5 B
-		"panel.fileDialog.size.eib",   // 1024^6 B
-		"panel.fileDialog.size.zib",   // 1024^7 B
-		"panel.fileDialog.size.yib"    // 1024^8 B
+		"panel.fileDialog.size.eib"    // 1024^6 B
+		// larger is > 2^64 B
 	};
 	private static final DecimalFormat FILE_SIZE_DECIMAL_FORMAT =
 			new DecimalFormat("0.##", new DecimalFormatSymbols(Locale.US));
@@ -305,14 +302,12 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	}
 
 	private void confirm() {
-		// TODO: fix unchecked invocations of Files.isDirectory(...) etc.
-		
 		Path path = resolvePath();
 		if (path != null) {
 			if (matchesSelectionMode(path)) {
 				close();
 				dispatchActionPerformedEvent();
-			} else if (Files.isDirectory(path)) {
+			} else if (isDirectory(path)) {
 				// Instead of confirming and closing, we open the
 				// selected directory.
 				setDirectory(path);
@@ -401,7 +396,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		} catch (InvalidPathException ignore) {
 		}
 		// Ensure that the path exists
-		if (path != null && Files.isDirectory(path)) {
+		if (path != null && isDirectory(path)) {
 			setDirectory(path);
 		} else {
 			// Do not change directory, but update path.
@@ -410,7 +405,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	}
 	
 	public void setDirectory(Path directory) {
-		if (directory != null && !Files.isDirectory(directory)) {
+		if (directory != null && !isDirectory(directory)) {
 			// Only support directories (or null for roots)
 			return;
 		}
@@ -430,12 +425,11 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		} else {
 			try {
 				itr = Files.list(directory).iterator();
-			} catch (IOException ignore) {
+			} catch (IOException | SecurityException ignore) {
 				itr = Collections.emptyIterator();
 			}
 		}
-		// Collect non-hidden files from iterator
-		paths = ImmutableList.copyOf(Iterators.filter(itr, this::filterPath));
+		paths = collectAndSortFiles(itr);
 		
 		fileTable.setModel(createTableModel());
 		if (directory == null) {
@@ -449,6 +443,29 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		// Reset the table scroll
 		GSPanelUtil.setScroll(fileTable, 0, 0);
 	}
+	
+	private List<Path> collectAndSortFiles(Iterator<Path> itr) {
+		List<Path> result = new ArrayList<>();
+		// Collect non-hidden files from iterator
+		while (itr.hasNext()) {
+			Path path = itr.next();
+			if (filterPath(path))
+				result.add(path);
+		}
+		// Sort such that directories are first, and
+		// then by alphabetical order of names.
+		Collections.sort(result, (p1, p2) -> {
+			boolean d1 = isDirectory(p1), d2 = isDirectory(p2);
+			if (d1 != d2) {
+				// Directories first
+				return d1 ? -1 : 1;
+			}
+			String n1 = getFileName(p1), n2 = getFileName(p2);
+			// Otherwise sort names alphabetically
+			return n1.compareTo(n2);
+		});
+		return result;
+	}
 
 	private boolean filterPath(Path path) {
 		if (isHidden(path)) {
@@ -457,7 +474,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}
 		// Only the directories only selection mode restricts visible files.
 		if (selectionMode == GSEFileDialogSelectionMode.DIRECTORIES_ONLY)
-			return Files.isDirectory(path);
+			return isDirectory(path);
 		return true;
 	}
 	
@@ -469,17 +486,33 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}
 		try {
 			return Files.isHidden(path);
-		} catch (Throwable ignore) {
+		} catch (IOException | SecurityException ignore) {
 		}
 		return true;
+	}
+	
+	private static boolean isDirectory(Path path) {
+		try {
+			return Files.isDirectory(path);
+		} catch (SecurityException ignore) {
+		}
+		return false;
+	}
+
+	private static boolean isRegularFile(Path path) {
+		try {
+			return Files.isRegularFile(path);
+		} catch (SecurityException ignore) {
+		}
+		return false;
 	}
 	
 	private boolean matchesSelectionMode(Path path) {
 		switch (selectionMode) {
 		case FILES_ONLY:
-			return Files.isRegularFile(path);
+			return isRegularFile(path);
 		case DIRECTORIES_ONLY:
-			return Files.isDirectory(path);
+			return isDirectory(path);
 		case FILES_AND_DIRECTORIES:
 			return true;
 		}
@@ -506,7 +539,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			BasicFileAttributes attribs = null;
 			try {
 				attribs = Files.readAttributes(path, BasicFileAttributes.class);
-			} catch (IOException e) {
+			} catch (IOException | SecurityException ignore) {
 			}
 			if (attribs != null) {
 				model.setCellValue(MODIFIED_COLUMN_INDEX, r, attribs.lastModifiedTime().toInstant());
@@ -602,7 +635,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	
 	private void onSelectedPathChanged() {
 		if (selectedPath != null && !matchesSelectionMode(selectedPath)
-				&& Files.isDirectory(selectedPath)) {
+				&& isDirectory(selectedPath)) {
 			// Update the confirm button text to reflect opening
 			// the selected path as the next directory.
 			confirmButton.setText(CONFIRM_TEXTS[GSEFileDialogMode.OPEN.getIndex()]);
@@ -640,6 +673,15 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		addFileIcons(new String[] {
 			"cfg", "conf", "config", "ini"
 		}, GSPanelContext.getIcon(0, 96, 12, 12));
+		// Arduino project icon
+		addFileIcon("ino", GSPanelContext.getIcon(12, 96, 12, 12));
+		// HTML files
+		addFileIcons(new String[] {
+			"html", "htm", "xhtml", "xhtm",
+			"shtml", "shtm", "dhtml", "dhtm"
+		}, GSPanelContext.getIcon(24, 96, 12, 12));
+		// JSON files
+		addFileIcon("json", GSPanelContext.getIcon(36, 96, 12, 12));
 	}
 
 	public static boolean addFileIcons(String[] fileExts, GSIcon icon) {
@@ -709,9 +751,9 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			GSIcon icon = null;
 			if (isRootDirectory) {
 				icon = ROOT_DIRECTORY_ICON;
-			} else if (Files.isDirectory(path)) {
+			} else if (isDirectory(path)) {
 				icon = DIRECTORY_ICON;
-			} else if (Files.isRegularFile(path)) {
+			} else if (isRegularFile(path)) {
 				// Icon depends on extension.
 				String fileExt = getFileExtension(name);
 				if (fileExt != null)

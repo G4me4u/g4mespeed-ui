@@ -43,7 +43,5 @@
   "panel.fileDialog.size.gib": "%s GB",
   "panel.fileDialog.size.tib": "%s TB",
   "panel.fileDialog.size.pib": "%s PB",
-  "panel.fileDialog.size.eib": "%s EB",
-  "panel.fileDialog.size.zib": "%s ZB",
-  "panel.fileDialog.size.yib": "%s YB"
+  "panel.fileDialog.size.eib": "%s EB"
 }
