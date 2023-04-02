@@ -33,8 +33,11 @@ public class GSKeyboardMixin implements GSIKeyboardAccess {
 		if (windowHandle == client.getWindow().getHandle()) {
 			gs_prevEventRepeating = (action == GLFW.GLFW_REPEAT);
 
-			if (G4mespeedUIMod.IS_DEV_ENV && key == GLFW.GLFW_KEY_O && (mods & GLFW.GLFW_MOD_CONTROL) != 0)
+			if (G4mespeedUIMod.IS_DEV_ENV && action == GLFW.GLFW_PRESS &&
+					key == GLFW.GLFW_KEY_O && (mods & GLFW.GLFW_MOD_CONTROL) != 0) {
+				// Open testing GUI when pressing CTRL + O
 				GSPanelContext.openContent(new GSDebugTestingGUI());
+			}
 		}
 	}
 	
