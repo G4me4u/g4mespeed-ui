@@ -282,11 +282,11 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 				confirm(selectedPath);
 			}
 		});
-		putButtonStroke(BACKWARD_STROKE, () -> {
+		fileTable.putButtonStroke(BACKWARD_STROKE, () -> {
 			if (directory != null)
 				setDirectory(directory.getParent());
 		});
-		putButtonStroke(FORWARD_STROKE, () -> {
+		fileTable.putButtonStroke(FORWARD_STROKE, () -> {
 			setDirectory(selectedPath);
 		});
 		// Default focus to the file table.
