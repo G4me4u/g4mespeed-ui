@@ -270,9 +270,8 @@ public final class GSPanelUtil {
 	/**
 	 * Formats the given date using the system date-time format. If the given
 	 * {@code dateTime} represents a date that is today, it will be formatted as
-	 * {@code "Today at <TimeFormat>"}, and similarly if the it is yesterday it is
-	 * formatted as {@code "Yesterday at <TimeFormat>"}, where TimeFormat is the
-	 * system time format.
+	 * {@code "Today at <TimeFormat>"}, and similarly for yesterday and tomorrow,
+	 * where TimeFormat is the system time format.
 	 * 
 	 * @param dateTime - the zoned date-time to be formatted
 	 * 
