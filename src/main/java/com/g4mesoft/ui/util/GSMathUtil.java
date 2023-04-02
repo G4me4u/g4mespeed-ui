@@ -5,6 +5,9 @@ public final class GSMathUtil {
 	public static final float  EPSILON_F = 1.0e-5f;
 	public static final double EPSILON_D = 1.0e-5;
 	
+	private GSMathUtil() {
+	}
+	
 	public static int clamp(int v, int mn, int mx) {
 		return v < mn ? mn : (v > mx ? mx : v);
 	}

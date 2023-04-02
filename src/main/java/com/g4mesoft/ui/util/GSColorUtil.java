@@ -1,6 +1,6 @@
 package com.g4mesoft.ui.util;
 
-public class GSColorUtil {
+public final class GSColorUtil {
 
 	/* REDS */
 	public static final int INDIAN_RED             = 0xFFCD5C5C;
@@ -197,6 +197,9 @@ public class GSColorUtil {
 	private static final String RGBA_HEX_FORMAT = "%08X";
 	
 	private static final float COLOR_DARKEN_FACTOR = 0.7f;
+	
+	private GSColorUtil() {
+	}
 	
 	/* @see https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation */
 	public static double[] rgb2xyz(int r, int g, int b) {
