@@ -29,5 +29,7 @@ public interface GSIHeaderSelectionModel {
 	public int getAnchor();
 	
 	public void setAnchor(int index);
+
+	public int getLead();
 	
 }

@@ -2,6 +2,7 @@ package com.g4mesoft.ui.panel.table;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.g4mesoft.ui.panel.GSDimension;
 import com.g4mesoft.ui.panel.GSETextAlignment;
@@ -698,12 +699,25 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		setSelectedRows(r0, r1);
 	}
 
+	public void setSelectedCell(int c, int r) {
+		setSelectedColumn(c);
+		setSelectedRow(r);
+	}
+
 	public void setSelectedColumns(int c0, int c1) {
 		columnSelectionModel.setInterval(c0, c1);
 	}
 
+	public void setSelectedColumn(int c) {
+		columnSelectionModel.set(c);
+	}
+	
 	public void setSelectedRows(int r0, int r1) {
 		rowSelectionModel.setInterval(r0, r1);
+	}
+
+	public void setSelectedRow(int r) {
+		rowSelectionModel.set(r);
 	}
 	
 	public void selectAll() {
@@ -829,6 +843,63 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			// Entire column is selected
 			dest.y = 0;
 			dest.height = getRowY(model.getRowCount());
+		}
+	}
+
+	private GSRectangle getSelectionLeadBounds() {
+		return getSelectionLeadBounds(null);
+	}
+	
+	private GSRectangle getSelectionLeadBounds(GSRectangle dest) {
+		if (!hasSelection())
+			return null;
+		if (dest == null)
+			dest = new GSRectangle();
+		if (columnSelectionModel.getSelectionPolicy() != GSEHeaderSelectionPolicy.DISABLED) {
+			int leadColumn = columnSelectionModel.getLead();
+			//assert(leadColumn != GSIHeaderSelectionModel.INVALID_SELECTION)
+			dest.x = getColumnX(leadColumn);
+			if (leadColumn < model.getColumnCount()) {
+				dest.width = getColumnWidth(leadColumn) + 2 * verticalBorderWidth;
+			} else {
+				dest.width = 0;
+			}
+		} else {
+			dest.x = 0;
+			dest.width = getColumnX(model.getColumnCount());
+		}
+		if (rowSelectionModel.getSelectionPolicy() != GSEHeaderSelectionPolicy.DISABLED) {
+			int leadRow = rowSelectionModel.getLead();
+			//assert(leadRow != GSIHeaderSelectionModel.INVALID_SELECTION)
+			dest.y = getRowY(leadRow);
+			if (leadRow < model.getRowCount()) {
+				dest.height = getRowHeight(leadRow) + 2 * horizontalBorderHeight;
+			} else {
+				dest.height = 0;
+			}
+		} else {
+			dest.y = 0;
+			dest.height = getRowY(model.getRowCount());
+		}
+		return dest;
+	}
+	
+	public void scrollToSelection() {
+		scrollToVisible(this::getSelectionBounds);
+	}
+	
+	public void scrollToSelectionLead() {
+		scrollToVisible(this::getSelectionLeadBounds);
+	}
+	
+	private void scrollToVisible(Supplier<GSRectangle> boundsGetter) {
+		if (isValid()) {
+			GSPanelUtil.scrollToVisible(this, boundsGetter.get());
+		} else {
+			GSPanelContext.schedule(() -> {
+				// Assume we are valid after scheduled task
+				GSPanelUtil.scrollToVisible(this, boundsGetter.get());
+			});
 		}
 	}
 
@@ -1039,10 +1110,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			int selectionUpperBound) {
 		if (selectionModel.getSelectionPolicy() != GSEHeaderSelectionPolicy.DISABLED &&
 				selectionUpperBound != 0 /* always invalid selection */) {
-			// Compute the lead index of the selection
-			int i0 = selectionModel.getIntervalMin();
-			int i1 = selectionModel.getIntervalMax();
-			int lead = (i0 != selectionModel.getAnchor()) ? i0 : i1;
+			int lead = selectionModel.getLead();
 			// Increment with sign, ensure we are in bounds. Note: a
 			// currently invalid selection will go to zero.
 			lead = GSMathUtil.clamp(lead + sign, 0, selectionUpperBound - 1);
@@ -1051,7 +1119,7 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			} else {
 				selectionModel.set(lead);
 			}
-			GSPanelUtil.scrollToVisible(this, getSelectionBounds());
+			scrollToSelectionLead();
 			event.consume();
 		}
 	}

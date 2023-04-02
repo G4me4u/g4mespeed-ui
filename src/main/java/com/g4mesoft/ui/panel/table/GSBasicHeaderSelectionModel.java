@@ -149,4 +149,9 @@ public class GSBasicHeaderSelectionModel implements GSIHeaderSelectionModel {
 	public void setAnchor(int index) {
 		anchor = GSMathUtil.clamp(index, intervalMin, intervalMax);
 	}
+	
+	@Override
+	public int getLead() {
+		return (intervalMin != anchor) ? intervalMin : intervalMax;
+	}
 }
