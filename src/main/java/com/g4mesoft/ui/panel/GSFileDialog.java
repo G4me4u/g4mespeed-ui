@@ -8,25 +8,24 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import com.g4mesoft.ui.panel.button.GSButton;
 import com.g4mesoft.ui.panel.cell.GSCellContext;
 import com.g4mesoft.ui.panel.cell.GSICellRenderer;
+import com.g4mesoft.ui.panel.dropdown.GSBasicDropdownListModel;
 import com.g4mesoft.ui.panel.dropdown.GSDropdownList;
+import com.g4mesoft.ui.panel.event.GSButtonStrokeBuilder;
 import com.g4mesoft.ui.panel.event.GSFocusEvent;
 import com.g4mesoft.ui.panel.event.GSIButtonStroke;
 import com.g4mesoft.ui.panel.event.GSIFocusEventListener;
-import com.g4mesoft.ui.panel.event.GSKeyButtonStroke;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
+import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.panel.field.GSTextField;
 import com.g4mesoft.ui.panel.field.GSTextLabel;
 import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
@@ -38,6 +37,7 @@ import com.g4mesoft.ui.panel.table.GSITableColumn;
 import com.g4mesoft.ui.panel.table.GSITableModel;
 import com.g4mesoft.ui.panel.table.GSTablePanel;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.util.GSPathUtil;
 import com.google.common.base.Objects;
 
 import net.minecraft.client.MinecraftClient;
@@ -87,23 +87,10 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	private static final GSMargin OUTER_MARGIN = new GSMargin(5);
 	private static final GSMargin FIELD_MARGIN = new GSMargin(3);
 
-	/* Used for file size to display text conversion */
-	private static final String[] FILE_SIZE_TRANSLATION_KEYS = {
-		"panel.fileDialog.size.bytes", // 1 B
-		"panel.fileDialog.size.kib",   // 1024^1 B
-		"panel.fileDialog.size.mib",   // 1024^2 B
-		"panel.fileDialog.size.gib",   // 1024^3 B
-		"panel.fileDialog.size.tib",   // 1024^4 B
-		"panel.fileDialog.size.pib",   // 1024^5 B
-		"panel.fileDialog.size.eib"    // 1024^6 B
-		// larger is > 2^64 B
-	};
-	private static final DecimalFormat FILE_SIZE_DECIMAL_FORMAT =
-			new DecimalFormat("0.##", new DecimalFormatSymbols(Locale.US));
-	private static final int ONE_KIBIBYTE_LOG2 = 10; // 2^10 = 1024
-	
-	private static final GSIButtonStroke GO_TO_PARENT_STROKE =
-			new GSKeyButtonStroke(GSKeyEvent.KEY_BACKSPACE);
+	private static final GSIButtonStroke BACKWARD_STROKE = GSButtonStrokeBuilder.get()
+			.key(GSKeyEvent.KEY_BACKSPACE).mouse(GSMouseEvent.BUTTON_4).build();
+	private static final GSIButtonStroke FORWARD_STROKE = GSButtonStrokeBuilder.get()
+			.mouse(GSMouseEvent.BUTTON_5).build();
 	
 	private static final Map<String, GSIcon> extensionToFileIcon;
 	
@@ -148,6 +135,8 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	
 	private final GSTextField pathField;
 	private final GSTextField nameField;
+	
+	private GSIFileNameFilter fileNameFilter;
 	private final GSDropdownList<Text> filterField;
 	
 	private final GSTablePanel fileTable;
@@ -159,6 +148,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	private List<Path> paths;
 	
 	private Path selectedPath;
+	private boolean canceled;
 	
 	private List<GSIActionListener> actionListeners;
 
@@ -177,7 +167,10 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		
 		pathField = new GSTextField();
 		nameField = new GSTextField();
-		filterField = new GSDropdownList<>();
+		
+		fileNameFilter = new GSFileExtensionFilter();
+		filterField = new GSDropdownList<>(fileNameFilter.getOptions());
+		filterField.setEmptySelectionAllowed(false);
 		
 		fileTable = new GSTablePanel();
 		fileTable.setColumnSelectionPolicy(GSEHeaderSelectionPolicy.DISABLED);
@@ -193,7 +186,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		
 		actionListeners = new ArrayList<>();
 		
-		onDirectoryChanged();
+		reloadDirectory();
 		
 		initLayout();
 		initEventListeners();
@@ -281,12 +274,20 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		pathField.addActionListener(() -> {
 			setDirectory(pathField.getText());
 		});
+		filterField.addChangeListener(this::reloadDirectory);
 		fileTable.addActionListener(() -> {
-			setDirectory(selectedPath);
+			if (selectedPath == null || GSPathUtil.isDirectory(selectedPath)) {
+				setDirectory(selectedPath);
+			} else {
+				confirm(selectedPath);
+			}
 		});
-		fileTable.putButtonStroke(GO_TO_PARENT_STROKE, () -> {
+		putButtonStroke(BACKWARD_STROKE, () -> {
 			if (directory != null)
 				setDirectory(directory.getParent());
+		});
+		putButtonStroke(FORWARD_STROKE, () -> {
+			setDirectory(selectedPath);
 		});
 		// Default focus to the file table.
 		addFocusEventListener(new GSIFocusEventListener() {
@@ -298,22 +299,30 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	}
 	
 	private void cancel() {
-		close();
-		dispatchActionPerformedEvent();
+		finish(null, true);
 	}
 
 	private void confirm() {
-		Path path = resolvePath();
+		confirm(resolvePath());
+	}
+	
+	private void confirm(Path path) {
 		if (path != null) {
 			if (matchesSelectionMode(path)) {
-				close();
-				dispatchActionPerformedEvent();
-			} else if (isDirectory(path)) {
+				finish(path, false);
+			} else if (GSPathUtil.isDirectory(path)) {
 				// Instead of confirming and closing, we open the
 				// selected directory.
 				setDirectory(path);
 			}
 		}
+	}
+	
+	private void finish(Path path, boolean canceled) {
+		this.selectedPath = path;
+		this.canceled = canceled;
+		close();
+		dispatchActionPerformedEvent();
 	}
 	
 	private Path resolvePath() {
@@ -323,7 +332,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			return selectedPath;
 		}
 		try {
-			Path path = Path.of(str);
+			Path path = GSPathUtil.getPath(str);
 			if (directory != null) {
 				// There are several cases. Either path is absolute
 				// in which case resolve will result path. Otherwise,
@@ -359,6 +368,10 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		actionListeners.forEach(GSIActionListener::actionPerformed);
 	}
 	
+	public GSEFileDialogMode getMode() {
+		return mode;
+	}
+	
 	public void setMode(GSEFileDialogMode mode) {
 		if (mode == null)
 			throw new IllegalArgumentException("mode is null!");
@@ -371,7 +384,11 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	private void onModeChanged() {
 		confirmButton.setText(CONFIRM_TEXTS[mode.getIndex()]);
 	}
-
+	
+	public GSEFileDialogSelectionMode getSelectionMode() {
+		return selectionMode;
+	}
+	
 	public void setSelectionMode(GSEFileDialogSelectionMode selectionMode) {
 		if (selectionMode == null)
 			throw new IllegalArgumentException("selectionMode is null!");
@@ -382,7 +399,21 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	}
 
 	private void onSelectionModeChanged() {
-		onDirectoryChanged();
+		reloadDirectory();
+	}
+
+	public void setFileNameFilter(GSIFileNameFilter filter) {
+		if (filter == null)
+			throw new IllegalArgumentException("filter is null");
+		this.fileNameFilter = filter;
+		// Update the options shown in the dropdown
+		int prevSelection = filterField.getSelectedIndex();
+		filterField.setModel(new GSBasicDropdownListModel<>(filter.getOptions()));
+		if (prevSelection != filterField.getSelectedIndex()) {
+			// Selection did not change (and thus, the listener
+			// did not reload the directory).
+			reloadDirectory();
+		}
 	}
 	
 	public void setDirectory(String str) {
@@ -393,27 +424,27 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}
 		Path path = null;
 		try {
-			path = Path.of(str);
+			path = GSPathUtil.getPath(str);
 		} catch (InvalidPathException ignore) {
 		}
 		// Ensure that the path exists
-		if (path != null && isDirectory(path)) {
+		if (path != null && GSPathUtil.isDirectory(path)) {
 			setDirectory(path);
 		} else {
 			// Do not change directory, but update path.
-			onDirectoryChanged();
+			reloadDirectory();
 		}
 	}
 	
 	public void setDirectory(Path directory) {
-		if (directory != null && !isDirectory(directory)) {
+		if (directory != null && !GSPathUtil.isDirectory(directory)) {
 			// Only support directories (or null for roots)
 			return;
 		}
 		if (!Objects.equal(directory, this.directory)) {
 			Path prevDirectory = this.directory;
 			this.directory = directory;
-			onDirectoryChanged();
+			reloadDirectory();
 			// Update selection such that the user is
 			// not confused going between directories.
 			if (prevDirectory != null)
@@ -421,7 +452,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}
 	}
 	
-	private void onDirectoryChanged() {
+	private void reloadDirectory() {
 		rootDirectories = (directory == null);
 		// Retrieve appropriate iterator over files
 		Iterator<Path> itr;
@@ -458,12 +489,14 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		// Sort such that directories are first, and
 		// then by alphabetical order of names.
 		Collections.sort(result, (p1, p2) -> {
-			boolean d1 = isDirectory(p1), d2 = isDirectory(p2);
+			boolean d1 = GSPathUtil.isDirectory(p1);
+			boolean d2 = GSPathUtil.isDirectory(p2);
 			if (d1 != d2) {
 				// Directories first
 				return d1 ? -1 : 1;
 			}
-			String n1 = getFileName(p1), n2 = getFileName(p2);
+			String n1 = GSPathUtil.getName(p1);
+			String n2 = GSPathUtil.getName(p2);
 			// Otherwise sort names alphabetically
 			return n1.compareTo(n2);
 		});
@@ -471,27 +504,17 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	}
 
 	private boolean filterPath(Path path) {
-		if (isHidden(path)) {
+		if (GSPathUtil.isHidden(path)) {
 			// File is hidden by the system.
 			return false;
 		}
-		// Only the directories only selection mode restricts visible files.
-		if (selectionMode == GSEFileDialogSelectionMode.DIRECTORIES_ONLY)
-			return isDirectory(path);
-		return true;
-	}
-	
-	private boolean isHidden(Path path) {
-		if (rootDirectories) {
-			// java.nio seems to think that the root directories
-			// are hidden, even though they are accessible...
+		if (selectionMode == GSEFileDialogSelectionMode.DIRECTORIES_ONLY &&
+				!GSPathUtil.isDirectory(path)) {
+			// Does not match selection mode
 			return false;
 		}
-		try {
-			return Files.isHidden(path);
-		} catch (IOException | SecurityException ignore) {
-		}
-		return true;
+		// Remaining files are filtered by fileName filter
+		return fileNameFilter.filter(path, filterField.getSelectedIndex());
 	}
 	
 	private void attemptToSelect(Path path) {
@@ -519,28 +542,26 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		fileTable.scrollToSelectionLead();
 	}
 	
-	private static boolean isDirectory(Path path) {
-		try {
-			return Files.isDirectory(path);
-		} catch (SecurityException ignore) {
-		}
-		return false;
+	public Path getSelectedPath() {
+		return selectedPath;
 	}
-
-	private static boolean isRegularFile(Path path) {
-		try {
-			return Files.isRegularFile(path);
-		} catch (SecurityException ignore) {
-		}
-		return false;
+	
+	public boolean isCanceled() {
+		return canceled;
 	}
 	
 	private boolean matchesSelectionMode(Path path) {
+		if (mode == GSEFileDialogMode.SAVE && !GSPathUtil.exists(path)) {
+			// Special case for always matching.
+			return true;
+		}
+		// Otherwise the file has to exist and have
+		// the type specified by selection mode.
 		switch (selectionMode) {
 		case FILES_ONLY:
-			return isRegularFile(path);
+			return GSPathUtil.isRegularFile(path);
 		case DIRECTORIES_ONLY:
-			return isDirectory(path);
+			return GSPathUtil.isDirectory(path);
 		case FILES_AND_DIRECTORIES:
 			return true;
 		}
@@ -585,9 +606,9 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		if (attribs.isDirectory()) {
 			return DIRECTORY_TYPE;
 		} else if (attribs.isRegularFile()) {
-			String extension = getFileExtension(path);
-			if (extension != null)
-				return translatable("regularFile", extension.toUpperCase());
+			String fileExt = GSPathUtil.getFileExtension(path);
+			if (fileExt != null)
+				return translatable("regularFile", fileExt.toUpperCase());
 		}
 		return UNKNOWN_FILE_TYPE;
 	}
@@ -597,47 +618,16 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			// Only supported for regular files
 			return null;
 		}
-		long size = attribs.size();
-		int i = 0;
-		for ( ; i < FILE_SIZE_TRANSLATION_KEYS.length; i++) {
-			if ((size >> (ONE_KIBIBYTE_LOG2 * (i + 1))) == 0L) {
-				// The current unit is the last to fit size
-				break;
-			}
-		}
-		// Convert to two-decimal precision
-		double value = (double)size / (1L << (ONE_KIBIBYTE_LOG2 * i));
-		return new TranslatableText(FILE_SIZE_TRANSLATION_KEYS[i],
-				FILE_SIZE_DECIMAL_FORMAT.format(value));
-	}
-	
-	private static String getFileExtension(Path path) {
-		return getFileExtension(getFileName(path));
-	}
-	
-	private static String getFileExtension(String fileName) {
-		int extIndex = fileName.lastIndexOf('.');
-		if (extIndex != -1 && extIndex != fileName.length() - 1)
-			return fileName.substring(extIndex + 1);
-		return null;
-	}
-	
-	private static String getFileName(Path path) {
-		Path name = path.getFileName();
-		return (name != null) ? name.toString() : path.toString();
+		return GSPathUtil.getSizeAsText(attribs.size());
 	}
 	
 	public static Path getDefaultDirectory() {
-		String home = System.getProperty("user.home");
+		Path home = GSPathUtil.getHome();
 		if (home != null) {
 			// Note: preferably we would retrieve the desktop of
 			//       the user, but this might not exist in the home
 			//       directory in case it was moved.
-			try {
-				return Path.of(home);
-			} catch (Throwable ignore) {
-				// Missing permission
-			}
+			return home;
 		}
 		// Fallback to the game directory (%appdata%/.minecraft on windows)
 		MinecraftClient client = MinecraftClient.getInstance();
@@ -652,7 +642,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			int pathIndex = rootDirectories ? selectedRow : (selectedRow - 1);
 			if (pathIndex >= 0 && pathIndex < paths.size()) {
 				selectedPath = paths.get(pathIndex);
-				nameField.setText(getFileName(selectedPath));
+				nameField.setText(GSPathUtil.getName(selectedPath));
 			} else {
 				selectedPath = (directory != null) ? directory.getParent() : null;
 				nameField.setText("");
@@ -663,7 +653,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	
 	private void onSelectedPathChanged() {
 		if (selectedPath != null && !matchesSelectionMode(selectedPath)
-				&& isDirectory(selectedPath)) {
+				&& GSPathUtil.isDirectory(selectedPath)) {
 			// Update the confirm button text to reflect opening
 			// the selected path as the next directory.
 			confirmButton.setText(CONFIRM_TEXTS[GSEFileDialogMode.OPEN.getIndex()]);
@@ -688,7 +678,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}, GSPanelContext.getIcon(36, 84, 12, 12));
 		// Binary files
 		addFileIcons(new String[] {
-			"bin", "iso"
+			"bin", "iso", "dat"
 		}, GSPanelContext.getIcon(48, 84, 12, 12));
 		// Image files
 		addFileIcons(new String[] {
@@ -750,23 +740,97 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		return (icon != null) ? icon : UNKNOWN_FILE_ICON;
 	}
 
+	/**
+	 * Shows an open file dialog, starting in the home directory of the user.
+	 * See {@link #showDialog(GSPanel, Path, GSEFileDialogMode)} for more
+	 * info on how to retrieve the result from the dialog.
+	 * 
+	 * @param source - the panel responsible for this dialog
+	 * 
+	 * @return The instance of the file dialog that is shown.
+	 * 
+	 * @see #showDialog(GSPanel, Path, GSEFileDialogMode)
+	 */
 	public static GSFileDialog showOpenDialog(GSPanel source) {
 		return showOpenDialog(source, getDefaultDirectory());
 	}
 	
+	/**
+	 * Shows an open file dialog, starting in the given directory. See
+	 * {@link #showDialog(GSPanel, Path, GSEFileDialogMode)} for more info
+	 * on how to retrieve the result from the dialog.
+	 * 
+	 * @param source - the panel responsible for this dialog
+	 * @param directory - the starting directory of the dialog
+	 * 
+	 * @return The instance of the file dialog that is shown.
+	 * 
+	 * @see #showDialog(GSPanel, Path, GSEFileDialogMode)
+	 */
 	public static GSFileDialog showOpenDialog(GSPanel source, Path directory) {
 		return showDialog(source, directory, GSEFileDialogMode.OPEN);
 	}
 
+	/**
+	 * Shows a save file dialog, starting in the home directory of the user.
+	 * See {@link #showDialog(GSPanel, Path, GSEFileDialogMode)} for more
+	 * info on how to retrieve the result from the dialog.
+	 * 
+	 * @param source - the panel responsible for this dialog
+	 * 
+	 * @return The instance of the file dialog that is shown.
+	 * 
+	 * @see #showDialog(GSPanel, Path, GSEFileDialogMode)
+	 */
 	public static GSFileDialog showSaveDialog(GSPanel source) {
 		return showSaveDialog(source, getDefaultDirectory());
 	}
 
+	/**
+	 * Shows a save file dialog, starting in the given directory. See
+	 * {@link #showDialog(GSPanel, Path, GSEFileDialogMode)} for more info.
+	 * 
+	 * @param source - the panel responsible for this dialog
+	 * @param directory - the starting directory of the dialog
+	 * 
+	 * @return The instance of the file dialog that is shown.
+	 * 
+	 * @see #showDialog(GSPanel, Path, GSEFileDialogMode)
+	 */
 	public static GSFileDialog showSaveDialog(GSPanel source, Path directory) {
 		return showDialog(source, directory, GSEFileDialogMode.SAVE);
 	}
 	
-	private static GSFileDialog showDialog(GSPanel source, Path directory, GSEFileDialogMode mode) {
+	/**
+	 * Shows a file dialog with the given mode, where the user can choose a
+	 * file, starting in the given directory. The instance that is returned
+	 * can be used to further customize the filters applied to the dialog.
+	 * In order to obtain the result of the dialog, the following code can
+	 * be used:
+	 * <pre>
+	 * GSFileDialog dialog = GSFileDialog.showDialog(...);
+	 * dialog.addActionListener(() -> {
+	 *     if (dialog.isCanceled()) {
+	 *         // user pressed cancel
+	 *     } else {
+	 *         Path path = dialog.getSelectedPath();
+	 *         // user chose path
+	 *     }
+	 * );
+	 * </pre>
+	 * The methods {@link #setSelectionMode(GSEFileDialogSelectionMode)},
+	 * and {@link #setFileNameFilter(GSIFileNameFilter)} are useful for
+	 * specifying which types of files the user can select. Note that the
+	 * file name filter does not enforce that the chosen file is accepted
+	 * by the filter, but only changes which files are shown in the table.
+	 * 
+	 * @param source - the panel responsible for this dialog
+	 * @param directory - the starting directory of the dialog
+	 * @param mode - the dialog mode
+	 * 
+	 * @return The instance of the file dialog that is shown.
+	 */
+	public static GSFileDialog showDialog(GSPanel source, Path directory, GSEFileDialogMode mode) {
 		GSFileDialog dialog = new GSFileDialog(directory);
 		dialog.setMode(mode);
 		GSPopup popup = new GSPopup(dialog, true);
@@ -780,16 +844,16 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		private final GSIcon icon;
 		
 		public GSFileName(Path path, boolean isRootDirectory) {
-			String name = getFileName(path);
+			String name = GSPathUtil.getName(path);
 			// Retrieve the icon based on file type
 			GSIcon icon = null;
 			if (isRootDirectory) {
 				icon = ROOT_DIRECTORY_ICON;
-			} else if (isDirectory(path)) {
+			} else if (GSPathUtil.isDirectory(path)) {
 				icon = DIRECTORY_ICON;
-			} else if (isRegularFile(path)) {
+			} else if (GSPathUtil.isRegularFile(path)) {
 				// Icon depends on extension.
-				String fileExt = getFileExtension(name);
+				String fileExt = GSPathUtil.getFileExtension(name);
 				if (fileExt != null)
 					icon = getFileIcon(fileExt);
 			}

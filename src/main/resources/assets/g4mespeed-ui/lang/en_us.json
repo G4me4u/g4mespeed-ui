@@ -37,11 +37,14 @@
   "panel.fileDialog.directoryType": "File folder",
   "panel.fileDialog.unknownType": "Unknown file",
   "panel.fileDialog.regularFile": "%s File",
-  "panel.fileDialog.size.bytes": "%s B",
-  "panel.fileDialog.size.kib": "%s KB",
-  "panel.fileDialog.size.mib": "%s MB",
-  "panel.fileDialog.size.gib": "%s GB",
-  "panel.fileDialog.size.tib": "%s TB",
-  "panel.fileDialog.size.pib": "%s PB",
-  "panel.fileDialog.size.eib": "%s EB"
+  
+  "panel.file.size.bytes": "%s B",
+  "panel.file.size.kib": "%s KB",
+  "panel.file.size.mib": "%s MB",
+  "panel.file.size.gib": "%s GB",
+  "panel.file.size.tib": "%s TB",
+  "panel.file.size.pib": "%s PB",
+  "panel.file.size.eib": "%s EB",
+  
+  "panel.file.allFiles": "*.* - All Files"
 }
