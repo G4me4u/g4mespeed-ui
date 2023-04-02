@@ -454,6 +454,10 @@ public final class GSPanelUtil {
 	}
 
 	public static void scrollToVisible(GSPanel panel, GSRectangle bounds) {
+		if (bounds == null || bounds.isEmpty()) {
+			// Both treated as non-existent
+			return;
+		}
 		GSScrollPanel scrollPanel = getScrollPanel(panel);
 		if (scrollPanel != null) {
 			GSDimension viewportSize = getViewportSize(panel);

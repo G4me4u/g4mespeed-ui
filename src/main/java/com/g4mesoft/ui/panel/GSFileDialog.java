@@ -230,6 +230,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			.set(GSGridLayoutManager.GRID_WIDTH, 4)
 			.set(GSGridLayoutManager.WEIGHT_X, 1.0f)
 			.set(GSGridLayoutManager.WEIGHT_Y, 1.0f)
+			.set(GSGridLayoutManager.FILL, GSEFill.BOTH)
 			.set(GSGridLayoutManager.MARGIN, FIELD_MARGIN);
 		add(scrollPanel);
 	
@@ -410,8 +411,13 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			return;
 		}
 		if (!Objects.equal(directory, this.directory)) {
+			Path prevDirectory = this.directory;
 			this.directory = directory;
 			onDirectoryChanged();
+			// Update selection such that the user is
+			// not confused going between directories.
+			if (prevDirectory != null)
+				attemptToSelect(prevDirectory);
 		}
 	}
 	
@@ -437,11 +443,8 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		} else {
 			pathField.setText(directory.toAbsolutePath().toString());
 		}
-		// Update selection to the first file in directory
-		int selection = (rootDirectories || paths.isEmpty()) ? 0 : 1;
-		fileTable.setSelectedRows(selection, selection);
-		// Reset the table scroll
 		GSPanelUtil.setScroll(fileTable, 0, 0);
+		selectPathIndex(0);
 	}
 	
 	private List<Path> collectAndSortFiles(Iterator<Path> itr) {
@@ -489,6 +492,31 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		} catch (IOException | SecurityException ignore) {
 		}
 		return true;
+	}
+	
+	private void attemptToSelect(Path path) {
+		// Attempt to select directory if it is related to
+		// the current directory.
+		if (directory == null || path.startsWith(directory)) {
+			for (int i = 0; i < paths.size(); i++) {
+				if (path.startsWith(paths.get(i))) {
+					// Update selection to common path
+					selectPathIndex(i);
+					break;
+				}
+			}
+		}
+	}
+	
+	private void selectPathIndex(int index) {
+		int r;
+		if (paths.isEmpty()) {
+			r = GSIHeaderSelectionModel.INVALID_SELECTION;
+		} else {
+			r = rootDirectories ? index : (index + 1);
+		}
+		fileTable.setSelectedRow(r);
+		fileTable.scrollToSelectionLead();
 	}
 	
 	private static boolean isDirectory(Path path) {
@@ -682,6 +710,12 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		}, GSPanelContext.getIcon(24, 96, 12, 12));
 		// JSON files
 		addFileIcon("json", GSPanelContext.getIcon(36, 96, 12, 12));
+		// Video files
+		addFileIcons(new String[] {
+			"mp4", "mov", "wmv", "avi",
+			"mkv", "flv", "f4v", "webm",
+			"vob", "ogv"
+		}, GSPanelContext.getIcon(48, 96, 12, 12));
 	}
 
 	public static boolean addFileIcons(String[] fileExts, GSIcon icon) {
