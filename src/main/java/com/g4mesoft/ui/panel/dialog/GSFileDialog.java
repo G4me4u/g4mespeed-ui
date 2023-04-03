@@ -1,4 +1,4 @@
-package com.g4mesoft.ui.panel;
+package com.g4mesoft.ui.panel.dialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +15,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.g4mesoft.ui.panel.GSDimension;
+import com.g4mesoft.ui.panel.GSEAnchor;
+import com.g4mesoft.ui.panel.GSEFill;
+import com.g4mesoft.ui.panel.GSEIconAlignment;
+import com.g4mesoft.ui.panel.GSEPopupPlacement;
+import com.g4mesoft.ui.panel.GSETextAlignment;
+import com.g4mesoft.ui.panel.GSGridLayoutManager;
+import com.g4mesoft.ui.panel.GSIActionListener;
+import com.g4mesoft.ui.panel.GSIcon;
+import com.g4mesoft.ui.panel.GSMargin;
+import com.g4mesoft.ui.panel.GSPanel;
+import com.g4mesoft.ui.panel.GSPanelContext;
+import com.g4mesoft.ui.panel.GSPanelUtil;
+import com.g4mesoft.ui.panel.GSParentPanel;
+import com.g4mesoft.ui.panel.GSPopup;
 import com.g4mesoft.ui.panel.button.GSButton;
 import com.g4mesoft.ui.panel.cell.GSCellContext;
 import com.g4mesoft.ui.panel.cell.GSICellRenderer;
@@ -171,6 +186,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		fileNameFilter = new GSFileExtensionFilter();
 		filterField = new GSDropdownList<>(fileNameFilter.getOptions());
 		filterField.setEmptySelectionAllowed(false);
+		filterField.setSelectedIndex(fileNameFilter.getDefaultOption());
 		
 		fileTable = new GSTablePanel();
 		fileTable.setColumnSelectionPolicy(GSEHeaderSelectionPolicy.DISABLED);
@@ -409,6 +425,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		// Update the options shown in the dropdown
 		int prevSelection = filterField.getSelectedIndex();
 		filterField.setModel(new GSBasicDropdownListModel<>(filter.getOptions()));
+		filterField.setSelectedIndex(fileNameFilter.getDefaultOption());
 		if (prevSelection != filterField.getSelectedIndex()) {
 			// Selection did not change (and thus, the listener
 			// did not reload the directory).

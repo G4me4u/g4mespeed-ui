@@ -597,7 +597,7 @@ public class GSPanel {
 		this.opacity = GSMathUtil.clamp(opacity, FULLY_TRANSPARENT, FULLY_OPAQUE);
 	}
 	
-	protected void putButtonStroke(GSIButtonStroke button, Runnable listener) {
+	public void putButtonStroke(GSIButtonStroke button, Runnable listener) {
 		if (buttonStrokes == null)
 			buttonStrokes = new LinkedHashMap<>();
 
@@ -627,7 +627,7 @@ public class GSPanel {
 		buttonStrokes.put(button, listener);
 	}
 
-	protected void removeButtonStroke(GSIButtonStroke button) {
+	public void removeButtonStroke(GSIButtonStroke button) {
 		if (buttonStrokes != null)
 			buttonStrokes.remove(button);
 	}

@@ -1,4 +1,4 @@
-package com.g4mesoft.ui.panel;
+package com.g4mesoft.ui.panel.dialog;
 
 import java.nio.file.Path;
 
@@ -67,5 +67,10 @@ public class GSFileExtensionFilter implements GSIFileNameFilter {
 	@Override
 	public Text[] getOptions() {
 		return options;
+	}
+	
+	@Override
+	public int getDefaultOption() {
+		return Math.min(1, options.length - 1);
 	}
 }

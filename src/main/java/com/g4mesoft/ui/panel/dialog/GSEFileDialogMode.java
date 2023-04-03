@@ -1,4 +1,4 @@
-package com.g4mesoft.ui.panel;
+package com.g4mesoft.ui.panel.dialog;
 
 public enum GSEFileDialogMode {
 
