@@ -62,16 +62,6 @@ import net.minecraft.text.TranslatableText;
 
 public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionListener {
 
-	/* Titles for the elements shown in the file table */
-	private static final Text NAME_TITLE     = translatable("name");
-	private static final Text MODIFIED_TITLE = translatable("modified");
-	private static final Text TYPE_TITLE     = translatable("type");
-	private static final Text SIZE_TITLE     = translatable("size");
-	/* Minimum sizes of each of the columns in the file table */
-	private static final int NAME_WIDTH     = 150;
-	private static final int MODIFIED_WIDTH = 120;
-	private static final int TYPE_WIDTH     = 80;
-	private static final int SIZE_WIDTH     = 50;
 	/* Height of the rows in the file table */
 	private static final int ROW_HEIGHT = 16;
 	/* Indices pointing to the column of each of the titles */
@@ -79,7 +69,9 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	private static final int MODIFIED_COLUMN_INDEX;
 	private static final int TYPE_COLUMN_INDEX;
 	private static final int SIZE_COLUMN_INDEX;
+	/* Titles for the elements shown in the file table */
 	private static final Text[] TABLE_TITLES;
+	/* Minimum sizes of each of the columns in the file table */
 	private static final int[] TABLE_WIDTHS;
 	
 	private static final Text[] CONFIRM_TEXTS;
@@ -119,16 +111,16 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		SIZE_COLUMN_INDEX     = titleCount++;
 		// Compute array with table titles
 		TABLE_TITLES = new Text[titleCount];
-		TABLE_TITLES[NAME_COLUMN_INDEX]     = NAME_TITLE;
-		TABLE_TITLES[MODIFIED_COLUMN_INDEX] = MODIFIED_TITLE;
-		TABLE_TITLES[TYPE_COLUMN_INDEX]     = TYPE_TITLE;
-		TABLE_TITLES[SIZE_COLUMN_INDEX]     = SIZE_TITLE;
+		TABLE_TITLES[NAME_COLUMN_INDEX]     = translatable("name");
+		TABLE_TITLES[MODIFIED_COLUMN_INDEX] = translatable("modified");
+		TABLE_TITLES[TYPE_COLUMN_INDEX]     = translatable("type");
+		TABLE_TITLES[SIZE_COLUMN_INDEX]     = translatable("size");
 		// Compute array with table widths
 		TABLE_WIDTHS = new int[titleCount];
-		TABLE_WIDTHS[NAME_COLUMN_INDEX]     = NAME_WIDTH;
-		TABLE_WIDTHS[MODIFIED_COLUMN_INDEX] = MODIFIED_WIDTH;
-		TABLE_WIDTHS[TYPE_COLUMN_INDEX]     = TYPE_WIDTH;
-		TABLE_WIDTHS[SIZE_COLUMN_INDEX]     = SIZE_WIDTH;
+		TABLE_WIDTHS[NAME_COLUMN_INDEX]     = 150;
+		TABLE_WIDTHS[MODIFIED_COLUMN_INDEX] = 120;
+		TABLE_WIDTHS[TYPE_COLUMN_INDEX]     = 80;
+		TABLE_WIDTHS[SIZE_COLUMN_INDEX]     = 50;
 		// Asset type value text
 		GSEFileDialogMode[] modes = GSEFileDialogMode.values();
 		CONFIRM_TEXTS = new Text[modes.length];
