@@ -74,7 +74,7 @@ public class GSDropdownSubMenu extends GSDropdownItem {
 		
 		boolean selected = (renderer.isMouseInside(0, 0, width, height) || popup != null);
 		
-		if (isEnabled() && selected);
+		if (isEnabled() && selected)
 			renderer.fillRect(0, 0, width, height, HOVERED_BACKGROUND_COLOR);
 
 		// Force allowed icon size to that predefined in GSDropdownItem
