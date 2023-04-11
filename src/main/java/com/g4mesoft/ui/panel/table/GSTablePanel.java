@@ -1100,7 +1100,9 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			break;
 		case GSKeyEvent.KEY_ESCAPE:
 			unfocus();
-			event.consume();
+			// Note: Do not consume. This is used in dialogs,
+			// etc. where ESC might cancel the operation.
+			//event.consume();
 			break;
 		}
 	}
