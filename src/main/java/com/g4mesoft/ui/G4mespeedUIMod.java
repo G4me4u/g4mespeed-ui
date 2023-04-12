@@ -16,16 +16,11 @@ public class G4mespeedUIMod implements ModInitializer {
 
 	public static final Logger GSUI_LOGGER = LogManager.getLogger("G4mespeed UI");
 	
-	/* Note: should be set to false in production builds. */
-	public static final boolean IS_DEV_ENV = true;
-	
 	private static final List<GSIRenderable3D> renderables = new ArrayList<>();
 	
 	@Override
 	public void onInitialize() {
 		GSUI_LOGGER.info("G4mespeed UI initialized!");
-		if (IS_DEV_ENV)
-			GSUI_LOGGER.info("IS_DEV_ENV enabled");
 	}
 
 	/**
