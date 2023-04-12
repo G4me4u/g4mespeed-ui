@@ -56,9 +56,7 @@ import com.g4mesoft.ui.util.GSPathUtil;
 import com.google.common.base.Objects;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionListener {
 
@@ -132,7 +130,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	}
 	
 	private static Text translatable(String key, Object... args) {
-		return new TranslatableText("panel.fileDialog." + key, args);
+		return Text.translatable("panel.fileDialog." + key, args);
 	}
 	
 	private Path directory;
@@ -869,12 +867,12 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 				if (fileExt != null)
 					icon = getFileIcon(fileExt);
 			}
-			this.name = new LiteralText(name);
+			this.name = Text.literal(name);
 			this.icon = (icon == null) ? UNKNOWN_FILE_ICON : icon;
 		}
 
 		public GSFileName(String name, GSIcon icon) {
-			this(new LiteralText(name), icon);
+			this(Text.literal(name), icon);
 		}
 		
 		public GSFileName(Text name, GSIcon icon) {
