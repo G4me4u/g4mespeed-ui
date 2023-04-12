@@ -73,4 +73,12 @@ public class GSFileExtensionFilter implements GSIFileNameFilter {
 	public int getDefaultOption() {
 		return Math.min(1, options.length - 1);
 	}
+
+	@Override
+	public Path resolve(Path path, int option) {
+		String ext = fileExts[option];
+		if (ext == null)
+			return path;
+		return GSPathUtil.withFileExtension(path, ext);
+	}
 }

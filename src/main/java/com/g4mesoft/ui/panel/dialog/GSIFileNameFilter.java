@@ -11,5 +11,7 @@ public interface GSIFileNameFilter {
 	public Text[] getOptions();
 	
 	public int getDefaultOption();
+
+	public Path resolve(Path path, int option);
 	
 }

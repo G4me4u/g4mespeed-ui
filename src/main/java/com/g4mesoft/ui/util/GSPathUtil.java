@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Objects;
 
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -186,9 +187,63 @@ public final class GSPathUtil {
 	 */
 	public static String getFileExtension(String fileName) {
 		int extIndex = fileName.lastIndexOf('.');
-		if (extIndex != -1 && extIndex != fileName.length() - 1)
+		if (extIndex != -1)
 			return fileName.substring(extIndex + 1);
 		return null;
+	}
+	
+	/**
+	 * Computes the path of the given {@code path} with the given new extension.
+	 * If the given path already has an extension, its extension is stripped,
+	 * and replaced by the given file extension. If the path already has the
+	 * given extension, then {@code path} is returned.
+	 * <br><br>
+	 * After an invocation of this method, the {@link #getFileExtension(Path)}
+	 * method will return the updated extension.
+	 * 
+	 * @param path - the path whose extension should be changed
+	 * @param fileExt - the new extension of the given path
+	 * 
+	 * @return A path with the original parent directory and file name as the
+	 *         given {@code path} but with the updated extension.
+	 */
+	public static Path withFileExtension(Path path, String fileExt) {
+		String fileName = getName(path);
+		// Extract current extension (similar to above)
+		int dotIndex = (fileExt == null) ?
+				fileName.indexOf('.') : fileName.lastIndexOf('.');
+		String curFileExt = null;
+		if (dotIndex != -1)
+			curFileExt = fileName.substring(dotIndex + 1);
+		if (Objects.equals(fileExt, curFileExt)) {
+			// Already matches current extension
+			return path;
+		}
+		// Extend with new extension
+		String nFileName;
+		if (fileExt == null) {
+			//assert(dotIndex != -1)
+			// Remove everything including the dot
+			nFileName = fileName.substring(0, dotIndex);
+		} else if (fileExt.isEmpty()) {
+			if (dotIndex != -1) {
+				// Remove everything after the dot
+				nFileName = fileName.substring(0, dotIndex + 1);
+			} else {
+				// Append a dot to the name
+				nFileName = fileName + ".";
+			}
+		} else {
+			if (dotIndex != -1) {
+				// Replace everything after dot with the
+				// expected extension.
+				nFileName = fileName.substring(0, dotIndex + 1) + fileExt;
+			} else {
+				// Add the entire extension with dot
+				nFileName = fileName + "." + fileExt;
+			}
+		}
+		return path.resolveSibling(nFileName);
 	}
 	
 	/**

@@ -317,7 +317,8 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	private void confirm(Path path) {
 		if (path != null) {
 			if (matchesSelectionMode(path)) {
-				finish(path, false);
+				finish(fileNameFilter.resolve(path,
+						filterField.getSelectedIndex()), false);
 			} else if (GSPathUtil.isDirectory(path)) {
 				// Instead of confirming and closing, we open the
 				// selected directory.
@@ -484,7 +485,6 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 			pathField.setText(directory.toAbsolutePath().toString());
 		}
 		GSPanelUtil.setScroll(fileTable, 0, 0);
-		selectPathIndex(0);
 	}
 	
 	private List<Path> collectAndSortFiles(Iterator<Path> itr) {
@@ -656,8 +656,11 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 				selectedPath = (directory != null) ? directory.getParent() : null;
 				nameField.setText("");
 			}
-			onSelectedPathChanged();
+		} else {
+			selectedPath = null;
+			nameField.setText("");
 		}
+		onSelectedPathChanged();
 	}
 	
 	private void onSelectedPathChanged() {
@@ -830,8 +833,8 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 	 * The methods {@link #setSelectionMode(GSEFileDialogSelectionMode)},
 	 * and {@link #setFileNameFilter(GSIFileNameFilter)} are useful for
 	 * specifying which types of files the user can select. Note that the
-	 * file name filter does not enforce that the chosen file is accepted
-	 * by the filter, but only changes which files are shown in the table.
+	 * file name filter might modify the name of the selected path upon
+	 * confirmation depending on implementation.
 	 * 
 	 * @param source - the panel responsible for this dialog
 	 * @param directory - the starting directory of the dialog

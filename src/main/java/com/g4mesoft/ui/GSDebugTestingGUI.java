@@ -74,7 +74,7 @@ public class GSDebugTestingGUI extends GSClosableParentPanel {
 			.set(GSGridLayoutManager.ANCHOR, GSEAnchor.CENTER)
 			.set(GSGridLayoutManager.FILL, GSEFill.NONE);
 		fileButton.addActionListener(() -> {
-			GSFileDialog dialog = GSFileDialog.showOpenDialog(null);
+			GSFileDialog dialog = GSFileDialog.showSaveDialog(null);
 			dialog.addActionListener(() -> {
 				if (dialog.isCanceled()) {
 					System.out.println("File dialog canceled.");
