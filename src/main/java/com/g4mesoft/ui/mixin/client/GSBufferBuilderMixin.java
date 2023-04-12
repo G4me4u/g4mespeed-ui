@@ -15,12 +15,13 @@ import com.g4mesoft.ui.renderer.GSClipRect;
 
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormat.DrawMode;
 
 @Mixin(BufferBuilder.class)
 public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 
 	@Shadow private ByteBuffer buffer;
-	@Shadow private int drawMode;
+	@Shadow private DrawMode drawMode;
 	@Shadow private VertexFormat format;
 
 	@Shadow private boolean building;
@@ -32,10 +33,7 @@ public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 	@Unique
 	private final GSClipAdjuster gs_adjuster = new GSClipAdjuster();
 
-	@Inject(
-		method = "next", 
-		at = @At("RETURN")
-	)
+	@Inject(method = "next", at = @At("RETURN"))
 	public void onNextReturn(CallbackInfo ci) {
 		if (building && (vertexCount & 0x3 /* % 4 */) == 0)
 			gs_adjuster.clipPreviousShape((BufferBuilder)(Object)this);
@@ -70,7 +68,7 @@ public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 	}
 
 	@Override
-	public int gs_getDrawMode() {
+	public DrawMode gs_getDrawMode() {
 		return drawMode;
 	}
 

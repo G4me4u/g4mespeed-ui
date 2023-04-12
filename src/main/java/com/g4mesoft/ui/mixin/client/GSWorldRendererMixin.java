@@ -2,7 +2,6 @@ package com.g4mesoft.ui.mixin.client;
 
 import java.util.Collection;
 
-import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -121,12 +120,11 @@ public abstract class GSWorldRendererMixin {
 			} else {
 				RenderSystem.defaultBlendFunc();
 			}
-			RenderSystem.shadeModel(GL11.GL_SMOOTH);
 			RenderSystem.disableTexture();
 			
-			// Fix model matrix
-			RenderSystem.pushMatrix();
-			RenderSystem.loadIdentity();
+			// View matrix is already uploaded to shader uniform
+			matrixStack.push();
+			matrixStack.loadIdentity();
 			
 			gs_renderer3d.begin(Tessellator.getInstance().getBuffer(), matrixStack);
 			for (GSIRenderable3D renderable : renderables) {
@@ -134,8 +132,8 @@ public abstract class GSWorldRendererMixin {
 					renderable.render(gs_renderer3d);
 			}
 			gs_renderer3d.end();
-	
-			RenderSystem.popMatrix();
+
+			matrixStack.pop();
 	
 			RenderSystem.enableTexture();
 			RenderSystem.disableBlend();
