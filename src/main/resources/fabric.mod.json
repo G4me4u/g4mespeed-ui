@@ -13,7 +13,7 @@
     "sources": "https://github.com/G4me4u/g4mespeed-ui"
   },
 
-  "license": "MIT License",
+  "license": "GNU-GPLv2",
   "icon": "assets/g4mespeed-ui/icon.png",
 
   "environment": "*",
