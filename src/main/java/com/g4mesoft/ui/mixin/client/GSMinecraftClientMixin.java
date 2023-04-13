@@ -1,6 +1,5 @@
 package com.g4mesoft.ui.mixin.client;
 
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
@@ -11,17 +10,12 @@ import com.g4mesoft.ui.panel.GSPanelContext;
 
 import net.minecraft.client.MinecraftClient;
 
-@Mixin(MinecraftClient.class)
+@Mixin(value = MinecraftClient.class, priority = -1000)
 public class GSMinecraftClientMixin {
 
 	@Inject(
 		method = "run",
-		at = @At(
-			value = "FIELD",
-			shift = At.Shift.BEFORE,
-			opcode = Opcodes.PUTFIELD,
-			target = "Lnet/minecraft/client/MinecraftClient;thread:Ljava/lang/Thread;"
-		)
+		at = @At("HEAD")
 	)
 	private void onInit(CallbackInfo ci) {
 		GSPanelContext.init((MinecraftClient)(Object)this);
