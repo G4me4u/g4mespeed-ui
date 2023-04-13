@@ -18,7 +18,7 @@ public class GSMinecraftClientMixin {
 		method = "run",
 		at = @At(
 			value = "FIELD",
-			shift = At.Shift.AFTER,
+			shift = At.Shift.BEFORE,
 			opcode = Opcodes.PUTFIELD,
 			target = "Lnet/minecraft/client/MinecraftClient;thread:Ljava/lang/Thread;"
 		)
