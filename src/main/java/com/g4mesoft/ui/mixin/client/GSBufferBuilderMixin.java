@@ -98,4 +98,10 @@ public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 	public void gs_setElementOffset(int elementOffset) {
 		this.elementOffset = elementOffset;
 	}
+	
+	@Override
+	public void gs_clipPreviousShape() {
+		if (building && vertexCount >= 4)
+			gs_adjuster.clipPreviousShape((BufferBuilder)(Object)this);
+	}
 }

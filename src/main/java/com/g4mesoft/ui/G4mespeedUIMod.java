@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import com.g4mesoft.ui.renderer.GSIRenderable3D;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class G4mespeedUIMod implements ModInitializer {
 
@@ -20,12 +21,17 @@ public class G4mespeedUIMod implements ModInitializer {
 	public static final boolean IS_DEV_ENV = true;
 	
 	private static final List<GSIRenderable3D> renderables = new ArrayList<>();
+	private static boolean sodiumLoaded;
 	
 	@Override
 	public void onInitialize() {
 		GSUI_LOGGER.info("G4mespeed UI initialized!");
 		if (IS_DEV_ENV)
 			GSUI_LOGGER.info("IS_DEV_ENV enabled");
+
+		sodiumLoaded = FabricLoader.getInstance().isModLoaded("sodium");
+		if (sodiumLoaded)
+			GSUI_LOGGER.info("Sodium is detected");
 	}
 
 	/**
@@ -57,5 +63,12 @@ public class G4mespeedUIMod implements ModInitializer {
 	 */
 	public static Collection<GSIRenderable3D> getRenderables() {
 		return Collections.unmodifiableCollection(renderables);
+	}
+	
+	/**
+	 * @return True, if sodium is present. False otherwise.
+	 */
+	public static boolean isSodiumLoaded() {
+		return sodiumLoaded;
 	}
 }
