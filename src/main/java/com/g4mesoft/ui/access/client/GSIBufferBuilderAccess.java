@@ -30,4 +30,6 @@ public interface GSIBufferBuilderAccess {
 
 	public void gs_setElementOffset(int elementOffset);
 	
+	public void gs_clipPreviousShape();
+	
 }
