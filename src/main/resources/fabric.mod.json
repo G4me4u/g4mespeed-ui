@@ -23,7 +23,7 @@
     ]
   },
   "mixins": [
-    "g4mespeed.ui.mixins.json"
+    "g4mespeed-ui.mixins.json"
   ],
 
   "depends": {
