@@ -10,7 +10,8 @@
     "client.GSMouseMixin",
     "client.GSBufferBuilderMixin",
     "client.GSIVertexFormatElementAccess",
-    "client.GSWorldRendererMixin"
+    "client.GSWorldRendererMixin",
+    "client.GSTextRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
