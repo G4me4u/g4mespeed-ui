@@ -46,21 +46,19 @@ import com.g4mesoft.ui.panel.field.GSTextLabel;
 import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.panel.table.GSBasicTableModel;
 import com.g4mesoft.ui.panel.table.GSEHeaderSelectionPolicy;
-import com.g4mesoft.ui.panel.table.GSIHeaderSelectionListener;
 import com.g4mesoft.ui.panel.table.GSIHeaderSelectionModel;
 import com.g4mesoft.ui.panel.table.GSITableColumn;
 import com.g4mesoft.ui.panel.table.GSITableModel;
 import com.g4mesoft.ui.panel.table.GSTablePanel;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSPathUtil;
+import com.g4mesoft.ui.util.GSTextUtil;
 import com.google.common.base.Objects;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
-public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionListener {
+public class GSFileDialog extends GSParentPanel {
 
 	/* Height of the rows in the file table */
 	private static final int ROW_HEIGHT = 16;
@@ -131,8 +129,8 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		initDefaultFileIcons();
 	}
 	
-	private static Text translatable(String key, Object... args) {
-		return new TranslatableText("panel.fileDialog." + key, args);
+	private static Text translatable(String key, Object... params) {
+		return GSTextUtil.translatable("panel.fileDialog." + key, params);
 	}
 	
 	private Path directory;
@@ -187,7 +185,6 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		fileTable.setMinimumRowHeight(ROW_HEIGHT);
 		fileTable.setColumnHeaderTextAlignment(GSETextAlignment.LEFT);
 		fileTable.setBorderWidth(0, 1);
-		fileTable.getRowSelectionModel().addListener(this);
 		
 		confirmButton = new GSButton(CONFIRM_TEXTS[mode.getIndex()]);
 		cancelButton = new GSButton(CANCEL_TEXT);
@@ -297,6 +294,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		fileTable.putButtonStroke(FORWARD_STROKE, () -> {
 			setDirectory(selectedPath);
 		});
+		fileTable.getRowSelectionModel().addListener(this::onSelectionChanged);
 		// Default focus to the file table.
 		addFocusEventListener(new GSIFocusEventListener() {
 			@Override
@@ -643,8 +641,7 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 		return (client != null) ? client.runDirectory.toPath() : null;
 	}
 	
-	@Override
-	public void selectionChanged(int firstIndex, int lastIndex) {
+	public void onSelectionChanged() {
 		int selectedRow = fileTable.getRowSelectionModel().getIntervalMin();
 		if (selectedRow != GSIHeaderSelectionModel.INVALID_SELECTION) {
 			// Set filename field accordingly
@@ -869,12 +866,12 @@ public class GSFileDialog extends GSParentPanel implements GSIHeaderSelectionLis
 				if (fileExt != null)
 					icon = getFileIcon(fileExt);
 			}
-			this.name = new LiteralText(name);
+			this.name = GSTextUtil.literal(name);
 			this.icon = (icon == null) ? UNKNOWN_FILE_ICON : icon;
 		}
 
 		public GSFileName(String name, GSIcon icon) {
-			this(new LiteralText(name), icon);
+			this(GSTextUtil.literal(name), icon);
 		}
 		
 		public GSFileName(Text name, GSIcon icon) {

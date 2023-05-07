@@ -11,7 +11,6 @@ import java.util.Locale;
 import java.util.Objects;
 
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 public final class GSPathUtil {
 
@@ -139,7 +138,7 @@ public final class GSPathUtil {
 		}
 		// Convert to two-decimal precision
 		double value = (double)size / (1L << (ONE_KIBIBYTE_LOG2 * i));
-		return new TranslatableText(FILE_SIZE_KEYS[i],
+		return GSTextUtil.translatable(FILE_SIZE_KEYS[i],
 				FILE_SIZE_FORMAT.format(value));
 	}
 	
