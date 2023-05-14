@@ -3,16 +3,15 @@ package com.g4mesoft.ui.panel.dialog;
 import java.nio.file.Path;
 
 import com.g4mesoft.ui.util.GSPathUtil;
+import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 public class GSFileExtensionFilter implements GSIFileNameFilter {
 
-	private static final Text ALL_FILES_TEXT = new TranslatableText("panel.file.allFiles");
-	private static final Text DESC_SEPARATOR = new LiteralText(" - ");
+	private static final Text ALL_FILES_TEXT = GSTextUtil.translatable("panel.file.allFiles");
+	private static final Text DESC_SEPARATOR = GSTextUtil.literal(" - ");
 	
 	private final String[] fileExts;
 	private final Text[] options;
@@ -40,7 +39,7 @@ public class GSFileExtensionFilter implements GSIFileNameFilter {
 		options = new Text[extCount + 1];
 		options[0] = ALL_FILES_TEXT;
 		for (int i = 0; i < extCount; i++) {
-			MutableText option = new LiteralText(fileExts[i]);
+			MutableText option = GSTextUtil.literal(fileExts[i]);
 			if (descs != null && descs[i] != null)
 				option = option.append(DESC_SEPARATOR).append(descs[i]);
 			options[i + 1] = option;
