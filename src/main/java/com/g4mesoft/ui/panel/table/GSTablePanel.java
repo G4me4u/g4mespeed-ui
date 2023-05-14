@@ -30,8 +30,7 @@ import com.g4mesoft.ui.util.GSMathUtil;
 public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
                                                            GSIKeyListener,
                                                            GSIScrollable,
-                                                           GSITableModelListener,
-                                                           GSIHeaderSelectionListener {
+                                                           GSITableModelListener {
 
 	public static final int PREFERRED_COUNT_UNSPECIFIED = 0;
 	public static final int INVALID_HEADER_INDEX = -1;
@@ -146,8 +145,8 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 		columnSelectionModel = new GSBasicHeaderSelectionModel();
 		rowSelectionModel = new GSBasicHeaderSelectionModel();
 		
-		columnSelectionModel.addListener(this);
-		rowSelectionModel.addListener(this);
+		columnSelectionModel.addListener(this::onSelectionChanged);
+		rowSelectionModel.addListener(this::onSelectionChanged);
 		
 		lastClickTimestamp = INVALID_CLICK_TIMESTAMP;
 		clickCount = 0;
@@ -902,6 +901,12 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 			});
 		}
 	}
+	
+	public void onSelectionChanged() {
+		// Only perform action when clicking the same selection
+		lastClickTimestamp = INVALID_CLICK_TIMESTAMP;
+		clickCount = 0;
+	}
 
 	public GSCellRendererRegistry getCellRendererRegistry() {
 		return cellRendererRegistry;
@@ -1218,12 +1223,5 @@ public class GSTablePanel extends GSParentPanel implements GSIMouseListener,
 	@Override
 	public void headerVisibilityChanged() {
 		updateHeaderVisibility();
-	}
-
-	@Override
-	public void selectionChanged(int firstIndex, int lastIndex) {
-		// Only perform action when clicking the same selection
-		lastClickTimestamp = INVALID_CLICK_TIMESTAMP;
-		clickCount = 0;
 	}
 }

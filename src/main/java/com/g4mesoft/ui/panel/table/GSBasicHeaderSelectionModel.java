@@ -3,6 +3,7 @@ package com.g4mesoft.ui.panel.table;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.g4mesoft.ui.panel.GSIChangeListener;
 import com.g4mesoft.ui.util.GSMathUtil;
 
 public class GSBasicHeaderSelectionModel implements GSIHeaderSelectionModel {
@@ -13,7 +14,7 @@ public class GSBasicHeaderSelectionModel implements GSIHeaderSelectionModel {
 	
 	private int anchor;
 	
-	private final List<GSIHeaderSelectionListener> listeners;
+	private final List<GSIChangeListener> listeners;
 	
 	public GSBasicHeaderSelectionModel() {
 		policy = GSEHeaderSelectionPolicy.SINGLE_INTERVAL_SELECTION;
@@ -24,20 +25,19 @@ public class GSBasicHeaderSelectionModel implements GSIHeaderSelectionModel {
 	}
 	
 	@Override
-	public void addListener(GSIHeaderSelectionListener listener) {
+	public void addListener(GSIChangeListener listener) {
 		if (listener == null)
 			throw new IllegalArgumentException("listener is null!");
 		listeners.add(listener);
 	}
 
 	@Override
-	public void removeListener(GSIHeaderSelectionListener listener) {
+	public void removeListener(GSIChangeListener listener) {
 		listeners.remove(listener);
 	}
 
-	public void dispatchSelectionChanged(int firstIndex, int lastIndex) {
-		for (GSIHeaderSelectionListener listener : listeners)
-			listener.selectionChanged(firstIndex, lastIndex);
+	public void dispatchSelectionChanged() {
+		listeners.forEach(GSIChangeListener::valueChanged);
 	}
 	
 	@Override
@@ -67,18 +67,15 @@ public class GSBasicHeaderSelectionModel implements GSIHeaderSelectionModel {
 	private void setIntervalImpl(int i0, int i1) {
 		if (i0 < INVALID_SELECTION || i1 < INVALID_SELECTION)
 			throw new IllegalArgumentException("Selection indices less than -1");
-		int firstIndex = intervalMin, lastIndex = intervalMax;
 		if (i0 == INVALID_SELECTION || i1 == INVALID_SELECTION) {
 			intervalMin = intervalMax = INVALID_SELECTION;
 		} else {
 			intervalMin = Math.min(i0, i1);
 			intervalMax = Math.max(i0, i1);
-			firstIndex = Math.min(firstIndex, i0);
-			lastIndex = Math.max(lastIndex, i1);
 			// Ensure anchor is a selected cell
 			anchor = GSMathUtil.clamp(anchor, intervalMin, intervalMax);
 		}
-		dispatchSelectionChanged(firstIndex, lastIndex);
+		dispatchSelectionChanged();
 	}
 
 	@Override

@@ -2,8 +2,7 @@ package com.g4mesoft.ui.panel.cell;
 
 import com.g4mesoft.ui.panel.GSDimension;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
-
-import net.minecraft.text.LiteralText;
+import com.g4mesoft.ui.util.GSTextUtil;
 
 public final class GSStringCellRenderer implements GSICellRenderer<String> {
 
@@ -14,11 +13,11 @@ public final class GSStringCellRenderer implements GSICellRenderer<String> {
 	
 	@Override
 	public void render(GSIRenderer2D renderer, String value, GSCellContext context) {
-		GSTextCellRenderer.INSTANCE.render(renderer, new LiteralText(value), context);
+		GSTextCellRenderer.INSTANCE.render(renderer, GSTextUtil.literal(value), context);
 	}
 	
 	@Override
 	public GSDimension getMinimumSize(String value) {
-		return GSTextCellRenderer.INSTANCE.getMinimumSize(new LiteralText(value));
+		return GSTextCellRenderer.INSTANCE.getMinimumSize(GSTextUtil.literal(value));
 	}
 }
