@@ -750,36 +750,39 @@ public class GSDropdownList<T> extends GSPanel implements GSIDropdownListModelLi
 		}
 		
 		private void drawItemList(GSIRenderer2D renderer, GSRectangle clipBounds) {
-			GSCellContext context = new GSCellContext();
-			context.bounds.x = dropdown.getBorderWidth() + dropdown.getHorizontalMargin();
-			context.bounds.y = 0;
-			context.bounds.width = width - context.bounds.x * 2;
-			context.textAlignment = dropdown.getTextAlignment();
+			GSRectangle bounds = new GSRectangle();
+			bounds.x = dropdown.getBorderWidth() + dropdown.getHorizontalMargin();
+			bounds.y = 0;
+			bounds.width = width - bounds.x * 2;
 			
+			GSCellContext context = new GSCellContext();
+
 			int remH = height;
 			int i = dropdown.isEmptySelectionAllowed() ? EMPTY_SELECTION : 0;
 			for (int cnt = model.getCount(); i < cnt && context.bounds.y < clipBounds.y + clipBounds.height; i++) {
 				// Note: EMPTY_SELECTION is -1, so this will result in
 				//       dividing by count + 1, when empty is allowed.
-				context.bounds.height = remH / (cnt - i);
-				remH -= context.bounds.height;
-				if (context.bounds.y + context.bounds.height >= clipBounds.y) {
-					if (i == selectedIndex || renderer.isMouseInside(context.bounds)) {
+				bounds.height = remH / (cnt - i);
+				remH -= bounds.height;
+				if (bounds.y + bounds.height >= clipBounds.y) {
+					if (i == selectedIndex || renderer.isMouseInside(bounds)) {
 						// Draw the selected background
 						context.backgroundColor = dropdown.getHoveredBackgroundColor();
 						context.textColor = dropdown.getHoveredTextColor();
-						renderer.fillRect(0, context.bounds.y, width,
-								context.bounds.height, context.backgroundColor);
+						renderer.fillRect(0, bounds.y, width,
+								bounds.height, context.backgroundColor);
 					} else {
 						context.backgroundColor = dropdown.getBackgroundColor();
 						context.textColor = dropdown.getTextColor();
 					}
+					context.textAlignment = dropdown.getTextAlignment();
 					if (i != EMPTY_SELECTION) {
 						T item = model.getItem(i);
+						context.bounds.setBounds(bounds);
 						dropdown.getCellRenderer(item).render(renderer, item, context);
 					}
 				}
-				context.bounds.y += context.bounds.height;
+				bounds.y += bounds.height;
 			}
 		}
 		
