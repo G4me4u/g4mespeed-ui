@@ -2,6 +2,7 @@ package com.g4mesoft.ui.panel.legacy;
 
 import com.g4mesoft.ui.panel.GSIActionListener;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.util.GSTextUtil;
 
 import net.minecraft.text.Text;
 
@@ -45,7 +46,7 @@ public abstract class GSAbstractTextActionPanel extends GSAbstractActionPanel {
 		if (text == null)
 			throw new IllegalArgumentException("text is null!");
 
-		setText(Text.literal(text));
+		setText(GSTextUtil.literal(text));
 	}
 
 	public void setText(Text text) {

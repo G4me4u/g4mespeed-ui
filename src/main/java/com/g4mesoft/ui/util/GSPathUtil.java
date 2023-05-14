@@ -138,7 +138,7 @@ public final class GSPathUtil {
 		}
 		// Convert to two-decimal precision
 		double value = (double)size / (1L << (ONE_KIBIBYTE_LOG2 * i));
-		return Text.translatable(FILE_SIZE_KEYS[i],
+		return GSTextUtil.translatable(FILE_SIZE_KEYS[i],
 				FILE_SIZE_FORMAT.format(value));
 	}
 	

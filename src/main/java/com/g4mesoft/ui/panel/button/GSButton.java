@@ -18,6 +18,7 @@ import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
+import com.g4mesoft.ui.util.GSTextUtil;
 
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -82,7 +83,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	}
 
 	public GSButton(GSIcon icon, String text) {
-		this(icon, Text.literal(text));
+		this(icon, GSTextUtil.literal(text));
 	}
 
 	public GSButton(Text text) {
@@ -234,7 +235,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	}
 
 	public void setText(String text) {
-		setText((text != null) ? Text.literal(text) : null);
+		setText((text != null) ? GSTextUtil.literal(text) : null);
 	}
 	
 	public void setText(Text text) {

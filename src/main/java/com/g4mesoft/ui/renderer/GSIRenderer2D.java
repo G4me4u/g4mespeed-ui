@@ -3,6 +3,7 @@ package com.g4mesoft.ui.renderer;
 import java.util.List;
 
 import com.g4mesoft.ui.panel.GSRectangle;
+import com.g4mesoft.ui.util.GSTextUtil;
 
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
@@ -10,7 +11,7 @@ import net.minecraft.text.Text;
 public interface GSIRenderer2D extends GSIRenderer {
 
 	public static final String DEFAULT_ELLIPSIS = "...";
-	public static final Text DEFAULT_ELLIPSIS_TEXT = Text.literal(DEFAULT_ELLIPSIS);
+	public static final Text DEFAULT_ELLIPSIS_TEXT = GSTextUtil.literal(DEFAULT_ELLIPSIS);
 	
 	public int getMouseX();
 
