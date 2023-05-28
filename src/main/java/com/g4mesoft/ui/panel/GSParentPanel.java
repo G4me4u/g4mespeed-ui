@@ -57,8 +57,7 @@ public class GSParentPanel extends GSPanel {
 		panel.onAdded(this);
 		panel.setVisible(isVisible());
 
-		if (!isValidating())
-			invalidate();
+		invalidate();
 		panel.invalidate();
 	}
 	
@@ -69,8 +68,7 @@ public class GSParentPanel extends GSPanel {
 
 		if (children.remove(panel)) {
 			onChildRemoved(panel);
-			if (!isValidating())
-				invalidate();
+			invalidate();
 		}
 	}
 
@@ -82,8 +80,7 @@ public class GSParentPanel extends GSPanel {
 		GSPanel panel = children.remove(index);
 		if (panel != null) {
 			onChildRemoved(panel);
-			if (!isValidating())
-				invalidate();
+			invalidate();
 		}
 	}
 	
@@ -101,8 +98,7 @@ public class GSParentPanel extends GSPanel {
 				onChildRemoved(children.remove(lastIndex));
 			} while (!children.isEmpty());
 		
-			if (!isValidating())
-				invalidate();
+			invalidate();
 		}
 	}
 

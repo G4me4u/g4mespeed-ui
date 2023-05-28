@@ -88,6 +88,9 @@ public class GSFileDialog extends GSParentPanel {
 	private static final Text DIRECTORY_TYPE    = translatable("directoryType");
 	private static final Text UNKNOWN_FILE_TYPE = translatable("unknownType");
 	
+	private static final Text FILE_ALREADY_EXISTS = translatable("alreadyExists");
+	private static final Text CONFIRM_OVERWRITE   = translatable("confirmOverwrite");
+	
 	private static final int FILE_ICON_SPACING = 5;
 	private static final GSMargin OUTER_MARGIN = new GSMargin(5);
 	private static final GSMargin FIELD_MARGIN = new GSMargin(3);
@@ -315,14 +318,45 @@ public class GSFileDialog extends GSParentPanel {
 	private void confirm(Path path) {
 		if (path != null) {
 			if (matchesSelectionMode(path)) {
-				finish(fileNameFilter.resolve(path,
-						filterField.getSelectedIndex()), false);
+				final Path selection = fileNameFilter.resolve(
+						path, filterField.getSelectedIndex());
+				if (isOverwritingFile(selection)) {
+					confirmOverwrite(selection);
+				} else {
+					finish(selection, false);
+				}
 			} else if (GSPathUtil.isDirectory(path)) {
 				// Instead of confirming and closing, we open the
 				// selected directory.
 				setDirectory(path);
 			}
 		}
+	}
+	
+	private boolean isOverwritingFile(Path path) {
+		if (mode != GSEFileDialogMode.SAVE)
+			return false;
+		switch (selectionMode) {
+		case FILES_AND_DIRECTORIES:
+		case FILES_ONLY:
+			return GSPathUtil.isRegularFile(path);
+		case DIRECTORIES_ONLY:
+			return false;
+		}
+		throw new IllegalStateException("Unknown selection mode");
+	}
+	
+	private void confirmOverwrite(Path path) {
+		GSConfirmDialog dialog = GSConfirmDialog.showDialog(this, 
+				FILE_ALREADY_EXISTS, GSConfirmDialog.YES_NO_OPTIONS);
+		dialog.setContent(new GSTextLabel(CONFIRM_OVERWRITE));
+		dialog.addActionListener(() -> {
+			if (dialog.hasSelection()) {
+				GSConfirmOption option = dialog.getSelectedOption();
+				if (option == GSConfirmOption.YES)
+					finish(path, false);
+			}
+		});
 	}
 	
 	private void finish(Path path, boolean canceled) {

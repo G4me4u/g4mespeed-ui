@@ -540,9 +540,13 @@ public class GSPanel {
 	protected final void invalidate() {
 		if (validating) {
 			invalidateLater = true;
-		} else if (valid) {
+		} else {
+			boolean wasValid = valid;
 			invalidateNow();
-			dispatchLayoutEvent(GSLayoutEvent.createInvalidatedEvent(), this);
+			if (wasValid) {
+				// Only dispatch if we were not already invalid.
+				dispatchLayoutEvent(GSLayoutEvent.createInvalidatedEvent(), this);
+			}
 		}
 	}
 	
