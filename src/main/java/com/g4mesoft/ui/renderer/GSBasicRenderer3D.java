@@ -172,7 +172,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
 			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL) {
-			RenderSystem.setShader(GameRenderer::getBlockProgram);
+			RenderSystem.setShader(GameRenderer::getRenderTypeSolidProgram);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
 			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {

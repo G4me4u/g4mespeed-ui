@@ -10,6 +10,7 @@ import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -30,6 +31,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private final MinecraftClient client;
 	
 	private BufferBuilder builder;
+	private DrawContext context;
 	private MatrixStack matrixStack;
 	private int mouseX;
 	private int mouseY;
@@ -57,9 +59,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		cachedClippedBounds = null;
 	}
 	
-	public void begin(BufferBuilder builder, MatrixStack matrixStack, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+	public void begin(BufferBuilder builder, DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
 		this.builder = builder;
-		this.matrixStack = matrixStack;
+		this.context = context;
+		this.matrixStack = context.getMatrices();
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
 		this.viewportWidth = viewportWidth;
@@ -381,12 +384,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
-		if (shadowed) {
-			client.textRenderer.drawWithShadow(matrixStack, text, x, y, color);
-		} else {
-			client.textRenderer.draw(matrixStack, text, x, y, color);
-		}
-
+		context.drawText(client.textRenderer, text, x, y, color, shadowed);
+		
 		RenderSystem.enableBlend();
 	}
 	
@@ -408,12 +407,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
-		if (shadowed) {
-			client.textRenderer.drawWithShadow(matrixStack, text, x, y, color);
-		} else {
-			client.textRenderer.draw(matrixStack, text, x, y, color);
-		}
-		
+		context.drawText(client.textRenderer, text, x, y, color, shadowed);
+			
 		RenderSystem.enableBlend();
 	}
 	
