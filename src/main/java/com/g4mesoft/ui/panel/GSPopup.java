@@ -51,6 +51,13 @@ public class GSPopup extends GSParentPanel {
 		backgroundColor = DEFAULT_BACKGROUND_COLOR;
 		
 		sourceLayoutListener = null;
+		
+		content.addLayoutEventListener(new GSILayoutEventListener() {
+			@Override
+			public void panelInvalidated(GSLayoutEvent event) {
+				GSPopup.this.invalidate();
+			}
+		});
 	}
 	
 	@Override
@@ -86,6 +93,8 @@ public class GSPopup extends GSParentPanel {
 	
 	@Override
 	protected void layout() {
+		updateBounds();
+		
 		GSMargin margin = content.getProperty(GSLayoutProperties.MARGIN);
 		int w = Math.max(0, width - margin.getHorizMargin());
 		int h = Math.max(0, height - margin.getVertMargin());
@@ -138,9 +147,7 @@ public class GSPopup extends GSParentPanel {
 		this.placement = placement;
 		this.relX = x;
 		this.relY = y;
-		
-		updateBounds(x, y);
-		
+
 		super.add(content);
 	
 		rootPanel.add(this, GSRootPanel.POPUP_LAYER);
@@ -150,30 +157,31 @@ public class GSPopup extends GSParentPanel {
 			content.requestFocus();
 	}
 	
-	private void updateBounds(int x, int y) {
+	private void updateBounds() {
 		GSDimension ps = getProperty(PREFERRED_SIZE);
 
+		int rx = relX, ry = relY;
 		if (source != null) {
 			GSLocation viewLocation = GSPanelUtil.getViewLocation(source);
 			
 			int dw = source.getWidth() - ps.getWidth();
 			switch (placement) {
 			case RELATIVE:
-				x += viewLocation.getX();
+				rx += viewLocation.getX();
 				break;
 			case NORTHWEST:
 			case WEST:
 			case SOUTHWEST:
-				x = viewLocation.getX();
+				rx = viewLocation.getX();
 			case NORTH:
 			case CENTER:
 			case SOUTH:
-				x = viewLocation.getX() + dw / 2;
+				rx = viewLocation.getX() + dw / 2;
 				break;
 			case NORTHEAST:
 			case EAST:
 			case SOUTHEAST:
-				x = viewLocation.getX() + dw;
+				rx = viewLocation.getX() + dw;
 			case ABSOLUTE:
 			default:
 				break;
@@ -182,28 +190,28 @@ public class GSPopup extends GSParentPanel {
 			int dh = source.getHeight() - ps.getHeight();
 			switch (placement) {
 			case RELATIVE:
-				y += viewLocation.getY();
+				ry += viewLocation.getY();
 				break;
 			case NORTHWEST:
 			case NORTH:
 			case NORTHEAST:
-				y = viewLocation.getY();
+				ry = viewLocation.getY();
 			case WEST:
 			case CENTER:
 			case EAST:
-				y = viewLocation.getY() + dh / 2;
+				ry = viewLocation.getY() + dh / 2;
 				break;
 			case SOUTHWEST:
 			case SOUTH:
 			case SOUTHEAST:
-				y = viewLocation.getY() + dh;
+				ry = viewLocation.getY() + dh;
 			case ABSOLUTE:
 			default:
 				break;
 			}
 		}
 		
-		setBounds(adjustLocation(x, y, ps), ps);
+		setBounds(adjustLocation(rx, ry, ps), ps);
 	}
 	
 	private GSLocation adjustLocation(int x, int y, GSDimension size) {
@@ -322,13 +330,13 @@ public class GSPopup extends GSParentPanel {
 		public void panelMoved(GSLayoutEvent event) {
 			// TODO(Christian): also capture events further up in the tree
 			if (source != null && source.isVisible())
-				updateBounds(relX, relY);
+				invalidate();
 		}
 
 		@Override
 		public void panelResized(GSLayoutEvent event) {
 			if (source != null && source.isVisible())
-				updateBounds(relX, relY);
+				invalidate();
 		}
 	}
 }
