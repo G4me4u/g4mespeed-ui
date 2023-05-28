@@ -37,7 +37,15 @@
   "panel.fileDialog.directoryType": "File folder",
   "panel.fileDialog.unknownType": "Unknown file",
   "panel.fileDialog.regularFile": "%s File",
-  
+  "panel.fileDialog.alreadyExists": "File already exists",
+  "panel.fileDialog.confirmOverwrite": "Do you want to overwrite it?",
+
+  "panel.confirmDialog.areYouSure": "Are you sure?",
+  "panel.confirmDialog.yes": "Yes",
+  "panel.confirmDialog.no": "No",
+  "panel.confirmDialog.cancel": "Cancel",
+  "panel.confirmDialog.ok": "Ok",
+
   "panel.file.size.bytes": "%s B",
   "panel.file.size.kib": "%s KB",
   "panel.file.size.mib": "%s MB",

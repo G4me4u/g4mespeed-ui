@@ -13,14 +13,20 @@ public final class GSTextUtil {
 	}
 
 	public static MutableText literal(String text) {
+		if (text == null)
+			throw new IllegalArgumentException("text is null");
 		return new LiteralText(text);
 	}
 
 	public static MutableText translatable(String key) {
+		if (key == null)
+			throw new IllegalArgumentException("text is null");
 		return new TranslatableText(key);
 	}
 
 	public static MutableText translatable(String key, Object... params) {
+		if (key == null)
+			throw new IllegalArgumentException("text is null");
 		return new TranslatableText(key, params);
 	}
 }
