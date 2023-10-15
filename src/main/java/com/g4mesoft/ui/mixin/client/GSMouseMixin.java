@@ -20,8 +20,6 @@ public class GSMouseMixin implements GSIMouseAccess {
 
 	@Unique
 	private int gs_prevEventModifiers;
-	@Unique
-	private float gs_prevEventScrollX;
 
 	@Inject(
 		method="onMouseButton(JIII)V",
@@ -32,24 +30,8 @@ public class GSMouseMixin implements GSIMouseAccess {
 			gs_prevEventModifiers = mods;
 	}
 	
-	@Inject(
-		method="onMouseScroll",
-		at = @At("HEAD")
-	)
-	private void onOnMouseScroll(long windowHandle, double scrollX, double scrollY, CallbackInfo ci) {
-		if (windowHandle == client.getWindow().getHandle()) {
-			gs_prevEventScrollX = (float)(client.options.getDiscreteMouseScroll().getValue() ? Math.signum(scrollX) : scrollX);
-			gs_prevEventScrollX *= client.options.getMouseSensitivity().getValue();
-		}
-	}
-	
 	@Override
 	public int gs_getPreviousEventModifiers() {
 		return gs_prevEventModifiers;
-	}
-
-	@Override
-	public double gs_getPreviousEventScrollX() {
-		return gs_prevEventScrollX;
 	}
 }

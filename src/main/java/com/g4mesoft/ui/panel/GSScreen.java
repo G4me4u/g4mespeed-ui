@@ -22,7 +22,7 @@ final class GSScreen extends Screen {
 	
 		rootPanel = new GSRootPanel();
 		
-		visible = false;
+		visible = false;		
 	}
 
 	@Override
@@ -97,9 +97,8 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
-		float scrollX = (float)((GSIMouseAccess)client.mouse).gs_getPreviousEventScrollX();
-		GSPanelContext.getEventDispatcher().mouseScroll((float)mouseX, (float)mouseY, scrollX, (float)scrollY);
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		GSPanelContext.getEventDispatcher().mouseScroll((float)mouseX, (float)mouseY, (float)scrollX, (float)scrollY);
 		return true;
 	}
 
