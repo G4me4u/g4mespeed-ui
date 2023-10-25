@@ -22,6 +22,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
@@ -308,6 +309,13 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
+	public void legacyDrawGuiTexture(Identifier texture, int x, int y, int w, int h) {
+		if (building)
+			throw new IllegalStateException("Batches are not supported when drawing gui textures");
+
+		context.drawGuiTexture(texture, x, y, w, h);
+	}
+	
 	@Override
 	public void drawVLine(int x, int y0, int y1, int color) {
 		fillRect(x, y0, 1, y1 - y0, color);

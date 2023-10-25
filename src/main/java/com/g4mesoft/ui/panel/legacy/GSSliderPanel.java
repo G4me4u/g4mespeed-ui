@@ -2,8 +2,8 @@ package com.g4mesoft.ui.panel.legacy;
 
 import com.g4mesoft.ui.panel.GSIActionListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
+import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
-import com.g4mesoft.ui.renderer.GSTexture;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
@@ -12,8 +12,9 @@ import net.minecraft.util.Identifier;
 
 public class GSSliderPanel extends GSAbstractTextActionPanel {
 
-	private static final Identifier TEXTURE_IDENTIFIER = new Identifier("textures/gui/widgets.png");
-	private static final GSTexture SLIDER_TEXTURE = new GSTexture(TEXTURE_IDENTIFIER, 256, 256);
+    private static final Identifier TEXTURE = new Identifier("widget/slider");
+    private static final Identifier HANDLE_TEXTURE = new Identifier("widget/slider_handle");
+    private static final Identifier HANDLE_HIGHLIGHTED_TEXTURE = new Identifier("widget/slider_handle_highlighted");
 	
 	public static final int SLIDER_HEIGHT = 20;
 	public static final int MAX_WIDTH = 200;
@@ -32,13 +33,17 @@ public class GSSliderPanel extends GSAbstractTextActionPanel {
 
 	@Override
 	protected void renderBackground(GSIRenderer2D renderer, boolean hovered) {
-		renderer.drawTexture(SLIDER_TEXTURE, 0, 0, width / 2, height, 0, 46);
-		renderer.drawTexture(SLIDER_TEXTURE, width / 2, 0, width / 2, height, 200 - width / 2, 46);
-
+		if (!(renderer instanceof GSBasicRenderer2D))
+			throw new IllegalStateException("Only GSBasicRenderer2D is supported.");
+		
+		GSBasicRenderer2D br = (GSBasicRenderer2D)renderer;
+		
 		int vx = Math.round(value * (width - 8));
-		int sy = (isEnabled() && renderer.isMouseInside(0, 0, width, height)) ? 86 : 66;
-		renderer.drawTexture(SLIDER_TEXTURE, vx    , 0, 4, height,   0, sy);
-		renderer.drawTexture(SLIDER_TEXTURE, vx + 4, 0, 4, height, 196, sy);
+		Identifier handleTex = (isEnabled() && renderer.isMouseInside(0, 0, width, height)) ?
+				HANDLE_HIGHLIGHTED_TEXTURE : HANDLE_TEXTURE;
+
+		br.legacyDrawGuiTexture(TEXTURE, 0, 0, width, height);
+		br.legacyDrawGuiTexture(handleTex, vx, 0, 8, height);
 	}
 
 	@Override

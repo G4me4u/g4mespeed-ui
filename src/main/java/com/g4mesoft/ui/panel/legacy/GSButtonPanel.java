@@ -3,17 +3,21 @@ package com.g4mesoft.ui.panel.legacy;
 import com.g4mesoft.ui.panel.GSIActionListener;
 import com.g4mesoft.ui.panel.event.GSIKeyListener;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
+import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
-import com.g4mesoft.ui.renderer.GSTexture;
 import com.g4mesoft.ui.util.GSTextUtil;
 
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyListener {
 
-	private static final Identifier TEXTURE_IDENTIFIER = new Identifier("textures/gui/widgets.png");
-	private static final GSTexture BUTTON_TEXTURE = new GSTexture(TEXTURE_IDENTIFIER, 256, 256);
+    private static final ButtonTextures TEXTURES = new ButtonTextures(
+		new Identifier("widget/button"),
+		new Identifier("widget/button_disabled"),
+		new Identifier("widget/button_highlighted")
+    );
 	
 	public static final int BUTTON_HEIGHT = 20;
 
@@ -33,11 +37,12 @@ public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyLi
 
 	@Override
 	protected void renderBackground(GSIRenderer2D renderer, boolean hovered) {
-		// Taken from AbstractButtonWidget#renderButton
-		int sy = isEnabled() ? (hovered ? 86 : 66) : 46;
-
-		renderer.drawTexture(BUTTON_TEXTURE, 0, 0, width / 2, height, 0, sy);
-		renderer.drawTexture(BUTTON_TEXTURE, width / 2, 0, width / 2, height, 200 - width / 2, sy);
+		if (!(renderer instanceof GSBasicRenderer2D))
+			throw new IllegalStateException("Only GSBasicRenderer2D is supported.");
+		
+		GSBasicRenderer2D br = (GSBasicRenderer2D)renderer;
+		
+        br.legacyDrawGuiTexture(TEXTURES.get(isEnabled(), hovered), 0, 0, width, height);
 	}
 
 	@Override
