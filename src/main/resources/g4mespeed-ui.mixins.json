@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "com.g4mesoft.ui.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
   ],
   "client": [
@@ -9,7 +9,8 @@
     "client.GSKeyboardMixin",
     "client.GSMouseMixin",
     "client.GSIVertexFormatElementAccess",
-    "client.GSWorldRendererMixin"
+    "client.GSWorldRendererMixin",
+    "client.GSIGameRendererAccess"
   ],
   "injectors": {
     "defaultRequire": 1

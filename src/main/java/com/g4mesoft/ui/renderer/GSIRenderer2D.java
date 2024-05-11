@@ -168,6 +168,12 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public void drawDottedHLine(int x0, int x1, int y, int length, int spacing, int color);
 	
+	public void drawMenuBackground(int x, int y, int width, int height, boolean inWorld);
+
+	public void drawPanoramaBackground(int x, int y, int width, int height);
+
+	public void applyBlur(int x, int y, int width, int height, float radius);
+	
 	public int getTextAscent();
 	
 	public int getTextDescent();

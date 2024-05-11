@@ -75,11 +75,11 @@ public abstract class GSWorldRendererMixin {
 			target = "Lnet/minecraft/client/gl/PostEffectProcessor;render(F)V"
 		)
 	)
-	private void onRenderTransparentLastFabulous(MatrixStack matrixStack, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
+	private void onRenderTransparentLastFabulous(float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
 		if (MinecraftClient.isFabulousGraphicsOrBetter())
 			client.worldRenderer.getTranslucentFramebuffer().beginWrite(false);
 		
-		handleOnRenderTransparentLast(matrixStack);
+		handleOnRenderTransparentLast(new MatrixStack());
 		
 		if (MinecraftClient.isFabulousGraphicsOrBetter())
             client.getFramebuffer().beginWrite(false);
@@ -97,8 +97,8 @@ public abstract class GSWorldRendererMixin {
 				")V"
 		)
 	)
-	private void onRenderTransparentLastDefault(MatrixStack matrixStack, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
-		handleOnRenderTransparentLast(matrixStack);
+	private void onRenderTransparentLastDefault(float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+		handleOnRenderTransparentLast(new MatrixStack());
 	}
 
 	@Unique

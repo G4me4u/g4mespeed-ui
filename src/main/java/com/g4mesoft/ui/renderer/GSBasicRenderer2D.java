@@ -5,12 +5,17 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import com.g4mesoft.ui.mixin.client.GSIGameRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.PostEffectProcessor;
+import net.minecraft.client.gui.CubeMapRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.RotatingCubeMapRenderer;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -29,6 +34,11 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	private static final int LINE_SPACING = 2;
 	private static final float DEFAULT_Z_OFFSET = 0.0f;
+	
+	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND_TEXTURE, 16, 16);
+	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(new Identifier("textures/gui/inworld_menu_background.png"), 16, 16);
+	private static final CubeMapRenderer PANORAMA_RENDERER = new CubeMapRenderer(new Identifier("textures/gui/title/background/panorama"));
+	private static final RotatingCubeMapRenderer ROTATING_PANORAMA_RENDERER = new RotatingCubeMapRenderer(PANORAMA_RENDERER);
 	
 	private final MinecraftClient client;
 	
@@ -50,6 +60,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private final Deque<Float> opacityStack;
 	
 	private GSRectangle cachedClippedBounds;
+
+	private long lastPanoramaTickTime;
 	
 	public GSBasicRenderer2D(MinecraftClient client) {
 		this.client = client;
@@ -61,6 +73,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		opacityStack = new ArrayDeque<>();
 		
 		cachedClippedBounds = null;
+	
+		lastPanoramaTickTime = System.currentTimeMillis();
 	}
 	
 	public void begin(BufferBuilder builder, DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
@@ -366,6 +380,57 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		if (!wasBuilding)
 			finish();
+	}
+	
+	private float getPanoramaTickDelta() {
+		long l = System.currentTimeMillis();
+		float f = (float)(l - lastPanoramaTickTime) / 50.0f;
+		lastPanoramaTickTime = l;
+		return (f > 7.0f) ? 0.5f : f;
+	}
+	
+	@Override
+	public void drawMenuBackground(int x, int y, int width, int height, boolean inWorld) {
+		if (!inWorld)
+			drawPanoramaBackground(x, y, width, height);
+		// Apply blur
+		float blurRadius = 10.0f * (float)client.options.getMenuBackgroundBlurrinessValue();
+		applyBlur(x, y, width, height, blurRadius);
+		// Draw darkening texture
+		GSTexture darkening = inWorld ? INWORLD_MENU_BACKGROUND_TEXTURE : MENU_BACKGROUND_TEXTURE;
+		drawTexture(darkening.getRegion(x, y, width, height), x, y);
+	}
+	
+	@Override
+	public void drawPanoramaBackground(int x, int y, int width, int height) {
+		if (building)
+			throw new IllegalStateException("Batches are not supported while drawing panorama!");
+		pushMatrix();
+		translate(x, y);
+		pushClip(0, 0, width, height);
+		// Note: context uses the same matrix stack as we do.
+		ROTATING_PANORAMA_RENDERER.render(context, width, height, 1.0f, this.getPanoramaTickDelta());
+		popClip();
+		popMatrix();
+		// Panorama disables blending.
+		RenderSystem.enableBlend();
+	}
+	
+	@Override
+	public void applyBlur(int x, int y, int width, int height, float radius) {
+		if (building)
+			throw new IllegalStateException("Batches are not supported while blurring!");
+		
+		// See client.gameRenderer.renderBlur(...)
+		PostEffectProcessor blurPostProcessor = ((GSIGameRendererAccess)client.gameRenderer).getBlurPostProcessor();
+		if (blurPostProcessor != null && radius >= 1.0f) {
+			blurPostProcessor.setUniforms("Radius", radius);
+			// Finish writing frame buffer.
+			pushClip(x, y, width, height);
+			blurPostProcessor.render(client.getTickDelta());
+			client.getFramebuffer().beginWrite(false);
+			popClip();
+		}
 	}
 
 	@Override

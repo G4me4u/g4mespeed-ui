@@ -173,12 +173,16 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL) {
 			RenderSystem.setShader(GameRenderer::getRenderTypeSolidProgram);
+		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL) {			
+			RenderSystem.setShader(GameRenderer::getRenderTypeEntitySolidProgram);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
 			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
 			RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_LIGHT) {
+			RenderSystem.setShader(GameRenderer::getParticleProgram);			
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_NORMAL) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorNormalProgram);
+			RenderSystem.setShader(GameRenderer::getRenderTypeCloudsProgram);
 		} else {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}
