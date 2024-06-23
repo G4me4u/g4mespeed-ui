@@ -36,4 +36,6 @@ public abstract interface GSIRenderer {
 	
 	public void finish();
 	
+	public boolean isBuilding();
+	
 }

@@ -17,6 +17,8 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.RotatingCubeMapRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
@@ -36,13 +38,13 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private static final float DEFAULT_Z_OFFSET = 0.0f;
 	
 	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND_TEXTURE, 16, 16);
-	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(new Identifier("textures/gui/inworld_menu_background.png"), 16, 16);
-	private static final CubeMapRenderer PANORAMA_RENDERER = new CubeMapRenderer(new Identifier("textures/gui/title/background/panorama"));
+	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(Identifier.ofVanilla("textures/gui/inworld_menu_background.png"), 16, 16);
+	private static final CubeMapRenderer PANORAMA_RENDERER = new CubeMapRenderer(Identifier.ofVanilla("textures/gui/title/background/panorama"));
 	private static final RotatingCubeMapRenderer ROTATING_PANORAMA_RENDERER = new RotatingCubeMapRenderer(PANORAMA_RENDERER);
 	
 	private final MinecraftClient client;
 	
-	private BufferBuilder builder;
+	private Tessellator tessellator;
 	private DrawContext context;
 	private MatrixStack matrixStack;
 	private int mouseX;
@@ -50,8 +52,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private int viewportWidth;
 	private int viewportHeight;
 	
-	private boolean building;
 	private DrawMode buildingDrawMode;
+	private BufferBuilder currBuilder;
 	
 	private GSTransform2D transform;
 	private final Deque<GSTransform2D> transformStack;
@@ -77,8 +79,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		lastPanoramaTickTime = System.currentTimeMillis();
 	}
 	
-	public void begin(BufferBuilder builder, DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
-		this.builder = builder;
+	public void begin(Tessellator tessellator, DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+		this.tessellator = tessellator;
 		this.context = context;
 		this.matrixStack = context.getMatrices();
 		this.mouseX = mouseX;
@@ -88,14 +90,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	public void end() {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Renderer is still building");
 		if (!clipStack.isEmpty())
 			throw new IllegalStateException("Clip stack is not empty");
 
 		transformStack.clear();
 		transform.reset();
-		builder = null;
+		tessellator = null;
 	}
 
 	@Override
@@ -236,10 +238,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	                         float rbr, float gbr, float bbr, float abr,
 	                         boolean mirror) {
 		
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (isBuilding() && buildingDrawMode != DrawMode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
-		boolean wasBuilding = building;
+		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
 			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 		
@@ -266,10 +268,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawRect(int x, int y, int width, int height, int color) {
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (isBuilding() && buildingDrawMode != DrawMode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
-		boolean wasBuilding = building;
+		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
 			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 		
@@ -300,7 +302,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public void drawTexture(GSITextureRegion texture, int x, int y, float r, float g, float b) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported when drawing textures");
 		
 		build(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
@@ -324,7 +326,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 
 	public void legacyDrawGuiTexture(Identifier texture, int x, int y, int w, int h) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported when drawing gui textures");
 
 		context.drawGuiTexture(texture, x, y, w, h);
@@ -342,10 +344,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawDottedVLine(int x, int y0, int y1, int length, int spacing, int color) {
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (isBuilding() && buildingDrawMode != DrawMode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
-		boolean wasBuilding = building;
+		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
 			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 		
@@ -363,10 +365,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawDottedHLine(int x0, int x1, int y, int length, int spacing, int color) {
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (isBuilding() && buildingDrawMode != DrawMode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
-		boolean wasBuilding = building;
+		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
 			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 		
@@ -394,8 +396,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (!inWorld)
 			drawPanoramaBackground(x, y, width, height);
 		// Apply blur
-		float blurRadius = 10.0f * (float)client.options.getMenuBackgroundBlurrinessValue();
-		applyBlur(x, y, width, height, blurRadius);
+		applyBlur(x, y, width, height, client.options.getMenuBackgroundBlurrinessValue());
 		// Draw darkening texture
 		GSTexture darkening = inWorld ? INWORLD_MENU_BACKGROUND_TEXTURE : MENU_BACKGROUND_TEXTURE;
 		drawTexture(darkening.getRegion(x, y, width, height), x, y);
@@ -403,7 +404,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawPanoramaBackground(int x, int y, int width, int height) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported while drawing panorama!");
 		pushMatrix();
 		translate(x, y);
@@ -418,7 +419,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void applyBlur(int x, int y, int width, int height, float radius) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported while blurring!");
 		
 		// See client.gameRenderer.renderBlur(...)
@@ -427,9 +428,11 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			blurPostProcessor.setUniforms("Radius", radius);
 			// Finish writing frame buffer.
 			pushClip(x, y, width, height);
-			blurPostProcessor.render(client.getTickDelta());
+			blurPostProcessor.render(client.getRenderTickCounter().getTickDelta(false));
 			client.getFramebuffer().beginWrite(false);
 			popClip();
+			// Blur post processor disables blending.
+			RenderSystem.enableBlend();
 		}
 	}
 
@@ -466,7 +469,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public void drawText(String text, int x, int y, int color, boolean shadowed) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported for drawing text");
 
 		int alpha = (int)((color >>> 24) * opacity);
@@ -489,7 +492,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public void drawText(OrderedText text, int x, int y, int color, boolean shadowed) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported for drawing text");
 		
 		int alpha = (int)((color >>> 24) * opacity);
@@ -588,15 +591,13 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void build(DrawMode drawMode, VertexFormat format) {
-		if (building)
+		if (isBuilding())
 			throw new IllegalStateException("Already building!");
 		
 		if (format == VertexFormats.POSITION) {
 			RenderSystem.setShader(GameRenderer::getPositionProgram);
 		} else if (format == VertexFormats.POSITION_COLOR) {
 			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
 			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
@@ -605,45 +606,53 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}
 		
-		builder.begin(drawMode, format);
 		
 		buildingDrawMode = drawMode;
-		building = true;
+		currBuilder = tessellator.begin(drawMode, format);
 	}
 
 	@Override
 	public GSBasicRenderer2D vert(float x, float y, float z) {
-		builder.vertex(x + transform.offsetX, y + transform.offsetY, z);
+		currBuilder.vertex(x + transform.offsetX, y + transform.offsetY, z);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer2D color(float r, float g, float b, float a) {
-		builder.color(r, g, b, a * opacity);
+		currBuilder.color(r, g, b, a * opacity);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer2D tex(float u, float v) {
-		builder.texture(u, v);
+		currBuilder.texture(u, v);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer2D next() {
-		builder.next();
+		// Note: BufferBuilder#next has been removed.
 		return this;
 	}
 	
 	@Override
 	public void finish() {
-		if (!building)
+		if (!isBuilding())
 			throw new IllegalStateException("Not building!");
 		
-		Tessellator.getInstance().draw();
-		building = false;
+		BuiltBuffer buffer = currBuilder.endNullable();
+		if (buffer != null) {
+			// Simply draw with the current program.
+	        BufferRenderer.drawWithGlobalProgram(buffer);
+		}
+		currBuilder = null;
 	}
 
+	@Override
+	public boolean isBuilding() {
+		return currBuilder != null;
+	}
+	
 	private class GSTransform2D {
 		
 		private int offsetX;

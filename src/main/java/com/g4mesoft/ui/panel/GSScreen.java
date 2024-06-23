@@ -59,7 +59,7 @@ final class GSScreen extends Screen {
 		
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
-		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance().getBuffer(),
+		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance(),
 				context, mouseX, mouseY, width, height);
 		
 		rootPanel.preRender(renderer);

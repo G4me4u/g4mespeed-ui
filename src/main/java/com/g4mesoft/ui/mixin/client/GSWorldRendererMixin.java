@@ -25,6 +25,7 @@ import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
@@ -75,7 +76,7 @@ public abstract class GSWorldRendererMixin {
 			target = "Lnet/minecraft/client/gl/PostEffectProcessor;render(F)V"
 		)
 	)
-	private void onRenderTransparentLastFabulous(float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+	private void onRenderTransparentLastFabulous(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
 		if (MinecraftClient.isFabulousGraphicsOrBetter())
 			client.worldRenderer.getTranslucentFramebuffer().beginWrite(false);
 		
@@ -97,7 +98,7 @@ public abstract class GSWorldRendererMixin {
 				")V"
 		)
 	)
-	private void onRenderTransparentLastDefault(float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+	private void onRenderTransparentLastDefault(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
 		handleOnRenderTransparentLast(new MatrixStack());
 	}
 
@@ -127,7 +128,7 @@ public abstract class GSWorldRendererMixin {
 			matrixStack.push();
 			matrixStack.loadIdentity();
 			
-			gs_renderer3d.begin(Tessellator.getInstance().getBuffer(), matrixStack);
+			gs_renderer3d.begin(Tessellator.getInstance(), matrixStack);
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);

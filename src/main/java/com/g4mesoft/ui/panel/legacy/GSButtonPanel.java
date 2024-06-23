@@ -14,9 +14,9 @@ import net.minecraft.util.Identifier;
 public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyListener {
 
     private static final ButtonTextures TEXTURES = new ButtonTextures(
-		new Identifier("widget/button"),
-		new Identifier("widget/button_disabled"),
-		new Identifier("widget/button_highlighted")
+		Identifier.of("widget/button"),
+		Identifier.of("widget/button_disabled"),
+		Identifier.of("widget/button_highlighted")
     );
 	
 	public static final int BUTTON_HEIGHT = 20;

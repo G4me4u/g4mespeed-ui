@@ -12,9 +12,9 @@ import net.minecraft.util.Identifier;
 
 public class GSSliderPanel extends GSAbstractTextActionPanel {
 
-    private static final Identifier TEXTURE = new Identifier("widget/slider");
-    private static final Identifier HANDLE_TEXTURE = new Identifier("widget/slider_handle");
-    private static final Identifier HANDLE_HIGHLIGHTED_TEXTURE = new Identifier("widget/slider_handle_highlighted");
+    private static final Identifier TEXTURE = Identifier.of("widget/slider");
+    private static final Identifier HANDLE_TEXTURE = Identifier.of("widget/slider_handle");
+    private static final Identifier HANDLE_HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_handle_highlighted");
 	
 	public static final int SLIDER_HEIGHT = 20;
 	public static final int MAX_WIDTH = 200;
