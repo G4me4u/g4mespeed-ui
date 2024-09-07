@@ -2,7 +2,6 @@ package com.g4mesoft.ui.mixin.client;
 
 import java.util.Collection;
 
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,9 +26,8 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Matrix4f;
 
 @Mixin(WorldRenderer.class)
 public abstract class GSWorldRendererMixin {
@@ -43,7 +41,7 @@ public abstract class GSWorldRendererMixin {
 		method = "<init>",
 		at = @At("RETURN")
 	)
-	private void onInit(MinecraftClient client, EntityRenderDispatcher entityRenderDispatcher, BlockEntityRenderDispatcher blockEntityRenderDispatcher, BufferBuilderStorage bufferBuilders, CallbackInfo ci) {
+	private void onInit(MinecraftClient client, BufferBuilderStorage builderStorage, CallbackInfo ci) {
 		gs_renderer3d = new GSBasicRenderer3D();
 	}
 	
@@ -72,7 +70,7 @@ public abstract class GSWorldRendererMixin {
 		at = @At(
 			value = "INVOKE",
 			shift = Shift.BEFORE,
-			target = "Lnet/minecraft/client/gl/PostEffectProcessor;render(F)V"
+			target = "Lnet/minecraft/client/gl/ShaderEffect;render(F)V"
 		)
 	)
 	private void onRenderTransparentLastFabulous(MatrixStack matrixStack, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
@@ -122,6 +120,7 @@ public abstract class GSWorldRendererMixin {
 			} else {
 				RenderSystem.defaultBlendFunc();
 			}
+			RenderSystem.disableTexture();
 			
 			// View matrix is already uploaded to shader uniform
 			matrixStack.push();
@@ -136,6 +135,7 @@ public abstract class GSWorldRendererMixin {
 
 			matrixStack.pop();
 	
+			RenderSystem.enableTexture();
 			RenderSystem.disableBlend();
 		}
 	}

@@ -29,6 +29,7 @@ final class GSScreen extends Screen {
 	protected void init() {
 		super.init();
 	
+		client.keyboard.setRepeatEvents(true);
 		rootPanel.setBounds(0, 0, width, height);
 		
 		setVisibleImpl(true);
@@ -37,6 +38,8 @@ final class GSScreen extends Screen {
 	@Override
 	public void removed() {
 		super.removed();
+
+		client.keyboard.setRepeatEvents(false);
 
 		setVisibleImpl(false);
 	}
@@ -54,6 +57,7 @@ final class GSScreen extends Screen {
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
 		
+		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		
@@ -69,6 +73,7 @@ final class GSScreen extends Screen {
 		((GSBasicRenderer2D)renderer).end();
 		
 		RenderSystem.disableBlend();
+		RenderSystem.enableTexture();
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import net.minecraft.client.render.VertexFormatElement;
 @Mixin(VertexFormatElement.class)
 public interface GSIVertexFormatElementAccess {
 
-	@Accessor("componentCount")
-	public int getComponentCount();
+	@Accessor("length")
+	public int getLength();
 	
 }

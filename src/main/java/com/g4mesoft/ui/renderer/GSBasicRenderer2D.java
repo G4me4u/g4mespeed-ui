@@ -274,6 +274,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 		RenderSystem.setShaderTexture(0, texture.getTexture().getIdentifier());
 		RenderSystem.setShaderColor(r, g, b, opacity);
+		RenderSystem.enableTexture();
 		
 		float x0 = (float)x;
 		float y0 = (float)y;
@@ -288,6 +289,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		finish();
 
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderSystem.disableTexture();
 	}
 
 	@Override
@@ -387,6 +389,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			client.textRenderer.draw(matrixStack, text, x, y, color);
 		}
 
+		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 	}
 	
@@ -414,6 +417,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			client.textRenderer.draw(matrixStack, text, x, y, color);
 		}
 		
+		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 	}
 	
@@ -509,15 +513,15 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Already building!");
 		
 		if (format == VertexFormats.POSITION) {
-			RenderSystem.setShader(GameRenderer::getPositionProgram);
+			RenderSystem.setShader(GameRenderer::getPositionShader);
 		} else if (format == VertexFormats.POSITION_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+			RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
+			RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+			RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 		} else {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}

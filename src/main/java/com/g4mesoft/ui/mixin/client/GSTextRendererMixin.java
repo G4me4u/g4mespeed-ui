@@ -1,6 +1,5 @@
 package com.g4mesoft.ui.mixin.client;
 
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
@@ -13,6 +12,7 @@ import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import net.minecraft.client.font.GlyphRenderer;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.util.math.Matrix4f;
 
 @Mixin(TextRenderer.class)
 public class GSTextRendererMixin {
@@ -26,7 +26,7 @@ public class GSTextRendererMixin {
 			target =
 				"Lnet/minecraft/client/font/GlyphRenderer;draw(" +
 					"ZFF" +
-					"Lorg/joml/Matrix4f;" +
+					"Lnet/minecraft/util/math/Matrix4f;" +
 					"Lnet/minecraft/client/render/VertexConsumer;" +
 					"FFFFI" +
 				")V"

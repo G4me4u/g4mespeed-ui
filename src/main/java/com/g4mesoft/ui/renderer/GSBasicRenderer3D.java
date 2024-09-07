@@ -1,7 +1,5 @@
 package com.g4mesoft.ui.renderer;
 
-import org.joml.Quaternionf;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.render.BufferBuilder;
@@ -11,6 +9,7 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Quaternion;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
@@ -50,7 +49,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public void rotate(float rx, float ry, float rz) {
-		matrixStack.multiply(new Quaternionf().rotateXYZ(rx, ry, rz));
+		matrixStack.multiply(new Quaternion(rx, ry, rz, false));
 	}
 
 	@Override
@@ -162,23 +161,23 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 			throw new IllegalStateException("Already building!");
 		
 		if (format == VertexFormats.POSITION) {
-			RenderSystem.setShader(GameRenderer::getPositionProgram);
+			RenderSystem.setShader(GameRenderer::getPositionShader);
 		} else if (format == VertexFormats.POSITION_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+			RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		} else if (format == VertexFormats.POSITION_COLOR_LIGHT) {
-			RenderSystem.setShader(GameRenderer::getPositionColorLightmapProgram);
+			RenderSystem.setShader(GameRenderer::getPositionColorLightmapShader);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
+			RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
-			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
+			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapShader);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL) {
-			RenderSystem.setShader(GameRenderer::getBlockProgram);
+			RenderSystem.setShader(GameRenderer::getBlockShader);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+			RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_NORMAL) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorNormalProgram);
+			RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
 		} else {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}
