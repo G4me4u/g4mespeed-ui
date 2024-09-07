@@ -6,10 +6,10 @@ import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.NarratorManager;
+import net.minecraft.client.util.math.MatrixStack;
 
 final class GSScreen extends Screen {
 
@@ -22,7 +22,7 @@ final class GSScreen extends Screen {
 	
 		rootPanel = new GSRootPanel();
 		
-		visible = false;		
+		visible = false;
 	}
 
 	@Override
@@ -49,7 +49,7 @@ final class GSScreen extends Screen {
 	}
 	
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
+	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		// Execute scheduled tasks (validate panels etc.)
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
@@ -60,7 +60,7 @@ final class GSScreen extends Screen {
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
 		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance().getBuffer(),
-				context, mouseX, mouseY, width, height);
+				matrixStack, mouseX, mouseY, width, height);
 		
 		rootPanel.preRender(renderer);
 		rootPanel.render(renderer);
@@ -97,8 +97,9 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-		GSPanelContext.getEventDispatcher().mouseScroll((float)mouseX, (float)mouseY, (float)scrollX, (float)scrollY);
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
+		float scrollX = (float)((GSIMouseAccess)client.mouse).gs_getPreviousEventScrollX();
+		GSPanelContext.getEventDispatcher().mouseScroll((float)mouseX, (float)mouseY, scrollX, (float)scrollY);
 		return true;
 	}
 

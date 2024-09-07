@@ -1,33 +1,25 @@
 package com.g4mesoft.ui.renderer;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
-import com.g4mesoft.ui.mixin.client.GSIGameRendererAccess;
+import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.PostEffectProcessor;
-import net.minecraft.client.gui.CubeMapRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.RotatingCubeMapRenderer;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
@@ -35,15 +27,9 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private static final int LINE_SPACING = 2;
 	private static final float DEFAULT_Z_OFFSET = 0.0f;
 	
-	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND_TEXTURE, 16, 16);
-	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(new Identifier("textures/gui/inworld_menu_background.png"), 16, 16);
-	private static final CubeMapRenderer PANORAMA_RENDERER = new CubeMapRenderer(new Identifier("textures/gui/title/background/panorama"));
-	private static final RotatingCubeMapRenderer ROTATING_PANORAMA_RENDERER = new RotatingCubeMapRenderer(PANORAMA_RENDERER);
-	
 	private final MinecraftClient client;
 	
 	private BufferBuilder builder;
-	private DrawContext context;
 	private MatrixStack matrixStack;
 	private int mouseX;
 	private int mouseY;
@@ -54,33 +40,26 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private DrawMode buildingDrawMode;
 	
 	private GSTransform2D transform;
-	private final Deque<GSTransform2D> transformStack;
-	private final Deque<GSClipRect> clipStack;
+	private final LinkedList<GSTransform2D> transformStack;
 	private float opacity;
-	private final Deque<Float> opacityStack;
+	private final LinkedList<Float> opacityStack;
 	
 	private GSRectangle cachedClippedBounds;
-
-	private long lastPanoramaTickTime;
 	
 	public GSBasicRenderer2D(MinecraftClient client) {
 		this.client = client;
 		
 		transform = new GSTransform2D();
-		transformStack = new ArrayDeque<>();
-		clipStack = new ArrayDeque<>();
+		transformStack = new LinkedList<>();
 		opacity = 1.0f;
-		opacityStack = new ArrayDeque<>();
+		opacityStack = new LinkedList<>();
 		
 		cachedClippedBounds = null;
-	
-		lastPanoramaTickTime = System.currentTimeMillis();
 	}
 	
-	public void begin(BufferBuilder builder, DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+	public void begin(BufferBuilder builder, MatrixStack matrixStack, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
 		this.builder = builder;
-		this.context = context;
-		this.matrixStack = context.getMatrices();
+		this.matrixStack = matrixStack;
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
 		this.viewportWidth = viewportWidth;
@@ -90,12 +69,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	public void end() {
 		if (building)
 			throw new IllegalStateException("Renderer is still building");
-		if (!clipStack.isEmpty())
-			throw new IllegalStateException("Clip stack is not empty");
 
 		transformStack.clear();
 		transform.reset();
 		builder = null;
+
+		invalidateClippedBounds();
 	}
 
 	@Override
@@ -124,7 +103,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transform = transformStack.pop();
 		matrixStack.pop();
 		
-		invalidateClipBounds();
+		invalidateClippedBounds();
 	}
 
 	@Override
@@ -134,7 +113,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 		matrixStack.translate(x, y, 0.0f);
 		
-		invalidateClipBounds();
+		invalidateClippedBounds();
 	}
 	
 	@Override
@@ -144,46 +123,33 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void pushClip(int x, int y, int width, int height) {
-		pushClip(new GSClipRect(x, y, x + width, y + height));
+		// Translate clip according to current transform
+		int x0 = x + transform.offsetX;
+		int y0 = y + transform.offsetY;
+		int x1 = x0 + width;
+		int y1 = y0 + height;
+		
+		((GSIBufferBuilderAccess)builder).gs_pushClip(x0, y0, x1, y1);
+		
+		invalidateClippedBounds();
 	}
 
 	@Override
 	public void pushClip(GSClipRect clip) {
 		// Translate clip according to current transform
-		clipStack.push(clip.offset(transform.offsetX, transform.offsetY));
+		clip = clip.offset(transform.offsetX, transform.offsetY);
+		((GSIBufferBuilderAccess)builder).gs_pushClip(clip);
 		
-		invalidateClipBounds();
-		// Compute the clip bounds and update scissor
-		setScissor(clipStack.peek());
+		invalidateClippedBounds();
 	}
 
 	@Override
 	public GSClipRect popClip() {
-		if (clipStack.isEmpty())
-			throw new IllegalStateException("Clip stack is empty!");
+		GSClipRect oldClip = ((GSIBufferBuilderAccess)builder).gs_popClip();
 		
-		GSClipRect oldClip = clipStack.pop();
-		
-		invalidateClipBounds();
-		setScissor(clipStack.peek());
+		invalidateClippedBounds();
 		
 		return oldClip;
-	}
-	
-	private void setScissor(GSClipRect clip) {
-		if (clip != null) {
-			Window window = MinecraftClient.getInstance().getWindow();
-			double s = window.getScaleFactor();
-			int h = window.getFramebufferHeight();
-			
-			int x = (int)Math.round(clip.x0 * s);
-			int y = h - (int)Math.round(clip.y1 * s);
-			int width = (int)Math.round((clip.x1 - clip.x0) * s);
-			int height = (int)Math.round((clip.y1 - clip.y0) * s);
-			RenderSystem.enableScissor(x, y, width, height);
-		} else {
-			RenderSystem.disableScissor();
-		}
 	}
 	
 	@Override
@@ -193,13 +159,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		return new GSRectangle(cachedClippedBounds);
 	}
 	
-	private void invalidateClipBounds() {
+	private void invalidateClippedBounds() {
 		// Should be invoked whenever the transform, clip, or viewport size changes.
 		cachedClippedBounds = null;
 	}
 	
 	private GSRectangle computeClippedBounds() {
-		GSClipRect clip = clipStack.peek();
+		GSClipRect clip = ((GSIBufferBuilderAccess)builder).gs_getClip();
+		
 		if (clip == null) {
 			// Clipped by viewport edges.
 			return new GSRectangle(-transform.offsetX, -transform.offsetY, viewportWidth, viewportHeight);
@@ -323,13 +290,6 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	public void legacyDrawGuiTexture(Identifier texture, int x, int y, int w, int h) {
-		if (building)
-			throw new IllegalStateException("Batches are not supported when drawing gui textures");
-
-		context.drawGuiTexture(texture, x, y, w, h);
-	}
-	
 	@Override
 	public void drawVLine(int x, int y0, int y1, int color) {
 		fillRect(x, y0, 1, y1 - y0, color);
@@ -381,57 +341,6 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (!wasBuilding)
 			finish();
 	}
-	
-	private float getPanoramaTickDelta() {
-		long l = System.currentTimeMillis();
-		float f = (float)(l - lastPanoramaTickTime) / 50.0f;
-		lastPanoramaTickTime = l;
-		return (f > 7.0f) ? 0.5f : f;
-	}
-	
-	@Override
-	public void drawMenuBackground(int x, int y, int width, int height, boolean inWorld) {
-		if (!inWorld)
-			drawPanoramaBackground(x, y, width, height);
-		// Apply blur
-		float blurRadius = 10.0f * (float)client.options.getMenuBackgroundBlurrinessValue();
-		applyBlur(x, y, width, height, blurRadius);
-		// Draw darkening texture
-		GSTexture darkening = inWorld ? INWORLD_MENU_BACKGROUND_TEXTURE : MENU_BACKGROUND_TEXTURE;
-		drawTexture(darkening.getRegion(x, y, width, height), x, y);
-	}
-	
-	@Override
-	public void drawPanoramaBackground(int x, int y, int width, int height) {
-		if (building)
-			throw new IllegalStateException("Batches are not supported while drawing panorama!");
-		pushMatrix();
-		translate(x, y);
-		pushClip(0, 0, width, height);
-		// Note: context uses the same matrix stack as we do.
-		ROTATING_PANORAMA_RENDERER.render(context, width, height, 1.0f, this.getPanoramaTickDelta());
-		popClip();
-		popMatrix();
-		// Panorama disables blending.
-		RenderSystem.enableBlend();
-	}
-	
-	@Override
-	public void applyBlur(int x, int y, int width, int height, float radius) {
-		if (building)
-			throw new IllegalStateException("Batches are not supported while blurring!");
-		
-		// See client.gameRenderer.renderBlur(...)
-		PostEffectProcessor blurPostProcessor = ((GSIGameRendererAccess)client.gameRenderer).getBlurPostProcessor();
-		if (blurPostProcessor != null && radius >= 1.0f) {
-			blurPostProcessor.setUniforms("Radius", radius);
-			// Finish writing frame buffer.
-			pushClip(x, y, width, height);
-			blurPostProcessor.render(client.getTickDelta());
-			client.getFramebuffer().beginWrite(false);
-			popClip();
-		}
-	}
 
 	@Override
 	public int getTextAscent() {
@@ -472,8 +381,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
-		context.drawText(client.textRenderer, text, x, y, color, shadowed);
-		
+		if (shadowed) {
+			client.textRenderer.drawWithShadow(matrixStack, text, x, y, color);
+		} else {
+			client.textRenderer.draw(matrixStack, text, x, y, color);
+		}
+
 		RenderSystem.enableBlend();
 	}
 	
@@ -495,8 +408,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
-		context.drawText(client.textRenderer, text, x, y, color, shadowed);
-			
+		if (shadowed) {
+			client.textRenderer.drawWithShadow(matrixStack, text, x, y, color);
+		} else {
+			client.textRenderer.draw(matrixStack, text, x, y, color);
+		}
+		
 		RenderSystem.enableBlend();
 	}
 	
