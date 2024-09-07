@@ -1,5 +1,7 @@
 package com.g4mesoft.ui.panel;
 
+import org.lwjgl.opengl.GL11;
+
 import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 import com.g4mesoft.ui.access.client.GSIMouseAccess;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
@@ -58,8 +60,11 @@ final class GSScreen extends Screen {
 		GSPanelContext.executeScheduledTasks();
 		
 		RenderSystem.disableTexture();
+		RenderSystem.disableAlphaTest();
+		RenderSystem.shadeModel(GL11.GL_SMOOTH);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
+		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 		
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
@@ -73,6 +78,8 @@ final class GSScreen extends Screen {
 		((GSBasicRenderer2D)renderer).end();
 		
 		RenderSystem.disableBlend();
+		RenderSystem.shadeModel(GL11.GL_FLAT);
+		RenderSystem.enableAlphaTest();
 		RenderSystem.enableTexture();
 	}
 

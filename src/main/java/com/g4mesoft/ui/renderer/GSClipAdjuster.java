@@ -3,13 +3,14 @@ package com.g4mesoft.ui.renderer;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
+import org.lwjgl.opengl.GL11;
+
 import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import com.g4mesoft.ui.mixin.client.GSIVertexFormatElementAccess;
 import com.g4mesoft.ui.util.GSMathUtil;
 
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormat.DrawMode;
 import net.minecraft.client.render.VertexFormatElement;
 
 public class GSClipAdjuster {
@@ -27,7 +28,7 @@ public class GSClipAdjuster {
 	}
 	
 	public void clipPreviousShape(BufferBuilder builder) {
-		if (clipRectStack.isEmpty() || ((GSIBufferBuilderAccess)builder).gs_getDrawMode() != DrawMode.QUADS)
+		if (clipRectStack.isEmpty() || ((GSIBufferBuilderAccess)builder).gs_getDrawMode() != GL11.GL_QUADS)
 			return;
 		
 		int vertexStart = ((GSIBufferBuilderAccess)builder).gs_getVertexCount() - 4;
@@ -125,29 +126,29 @@ public class GSClipAdjuster {
 	private void interpolateClipped(ByteBuffer buffer, VertexFormat format, int i0, int i1, float t0, float t1) {
 		for (VertexFormatElement vertexElement : format.getElements()) {
 			if (vertexElement.getType() != VertexFormatElement.Type.PADDING) {
-				VertexFormatElement.DataType dataType = vertexElement.getDataType();
-				for (int i = 0; i < ((GSIVertexFormatElementAccess)vertexElement).getLength(); i++) {
-					float v0 = getVertexElement(buffer, i0, dataType);
-					float v1 = getVertexElement(buffer, i1, dataType);
+				VertexFormatElement.Format vertexElementFormat = vertexElement.getFormat();
+				for (int i = 0; i < ((GSIVertexFormatElementAccess)vertexElement).getCount(); i++) {
+					float v0 = getVertexElement(buffer, i0, vertexElementFormat);
+					float v1 = getVertexElement(buffer, i1, vertexElementFormat);
 	
 					float dv = v1 - v0;
 					if (t0 > 0.0f)
-						setVertexElement(buffer, i0, dataType, v0 + dv * t0);
+						setVertexElement(buffer, i0, vertexElementFormat, v0 + dv * t0);
 					if (t1 < 1.0f)
-						setVertexElement(buffer, i1, dataType, v0 + dv * t1);
+						setVertexElement(buffer, i1, vertexElementFormat, v0 + dv * t1);
 				
-					i0 += dataType.getByteLength();
-					i1 += dataType.getByteLength();
+					i0 += vertexElementFormat.getSize();
+					i1 += vertexElementFormat.getSize();
 				}
 			} else {
-				i0 += vertexElement.getByteLength();
-				i1 += vertexElement.getByteLength();
+				i0 += vertexElement.getSize();
+				i1 += vertexElement.getSize();
 			}
 		}
 	}
 	
-	private float getVertexElement(ByteBuffer buffer, int index, VertexFormatElement.DataType dataType) {
-		switch (dataType) {
+	private float getVertexElement(ByteBuffer buffer, int index, VertexFormatElement.Format vertexElementFormat) {
+		switch (vertexElementFormat) {
 		case FLOAT:
 			return buffer.getFloat(index);
 		case UINT:
@@ -164,8 +165,8 @@ public class GSClipAdjuster {
 		}
 	}
 
-	private void setVertexElement(ByteBuffer buffer, int index, VertexFormatElement.DataType dataType, float value) {
-		switch (dataType) {
+	private void setVertexElement(ByteBuffer buffer, int index, VertexFormatElement.Format vertexElementFormat, float value) {
+		switch (vertexElementFormat) {
 		case FLOAT:
 			buffer.putFloat(index, value);
 			break;
