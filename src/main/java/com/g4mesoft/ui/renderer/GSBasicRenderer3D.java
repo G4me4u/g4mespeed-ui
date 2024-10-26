@@ -4,10 +4,10 @@ import org.joml.Quaternionf;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormat.DrawMode;
@@ -164,25 +164,25 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 			throw new IllegalStateException("Already building!");
 		
 		if (format == VertexFormats.POSITION) {
-			RenderSystem.setShader(GameRenderer::getPositionProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION);
 		} else if (format == VertexFormats.POSITION_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 		} else if (format == VertexFormats.POSITION_COLOR_LIGHT) {
-			RenderSystem.setShader(GameRenderer::getPositionColorLightmapProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR_LIGHTMAP);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
-			RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR_TEX_LIGHTMAP);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL) {
-			RenderSystem.setShader(GameRenderer::getRenderTypeSolidProgram);
+			RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_SOLID);
 		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL) {			
-			RenderSystem.setShader(GameRenderer::getRenderTypeEntitySolidProgram);
+			RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_ENTITY_SOLID);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_LIGHT) {
-			RenderSystem.setShader(GameRenderer::getParticleProgram);			
+			RenderSystem.setShader(ShaderProgramKeys.PARTICLE);			
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_NORMAL) {
-			RenderSystem.setShader(GameRenderer::getRenderTypeCloudsProgram);
+			RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_CLOUDS);
 		} else {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}

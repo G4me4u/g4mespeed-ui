@@ -12,6 +12,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.PostEffectProcessor;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.CubeMapRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.RotatingCubeMapRenderer;
@@ -19,7 +20,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.DefaultFramebufferSet;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormat.DrawMode;
@@ -41,6 +43,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(Identifier.ofVanilla("textures/gui/inworld_menu_background.png"), 16, 16);
 	private static final CubeMapRenderer PANORAMA_RENDERER = new CubeMapRenderer(Identifier.ofVanilla("textures/gui/title/background/panorama"));
 	private static final RotatingCubeMapRenderer ROTATING_PANORAMA_RENDERER = new RotatingCubeMapRenderer(PANORAMA_RENDERER);
+	
+	private static final Identifier BLUR_EFFECT_IDENTIFIER = Identifier.ofVanilla("blur");
 	
 	private final MinecraftClient client;
 	
@@ -329,7 +333,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported when drawing gui textures");
 
-		context.drawGuiTexture(texture, x, y, w, h);
+		context.drawGuiTexture(RenderLayer::getGuiTextured, texture, x, y, w, h);
 	}
 	
 	@Override
@@ -418,18 +422,18 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
+	@SuppressWarnings("deprecation")
 	public void applyBlur(int x, int y, int width, int height, float radius) {
 		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported while blurring!");
 		
 		// See client.gameRenderer.renderBlur(...)
-		PostEffectProcessor blurPostProcessor = ((GSIGameRendererAccess)client.gameRenderer).getBlurPostProcessor();
+		PostEffectProcessor blurPostProcessor = client.getShaderLoader().loadPostEffect(BLUR_EFFECT_IDENTIFIER, DefaultFramebufferSet.MAIN_ONLY);
 		if (blurPostProcessor != null && radius >= 1.0f) {
 			blurPostProcessor.setUniforms("Radius", radius);
 			// Finish writing frame buffer.
 			pushClip(x, y, width, height);
-			blurPostProcessor.render(client.getRenderTickCounter().getTickDelta(false));
-			client.getFramebuffer().beginWrite(false);
+			blurPostProcessor.render(client.getFramebuffer(), ((GSIGameRendererAccess)client.gameRenderer).getPool());
 			popClip();
 			// Blur post processor disables blending.
 			RenderSystem.enableBlend();
@@ -595,13 +599,13 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Already building!");
 		
 		if (format == VertexFormats.POSITION) {
-			RenderSystem.setShader(GameRenderer::getPositionProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION);
 		} else if (format == VertexFormats.POSITION_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 		} else if (format == VertexFormats.POSITION_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
 		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+			RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
 		} else {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}
