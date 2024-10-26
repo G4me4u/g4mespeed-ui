@@ -71,7 +71,7 @@ void setupRepositories(RepositoryHandler repositories) {
 	def ENV = System.getenv()
 	if (ENV.MAVEN_URL && ENV.MAVEN_ALIAS && ENV.MAVEN_TOKEN) {
 		repositories.maven {
-			url "${ENV.MAVEN_URL}/snapshots"
+			url "${ENV.MAVEN_URL}/releases"
 			credentials {
 				username ENV.MAVEN_ALIAS
 				password ENV.MAVEN_TOKEN
