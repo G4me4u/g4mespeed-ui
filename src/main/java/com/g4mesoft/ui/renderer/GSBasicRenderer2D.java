@@ -155,8 +155,15 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public void pushClip(GSClipRect clip) {
-		// Translate clip according to current transform
-		clipStack.push(clip.offset(transform.offsetX, transform.offsetY));
+		// Translate clip according to current transform.
+		clip = clip.offset(transform.offsetX, transform.offsetY);
+		// Ensure previous clip bounds are still in effect.
+		GSClipRect prevClip = clipStack.peek();
+		if (prevClip != null) {
+			clip = prevClip.intersection(clip);
+		}
+		
+		clipStack.push(clip);
 		
 		invalidateClipBounds();
 		// Compute the clip bounds and update scissor
@@ -508,7 +515,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
 		context.drawText(client.textRenderer, text, x, y, color, shadowed);
-			
+		
 		RenderSystem.enableBlend();
 	}
 	
