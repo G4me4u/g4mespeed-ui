@@ -433,7 +433,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			blurPostProcessor.setUniforms("Radius", radius);
 			// Finish writing frame buffer.
 			pushClip(x, y, width, height);
+			RenderSystem.disableBlend();
 			blurPostProcessor.render(client.getFramebuffer(), ((GSIGameRendererAccess)client.gameRenderer).getPool());
+			// See Screen#applyBlur
+			client.getFramebuffer().beginWrite(false);
 			popClip();
 			// Blur post processor disables blending.
 			RenderSystem.enableBlend();
