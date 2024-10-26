@@ -2,13 +2,12 @@ package com.g4mesoft.ui.mixin.client;
 
 import java.util.Collection;
 
-import org.joml.Matrix4f;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -20,22 +19,27 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.BufferBuilderStorage;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.DefaultFramebufferSet;
+import net.minecraft.client.render.Fog;
+import net.minecraft.client.render.FrameGraphBuilder;
 import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.RenderPass;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.util.ObjectAllocator;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Vec3d;
 
 @Mixin(WorldRenderer.class)
 public abstract class GSWorldRendererMixin {
 
 	@Shadow @Final private MinecraftClient client;
+	@Shadow @Final private DefaultFramebufferSet framebufferSet;
+	
+	@Shadow @Nullable public abstract Framebuffer getTranslucentFramebuffer();
 	
 	@Unique
 	private GSBasicRenderer3D gs_renderer3d;
@@ -49,28 +53,32 @@ public abstract class GSWorldRendererMixin {
 	}
 	
 	@Inject(
-		method = "render",
-		at = @At(
-			value = "INVOKE",
-			shift = Shift.AFTER,
-			target =
-				"Lnet/minecraft/client/render/WorldRenderer;renderWeather(" +
-					"Lnet/minecraft/client/render/FrameGraphBuilder;" +
-					"Lnet/minecraft/client/render/LightmapTextureManager;" +
-					"Lnet/minecraft/util/math/Vec3d;" +
-					"F" +
-					"Lnet/minecraft/client/render/Fog;" +
-				")V"
-		)
+		method = "renderWeather",
+		at = @At("RETURN")
 	)
-	private void onRenderTransparentLast(ObjectAllocator allocator, RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
-		if (MinecraftClient.isFabulousGraphicsOrBetter())
-			client.worldRenderer.getTranslucentFramebuffer().beginWrite(false);
-		
-		handleOnRenderTransparentLast(new MatrixStack());
-		
-		if (MinecraftClient.isFabulousGraphicsOrBetter())
-            client.getFramebuffer().beginWrite(false);
+	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, LightmapTextureManager lightmapTextureManager, Vec3d pos, float tickDelta, Fog fog, CallbackInfo ci) {
+		RenderPass renderPass = frameGraphBuilder.createPass("gsTranslucent");
+		if (MinecraftClient.isFabulousGraphicsOrBetter() && framebufferSet.translucentFramebuffer != null) {
+			framebufferSet.translucentFramebuffer = renderPass.transfer(framebufferSet.translucentFramebuffer);
+		} else {
+			framebufferSet.mainFramebuffer = renderPass.transfer(framebufferSet.mainFramebuffer);
+		}
+		renderPass.setRenderer(() -> {
+			// See: RenderTarget.TRANSLUCENT_TARGET
+			if (MinecraftClient.isFabulousGraphicsOrBetter()) {
+				Framebuffer framebuffer = ((WorldRenderer)(Object)this).getTranslucentFramebuffer();
+				if (framebuffer != null) {
+					framebuffer.beginWrite(false);
+				} else {
+					client.getFramebuffer().beginWrite(false);
+				}
+			}
+	
+			handleOnRenderTransparentLast(new MatrixStack());
+	
+			if (MinecraftClient.isFabulousGraphicsOrBetter())
+				client.getFramebuffer().beginWrite(false);
+		});
 	}
 	
 	@Unique
