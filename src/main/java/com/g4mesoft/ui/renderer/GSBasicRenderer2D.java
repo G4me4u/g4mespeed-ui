@@ -328,6 +328,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Batches are not supported when drawing gui textures");
 
 		context.drawGuiTexture(texture, x, y, w, h);
+		// Note: seems to disable scissor test.
+		setScissor(clipStack.peek());
 	}
 	
 	@Override
