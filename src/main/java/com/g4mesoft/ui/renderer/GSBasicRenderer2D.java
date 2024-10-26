@@ -341,6 +341,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Batches are not supported when drawing gui textures");
 
 		context.drawGuiTexture(RenderLayer::getGuiTextured, texture, x, y, w, h);
+		context.draw();
 		// Note: seems to disable scissor test.
 		setScissor(clipStack.peek());
 	}
@@ -492,6 +493,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
 		context.drawText(client.textRenderer, text, x, y, color, shadowed);
+		// Note: immediately draw to handle scissor.
+		context.draw();
 		
 		RenderSystem.enableBlend();
 	}
@@ -515,6 +518,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
 		context.drawText(client.textRenderer, text, x, y, color, shadowed);
+		// Note: immediately draw to handle scissor.
+		context.draw();
 		
 		RenderSystem.enableBlend();
 	}
