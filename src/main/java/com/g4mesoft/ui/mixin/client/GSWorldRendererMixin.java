@@ -24,7 +24,6 @@ import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.DefaultFramebufferSet;
 import net.minecraft.client.render.Fog;
 import net.minecraft.client.render.FrameGraphBuilder;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderPass;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.WorldRenderer;
@@ -56,7 +55,7 @@ public abstract class GSWorldRendererMixin {
 		method = "renderWeather",
 		at = @At("RETURN")
 	)
-	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, LightmapTextureManager lightmapTextureManager, Vec3d pos, float tickDelta, Fog fog, CallbackInfo ci) {
+	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, Vec3d pos, float tickDelta, Fog fog, CallbackInfo ci) {
 		RenderPass renderPass = frameGraphBuilder.createPass("gsTranslucent");
 		if (MinecraftClient.isFabulousGraphicsOrBetter() && framebufferSet.translucentFramebuffer != null) {
 			framebufferSet.translucentFramebuffer = renderPass.transfer(framebufferSet.translucentFramebuffer);
