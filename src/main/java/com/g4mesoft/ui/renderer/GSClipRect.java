@@ -2,6 +2,8 @@ package com.g4mesoft.ui.renderer;
 
 public class GSClipRect {
 
+	public static final GSClipRect EMPTY = new GSClipRect(0.0f, 0.0f, 0.0f, 0.0f);
+
 	public final float x0;
 	public final float y0;
 	
@@ -30,7 +32,11 @@ public class GSClipRect {
 		float _y0 = Math.max(y0, other.y0);
 		float _x1 = Math.min(x1, other.x1);
 		float _y1 = Math.min(y1, other.y1);
-		return new GSClipRect(_x0, _y0, _x1, _y1);
+		if (_x0 >= _x1 || _y0 >= _y1) {
+			return GSClipRect.EMPTY;
+		} else {
+			return new GSClipRect(_x0, _y0, _x1, _y1);
+		}
 	}
 
 	public GSClipRect union(GSClipRect other) {
