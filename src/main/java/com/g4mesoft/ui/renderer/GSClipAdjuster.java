@@ -126,8 +126,8 @@ public class GSClipAdjuster {
 	private void interpolateClipped(ByteBuffer buffer, VertexFormat format, int i0, int i1, float t0, float t1) {
 		for (VertexFormatElement vertexElement : format.getElements()) {
 			if (vertexElement.getType() != VertexFormatElement.Type.PADDING) {
-				VertexFormatElement.Format dataType = vertexElement.getDataType();
-				for (int i = 0; i < ((GSIVertexFormatElementAccess)vertexElement).getLength(); i++) {
+				VertexFormatElement.Format dataType = vertexElement.getFormat();
+				for (int i = 0; i < ((GSIVertexFormatElementAccess)vertexElement).getCount(); i++) {
 					float v0 = getVertexElement(buffer, i0, dataType);
 					float v1 = getVertexElement(buffer, i1, dataType);
 	
@@ -141,8 +141,8 @@ public class GSClipAdjuster {
 					i1 += dataType.getSize();
 				}
 			} else {
-				i0 += vertexElement.getByteLength();
-				i1 += vertexElement.getByteLength();
+				i0 += vertexElement.getSize();
+				i1 += vertexElement.getSize();
 			}
 		}
 	}

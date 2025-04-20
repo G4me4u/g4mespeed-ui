@@ -10,14 +10,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
 import com.g4mesoft.ui.renderer.GSERenderPhase;
 import com.g4mesoft.ui.renderer.GSIRenderable3D;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
@@ -27,8 +25,8 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.util.math.Matrix4f;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
 
 @Mixin(WorldRenderer.class)
 public abstract class GSWorldRendererMixin {
@@ -48,47 +46,9 @@ public abstract class GSWorldRendererMixin {
 	
 	@Inject(
 		method = "render",
-		slice = @Slice(
-			from = @At(
-				value = "INVOKE",
-				ordinal = 0,
-				shift = Shift.BEFORE,
-				target =
-					"Lnet/minecraft/client/render/WorldRenderer;renderWorldBorder(" +
-						"Lnet/minecraft/client/render/Camera;" +
-					")V"
-			),
-			to = @At(
-				value = "INVOKE",
-				ordinal = 1,
-				shift = Shift.AFTER,
-				target =
-					"Lnet/minecraft/client/render/WorldRenderer;renderWorldBorder(" +
-						"Lnet/minecraft/client/render/Camera;" +
-					")V"
-			)
-		), 
+		allow = 1,
 		at = @At(
 			value = "INVOKE",
-			shift = Shift.BEFORE,
-			target = "Lnet/minecraft/client/gl/ShaderEffect;render(F)V"
-		)
-	)
-	private void onRenderTransparentLastFabulous(MatrixStack matrixStack, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
-		if (MinecraftClient.isFabulousGraphicsOrBetter())
-			client.worldRenderer.getTranslucentFramebuffer().beginWrite(false);
-		
-		handleOnRenderTransparentLast(matrixStack);
-		
-		if (MinecraftClient.isFabulousGraphicsOrBetter())
-            client.getFramebuffer().beginWrite(false);
-	}
-	
-	@Inject(
-		method = "render",
-		at = @At(
-			value = "INVOKE",
-			ordinal = 1,
 			shift = Shift.AFTER,
 			target =
 				"Lnet/minecraft/client/render/WorldRenderer;renderWorldBorder(" +
@@ -114,13 +74,7 @@ public abstract class GSWorldRendererMixin {
 			RenderSystem.enableCull();
 			
 			RenderSystem.enableBlend();
-			if (MinecraftClient.isFabulousGraphicsOrBetter()) {
-				// The Fabulous graphics setting seems to use a different blend func
-				RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
-						GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-			} else {
-				RenderSystem.defaultBlendFunc();
-			}
+			RenderSystem.defaultBlendFunc();
 			RenderSystem.shadeModel(GL11.GL_SMOOTH);
 			RenderSystem.disableTexture();
 			

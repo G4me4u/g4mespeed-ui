@@ -256,7 +256,7 @@ public final class GSPanelContext {
 	}
 	
 	private String i18nTranslateImpl(String key) {
-		return Language.getInstance().get(key);
+		return Language.getInstance().translate(key);
 	}
 
 	private String i18nTranslateFormattedImpl(String key, Object... args) {

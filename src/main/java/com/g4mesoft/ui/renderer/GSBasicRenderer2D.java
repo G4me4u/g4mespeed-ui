@@ -7,20 +7,19 @@ import java.util.List;
 import org.lwjgl.opengl.GL11;
 
 import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
+import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Language;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
 
@@ -30,7 +29,6 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private final MinecraftClient client;
 	
 	private BufferBuilder builder;
-	private MatrixStack matrixStack;
 	private int mouseX;
 	private int mouseY;
 	private int viewportWidth;
@@ -57,9 +55,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		cachedClippedBounds = null;
 	}
 	
-	public void begin(BufferBuilder builder, MatrixStack matrixStack, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+	public void begin(BufferBuilder builder, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
 		this.builder = builder;
-		this.matrixStack = matrixStack;
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
 		this.viewportWidth = viewportWidth;
@@ -91,8 +88,6 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	public void pushMatrix() {
 		transformStack.push(transform);
 		transform = new GSTransform2D(transform);
-		
-		matrixStack.push();
 	}
 
 	@Override
@@ -101,7 +96,6 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Transform stack is empty!");
 		
 		transform = transformStack.pop();
-		matrixStack.pop();
 		
 		invalidateClippedBounds();
 	}
@@ -111,14 +105,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transform.offsetX += x;
 		transform.offsetY += y;
 
-		matrixStack.translate(x, y, 0.0f);
-		
 		invalidateClippedBounds();
-	}
-	
-	@Override
-	public void translateDepth(float z) {
-		matrixStack.translate(0.0f, 0.0f, z);
 	}
 	
 	@Override
@@ -364,29 +351,36 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public float getTextWidth(String text) {
-		return client.textRenderer.getWidth(text);
+	public float getTextWidth(CharSequence text) {
+		return client.textRenderer.getStringWidth(text.toString());
 	}
 
 	@Override
 	public float getTextWidthNoStyle(CharSequence text) {
-		return client.textRenderer.getWidth(new GSCharSequenceOrderedText(text));
+		float w = 0.0f;
+		FontStorage fontStorage = ((GSITextRendererAccess)client.textRenderer).getFontStorage();
+		for (int i = 0; i < text.length(); i++)
+			w += fontStorage.getGlyph(text.charAt(i)).getAdvance();
+		return (float)Math.ceil(w);
 	}
 
 	@Override
-	public void drawText(String text, int x, int y, int color, boolean shadowed) {
+	public void drawText(CharSequence text, int x, int y, int color, boolean shadowed) {
 		if (building)
 			throw new IllegalStateException("Batches are not supported for drawing text");
-
+		
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
+		x += transform.offsetX;
+		y += transform.offsetY;
+		
 		if (shadowed) {
-			client.textRenderer.drawWithShadow(matrixStack, text, x, y, color);
+			client.textRenderer.drawWithShadow(text.toString(), x, y, color);
 		} else {
-			client.textRenderer.draw(matrixStack, text, x, y, color);
+			client.textRenderer.draw(text.toString(), x, y, color);
 		}
-
+		
 		RenderSystem.disableTexture();
 		RenderSystem.shadeModel(GL11.GL_SMOOTH);
 		RenderSystem.enableBlend();
@@ -395,32 +389,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawTextNoStyle(CharSequence text, int x, int y, int color, boolean shadowed) {
-		drawText(new GSCharSequenceOrderedText(text), x, y, color, shadowed);
-	}
-	
-	@Override
-	public float getTextWidth(OrderedText text) {
-		return client.textRenderer.getWidth(text);
-	}
-
-	@Override
-	public void drawText(OrderedText text, int x, int y, int color, boolean shadowed) {
-		if (building)
-			throw new IllegalStateException("Batches are not supported for drawing text");
-		
-		int alpha = (int)((color >>> 24) * opacity);
-		color = (alpha << 24) | (color & 0x00FFFFFF);
-		
-		if (shadowed) {
-			client.textRenderer.drawWithShadow(matrixStack, text, x, y, color);
-		} else {
-			client.textRenderer.draw(matrixStack, text, x, y, color);
+		try {
+			((GSITextRendererAccess)client.textRenderer).setEscapeTextFlag(true);
+			drawText(text, x, y, color, shadowed);
+		} finally {
+			((GSITextRendererAccess)client.textRenderer).setEscapeTextFlag(false);
 		}
-		
-		RenderSystem.disableTexture();
-		RenderSystem.shadeModel(GL11.GL_SMOOTH);
-		RenderSystem.enableBlend();
-		RenderSystem.disableAlphaTest();
 	}
 	
 	@Override
@@ -492,21 +466,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public OrderedText trimString(Text text, int availableWidth, Text ellipsis) {
-		if (getTextWidth(text) <= availableWidth)
-			return text.asOrderedText();
-		
-		availableWidth -= (int)Math.ceil(getTextWidth(ellipsis));
-		
-		StringVisitable trimmed = client.textRenderer.trimToWidth(text, availableWidth);
-		StringVisitable result = StringVisitable.concat(trimmed, ellipsis);
-		
-		return Language.getInstance().reorder(result);
-	}
-	
-	@Override
-	public List<OrderedText> splitToLines(Text text, int availableWidth) {
-		return client.textRenderer.wrapLines(text, availableWidth);
+	public Text trimString(Text text, int availableWidth, Text ellipsis) {
+		return new LiteralText(trimString(text.asFormattedString(), availableWidth, ellipsis.asFormattedString()));
 	}
 	
 	@Override

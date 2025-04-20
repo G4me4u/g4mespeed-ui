@@ -5,7 +5,6 @@ import java.util.List;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 
 public interface GSIRenderer2D extends GSIRenderer {
@@ -34,8 +33,6 @@ public interface GSIRenderer2D extends GSIRenderer {
 	public void popMatrix();
 	
 	public void translate(int x, int y);
-	
-	public void translateDepth(float z);
 	
 	public void pushClip(int x, int y, int width, int height);
 	
@@ -176,29 +173,27 @@ public interface GSIRenderer2D extends GSIRenderer {
 	
 	public int getLineHeight();
 	
-	public float getTextWidth(String text);
+	public float getTextWidth(CharSequence text);
 
 	public float getTextWidthNoStyle(CharSequence text);
 
 	default public float getTextWidth(Text text) {
-		return getTextWidth(text.asOrderedText());
+		return getTextWidth(text.asFormattedString());
 	}
 	
-	public float getTextWidth(OrderedText text);
-	
-	default public void drawCenteredText(String text, int xc, int y, int color) {
+	default public void drawCenteredText(CharSequence text, int xc, int y, int color) {
 		drawCenteredText(text, xc, y, color, true);
 	}
 	
-	default public void drawCenteredText(String text, int xc, int y, int color, boolean shadowed) {
+	default public void drawCenteredText(CharSequence text, int xc, int y, int color, boolean shadowed) {
 		drawText(text, xc - (int)Math.ceil(getTextWidth(text)) / 2, y, color, shadowed);
 	}
 	
-	default public void drawText(String text, int x, int y, int color) {
+	default public void drawText(CharSequence text, int x, int y, int color) {
 		drawText(text, x, y, color, true);
 	}
 
-	public void drawText(String text, int x, int y, int color, boolean shadowed);
+	public void drawText(CharSequence text, int x, int y, int color, boolean shadowed);
 	
 	default public void drawCenteredTextNoStyle(CharSequence text, int xc, int y, int color) {
 		drawCenteredTextNoStyle(text, xc, y, color, true);
@@ -215,35 +210,21 @@ public interface GSIRenderer2D extends GSIRenderer {
 	public void drawTextNoStyle(CharSequence text, int x, int y, int color, boolean shadowed);
 	
 	default public void drawCenteredText(Text text, int xc, int y, int color) {
-		drawCenteredText(text.asOrderedText(), xc, y, color);
-	}
-	
-	default public void drawCenteredText(Text text, int xc, int y, int color, boolean shadowed) {
-		drawCenteredText(text.asOrderedText(), xc, y, color, shadowed);
-	}
-	
-	default public void drawText(Text text, int x, int y, int color) {
-		drawText(text.asOrderedText(), x, y, color);
-	}
-
-	default public void drawText(Text text, int x, int y, int color, boolean shadowed) {
-		drawText(text.asOrderedText(), x, y, color, shadowed);
-	}
-	
-	default public void drawCenteredText(OrderedText text, int xc, int y, int color) {
 		drawCenteredText(text, xc, y, color, true);
 	}
 	
-	default public void drawCenteredText(OrderedText text, int xc, int y, int color, boolean shadowed) {
+	default public void drawCenteredText(Text text, int xc, int y, int color, boolean shadowed) {
 		drawText(text, xc - (int)Math.ceil(getTextWidth(text)) / 2, y, color, shadowed);
 	}
 	
-	default public void drawText(OrderedText text, int x, int y, int color) {
+	default public void drawText(Text text, int x, int y, int color) {
 		drawText(text, x, y, color, true);
 	}
 
-	public void drawText(OrderedText text, int x, int y, int color, boolean shadowed);
-	
+	default public void drawText(Text text, int x, int y, int color, boolean shadowed) {
+		drawText(text.asFormattedString(), x, y, color, shadowed);
+	}
+
 	default public String trimString(String text, int availableWidth) {
 		return trimString(text, availableWidth, DEFAULT_ELLIPSIS);
 	}
@@ -252,14 +233,12 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public List<String> splitToLines(String text, int availableWidth);
 
-	default public OrderedText trimString(Text text, int availableWidth) {
+	default public Text trimString(Text text, int availableWidth) {
 		return trimString(text, availableWidth, DEFAULT_ELLIPSIS_TEXT);
 	}
 	
-	public OrderedText trimString(Text text, int availableWidth, Text ellipsis);
+	public Text trimString(Text text, int availableWidth, Text ellipsis);
 	
-	public List<OrderedText> splitToLines(Text text, int availableWidth);
-
 	default public void vert(float x, float y) {
 		vert(x, y, 0.0f);
 	}

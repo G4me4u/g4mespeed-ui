@@ -1,43 +1,43 @@
 package com.g4mesoft.ui.mixin.client;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.At.Shift;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-import com.g4mesoft.ui.G4mespeedUIMod;
-import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
+import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 
-import net.minecraft.client.font.GlyphRenderer;
+import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.util.math.Matrix4f;
 
 @Mixin(TextRenderer.class)
-public class GSTextRendererMixin {
+public class GSTextRendererMixin implements GSITextRendererAccess {
 
-	@Inject(
-		method = "drawGlyph",
-		expect = 2,
-		at = @At(
-			value = "INVOKE",
-			shift = Shift.AFTER,
-			target =
-				"Lnet/minecraft/client/font/GlyphRenderer;draw(" +
-					"ZFF" +
-					"Lnet/minecraft/util/math/Matrix4f;" +
-					"Lnet/minecraft/client/render/VertexConsumer;" +
-					"FFFFI" +
-				")V"
+	@Shadow @Final private FontStorage fontStorage;
+	
+	@Unique
+	private boolean gs_escapeFormatting;
+	
+	@ModifyConstant(
+		method = "drawLayer",
+		allow = 1,
+		constant = @Constant(
+			intValue = 167
 		)
 	)
-    private void drawGlyph(GlyphRenderer glyphRenderer, boolean bold, boolean italic,
-                           float weight, float x, float y, Matrix4f matrix,
-                           VertexConsumer vertexConsumer, float red, float green,
-                           float blue, float alpha, int light, CallbackInfo ci)
-	{
-		if (G4mespeedUIMod.isSodiumLoaded())
-			((GSIBufferBuilderAccess)vertexConsumer).gs_clipPreviousShape();
+	private int onDrawLayerModify167(int value) {
+		return gs_escapeFormatting ? -1 : value;
+	}
+	
+	@Override
+	public FontStorage getFontStorage() {
+		return this.fontStorage;
+	}
+
+	@Override
+	public void setEscapeTextFlag(boolean escapeFormatting) {
+		gs_escapeFormatting = escapeFormatting;
 	}
 }

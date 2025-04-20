@@ -44,4 +44,9 @@ public class GSBasicCharSequence implements CharSequence {
 		// start > end, checked in the constructor below
 		return new GSBasicCharSequence(buffer, offset + start, end - start);
 	}
+	
+	@Override
+	public String toString() {
+		return new String(buffer, offset, length);
+	}
 }

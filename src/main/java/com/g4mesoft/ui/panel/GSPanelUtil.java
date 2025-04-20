@@ -14,7 +14,6 @@ import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.panel.scroll.GSViewport;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 
 public final class GSPanelUtil {
@@ -58,11 +57,10 @@ public final class GSPanelUtil {
 		}
 		
 		// Trim text and get text width
-		OrderedText trimmedText = null;
 		int tw = 0;
 		if (text != null) {
-			trimmedText = renderer.trimString(text, rw);
-			tw = (int)Math.ceil(renderer.getTextWidth(trimmedText));
+			text = renderer.trimString(text, rw);
+			tw = (int)Math.ceil(renderer.getTextWidth(text));
 		}
 		
 		// Handle text alignment
@@ -86,7 +84,7 @@ public final class GSPanelUtil {
 			// Handle left icon alignment (move text to the right)
 			if (icon != null && iconAlignment != GSEIconAlignment.RIGHT)
 				tx += icon.getWidth() + spacing;
-			renderer.drawText(trimmedText, tx, ty, textColor, shadowed);
+			renderer.drawText(text, tx, ty, textColor, shadowed);
 		}
 
 		if (icon != null) {

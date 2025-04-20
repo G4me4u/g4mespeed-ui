@@ -251,11 +251,7 @@ public class GSPopup extends GSParentPanel {
 		renderShadow(renderer);
 		renderBackground(renderer);
 		
-		// Fix issues with text rendering (depth enabled)
-		renderer.pushMatrix();
-		renderer.translateDepth(0.1f);
 		super.render(renderer);
-		renderer.popMatrix();
 	}
 	
 	protected void renderShadow(GSIRenderer2D renderer) {
