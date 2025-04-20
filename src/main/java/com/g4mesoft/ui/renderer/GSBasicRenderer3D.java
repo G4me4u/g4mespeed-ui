@@ -1,11 +1,10 @@
 package com.g4mesoft.ui.renderer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
@@ -62,7 +61,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, VertexFormats.POSITION_COLOR);
+			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		// Back Face
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -114,7 +113,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(LINES, VertexFormats.POSITION_COLOR);
+			build(LINES, DefaultVertexFormat.POSITION_COLOR);
 		
 		// Lines on X-axis
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -181,7 +180,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public GSBasicRenderer3D next() {
-		builder.next();
+		builder.nextVertex();
 		return this;
 	}
 	
@@ -190,7 +189,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		if (!building)
 			throw new IllegalStateException("Not building!");
 		
-		Tessellator.getInstance().draw();
+		Tessellator.getInstance().end();
 		building = false;
 	}
 }

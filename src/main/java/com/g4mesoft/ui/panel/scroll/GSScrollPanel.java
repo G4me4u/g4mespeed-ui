@@ -290,7 +290,7 @@ public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GS
 	public void mouseScrolled(GSMouseEvent event) {
 		// In case the user is trying to zoom in or out we should not
 		// scroll. This has different behavior on different platforms.
-		if (!event.isConsumed() && !Screen.hasControlDown() && !Screen.hasAltDown()) {
+		if (!event.isConsumed() && !Screen.isControlDown() && !Screen.isAltDown()) {
 			float newScrollX = horizontalScrollBar.getScroll();
 			float newScrollY = verticalScrollBar.getScroll();
 			
@@ -299,7 +299,7 @@ public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GS
 
 			// Shift will flip the xScroll and yScroll. This makes it
 			// possible to scroll horizontally without any xScroll.
-			if (Screen.hasShiftDown()) {
+			if (Screen.isShiftDown()) {
 				newScrollX -= event.getScrollY() * blockScrollX;
 				newScrollY -= event.getScrollX() * blockScrollY;
 			} else {

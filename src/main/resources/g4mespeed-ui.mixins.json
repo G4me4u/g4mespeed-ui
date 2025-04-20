@@ -5,9 +5,9 @@
   "mixins": [
   ],
   "client": [
-    "client.GSMinecraftClientMixin",
-    "client.GSKeyboardMixin",
-    "client.GSMouseMixin",
+    "client.GSMinecraftMixin",
+    "client.GSKeyboardHandlerMixin",
+    "client.GSMouseHandlerMixin",
     "client.GSBufferBuilderMixin",
     "client.GSIVertexFormatElementAccess",
     "client.GSGameRendererMixin",

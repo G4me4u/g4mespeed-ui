@@ -18,16 +18,16 @@ import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
 import com.g4mesoft.ui.renderer.GSERenderPhase;
 import com.g4mesoft.ui.renderer.GSIRenderable3D;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.Tessellator;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.client.resource.manager.ResourceManager;
 
 @Mixin(GameRenderer.class)
 public abstract class GSGameRendererMixin {
 
-	@Shadow @Final private MinecraftClient client;
+	@Shadow @Final private Minecraft minecraft;
 	
 	@Unique
 	private GSBasicRenderer3D gs_renderer3d;
@@ -36,12 +36,12 @@ public abstract class GSGameRendererMixin {
 		method = "<init>",
 		at = @At("RETURN")
 	)
-	private void onInit(MinecraftClient client, ResourceManager resourceManager, CallbackInfo ci) {
+	private void onInit(Minecraft client, ResourceManager resourceManager, CallbackInfo ci) {
 		gs_renderer3d = new GSBasicRenderer3D();
 	}
 	
 	@Inject(
-		method = "renderCenter",
+		method = "render(FJ)V",
 		allow = 1,
 		slice = @Slice(
 			from = @At(
@@ -54,9 +54,10 @@ public abstract class GSGameRendererMixin {
 			value = "INVOKE",
 			shift = Shift.AFTER,
 			target =
-				"Lnet/minecraft/client/render/WorldRenderer;renderLayer(" +
-					"Lnet/minecraft/client/render/RenderLayer;" +
-					"Lnet/minecraft/client/render/Camera;" +
+				"Lnet/minecraft/client/render/world/WorldRenderer;render(" +
+					"Lnet/minecraft/client/render/block/BlockLayer;" +
+					"D" +
+					"Lnet/minecraft/entity/Entity;" +
 				")I"
 		)
 	)
@@ -87,7 +88,7 @@ public abstract class GSGameRendererMixin {
 			GlStateManager.pushMatrix();
 			GlStateManager.loadIdentity();
 			
-			gs_renderer3d.begin(Tessellator.getInstance().getBuffer());
+			gs_renderer3d.begin(Tessellator.getInstance().getBuilder());
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);

@@ -6,7 +6,7 @@ import com.g4mesoft.ui.panel.GSPanelContext;
 import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 
-import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.instance.SimpleSoundInstance;
 import net.minecraft.sound.SoundEvents;
 
 public abstract class GSAbstractActionPanel extends GSPanel implements GSIMouseListener {
@@ -22,7 +22,7 @@ public abstract class GSAbstractActionPanel extends GSPanel implements GSIMouseL
 	protected abstract void onClicked(int mouseX, int mouseY);
 
 	protected void playClickSound() {
-		GSPanelContext.playSound(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+		GSPanelContext.playSound(SimpleSoundInstance.of(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 	}
 	
 	@Override

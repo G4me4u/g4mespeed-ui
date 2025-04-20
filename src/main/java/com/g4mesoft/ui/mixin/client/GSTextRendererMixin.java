@@ -9,13 +9,13 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 
-import net.minecraft.client.font.FontStorage;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.render.TextRenderer;
+import net.minecraft.client.render.font.FontSet;
 
 @Mixin(TextRenderer.class)
 public class GSTextRendererMixin implements GSITextRendererAccess {
 
-	@Shadow @Final private FontStorage fontStorage;
+	@Shadow @Final private FontSet fonts;
 	
 	@Unique
 	private boolean gs_escapeFormatting;
@@ -32,8 +32,8 @@ public class GSTextRendererMixin implements GSITextRendererAccess {
 	}
 	
 	@Override
-	public FontStorage getFontStorage() {
-		return this.fontStorage;
+	public FontSet getFonts() {
+		return this.fonts;
 	}
 
 	@Override

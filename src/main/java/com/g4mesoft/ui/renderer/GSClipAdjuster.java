@@ -8,10 +8,9 @@ import org.lwjgl.opengl.GL11;
 import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import com.g4mesoft.ui.mixin.client.GSIVertexFormatElementAccess;
 import com.g4mesoft.ui.util.GSMathUtil;
-
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormatElement;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public class GSClipAdjuster {
 
@@ -35,8 +34,8 @@ public class GSClipAdjuster {
 		if (vertexStart < 0)
 			return;
 
-		VertexFormat format = builder.getVertexFormat();
-		ByteBuffer buffer = builder.getByteBuffer();
+		VertexFormat format = builder.getFormat();
+		ByteBuffer buffer = builder.getBuffer();
 		
 		int startIndex = vertexStart * format.getVertexSize();
 		
@@ -123,8 +122,8 @@ public class GSClipAdjuster {
 	
 	private void interpolateClipped(ByteBuffer buffer, VertexFormat format, int i0, int i1, float t0, float t1) {
 		for (VertexFormatElement vertexElement : format.getElements()) {
-			if (vertexElement.getType() != VertexFormatElement.Type.PADDING) {
-				VertexFormatElement.Format dataType = vertexElement.getFormat();
+			if (vertexElement.getUsage() != VertexFormatElement.Usage.PADDING) {
+				VertexFormatElement.Type dataType = vertexElement.getType();
 				for (int i = 0; i < ((GSIVertexFormatElementAccess)vertexElement).getCount(); i++) {
 					float v0 = getVertexElement(buffer, i0, dataType);
 					float v1 = getVertexElement(buffer, i1, dataType);
@@ -139,13 +138,13 @@ public class GSClipAdjuster {
 					i1 += dataType.getSize();
 				}
 			} else {
-				i0 += vertexElement.getSize();
-				i1 += vertexElement.getSize();
+				i0 += vertexElement.getByteSize();
+				i1 += vertexElement.getByteSize();
 			}
 		}
 	}
 	
-	private float getVertexElement(ByteBuffer buffer, int index, VertexFormatElement.Format dataType) {
+	private float getVertexElement(ByteBuffer buffer, int index, VertexFormatElement.Type dataType) {
 		switch (dataType) {
 		case FLOAT:
 			return buffer.getFloat(index);
@@ -163,7 +162,7 @@ public class GSClipAdjuster {
 		}
 	}
 
-	private void setVertexElement(ByteBuffer buffer, int index, VertexFormatElement.Format vertexElementFormat, float value) {
+	private void setVertexElement(ByteBuffer buffer, int index, VertexFormatElement.Type vertexElementFormat, float value) {
 		switch (vertexElementFormat) {
 		case FLOAT:
 			buffer.putFloat(index, value);

@@ -11,13 +11,13 @@ import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.FontStorage;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.render.font.FontSet;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
@@ -26,7 +26,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private static final int LINE_SPACING = 2;
 	private static final float DEFAULT_Z_OFFSET = 0.0f;
 	
-	private final MinecraftClient client;
+	private final Minecraft client;
 	
 	private BufferBuilder builder;
 	private int mouseX;
@@ -44,7 +44,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	private GSRectangle cachedClippedBounds;
 	
-	public GSBasicRenderer2D(MinecraftClient client) {
+	public GSBasicRenderer2D(Minecraft client) {
 		this.client = client;
 		
 		transform = new GSTransform2D();
@@ -195,7 +195,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, VertexFormats.POSITION_COLOR);
+			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		float x0 = (float)x;
 		float y0 = (float)y;
@@ -225,7 +225,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, VertexFormats.POSITION_COLOR);
+			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		drawHLine(x, x + width, y, color);
 		drawHLine(x, x + width, y + height - 1, color);
@@ -259,14 +259,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		GlStateManager.enableTexture();
 		GlStateManager.color4f(r, g, b, opacity);
-		client.getTextureManager().bindTexture(texture.getTexture().getIdentifier());
+		client.getTextureManager().bind(texture.getTexture().getIdentifier());
 		
 		float x0 = (float)x;
 		float y0 = (float)y;
 		float x1 = x0 + texture.getRegionWidth();
 		float y1 = y0 + texture.getRegionHeight();
 		
-		build(QUADS, VertexFormats.POSITION_TEXTURE);
+		build(QUADS, DefaultVertexFormat.POSITION_TEX);
 		vert(x0, y1, DEFAULT_Z_OFFSET).tex(texture.getU0(), texture.getV1()).next();
 		vert(x1, y1, DEFAULT_Z_OFFSET).tex(texture.getU1(), texture.getV1()).next();
 		vert(x1, y0, DEFAULT_Z_OFFSET).tex(texture.getU1(), texture.getV0()).next();
@@ -294,7 +294,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, VertexFormats.POSITION_COLOR);
+			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		int n = (y1 - y0) / (length + spacing);
 		
@@ -315,7 +315,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, VertexFormats.POSITION_COLOR);
+			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		int n = (x1 - x0) / (length + spacing);
 		
@@ -352,15 +352,15 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public float getTextWidth(CharSequence text) {
-		return client.textRenderer.getStringWidth(text.toString());
+		return client.textRenderer.getWidth(text.toString());
 	}
 
 	@Override
 	public float getTextWidthNoStyle(CharSequence text) {
 		float w = 0.0f;
-		FontStorage fontStorage = ((GSITextRendererAccess)client.textRenderer).getFontStorage();
+		FontSet fonts = ((GSITextRendererAccess)client.textRenderer).getFonts();
 		for (int i = 0; i < text.length(); i++)
-			w += fontStorage.getGlyph(text.charAt(i)).getAdvance();
+			w += fonts.getGlyphInfo(text.charAt(i)).getAdvance();
 		return (float)Math.ceil(w);
 	}
 
@@ -469,7 +469,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public Text trimString(Text text, int availableWidth, Text ellipsis) {
-		return new LiteralText(trimString(text.asFormattedString(), availableWidth, ellipsis.asFormattedString()));
+		return new LiteralText(trimString(text.getFormattedString(), availableWidth, ellipsis.getFormattedString()));
 	}
 	
 	@Override
@@ -503,7 +503,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public GSBasicRenderer2D next() {
-		builder.next();
+		builder.nextVertex();
 		return this;
 	}
 	
@@ -512,7 +512,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (!building)
 			throw new IllegalStateException("Not building!");
 		
-		Tessellator.getInstance().draw();
+		Tessellator.getInstance().end();
 		building = false;
 	}
 

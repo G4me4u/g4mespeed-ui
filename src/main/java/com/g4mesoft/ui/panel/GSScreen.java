@@ -2,25 +2,22 @@ package com.g4mesoft.ui.panel;
 
 import org.lwjgl.opengl.GL11;
 
-import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
-import com.g4mesoft.ui.access.client.GSIMouseAccess;
+import com.g4mesoft.ui.access.client.GSIKeyboardHandlerAccess;
+import com.g4mesoft.ui.access.client.GSIMouseHandlerAccess;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.Tessellator;
 
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.util.NarratorManager;
 
-final class GSScreen extends Screen {
+public final class GSScreen extends Screen {
 
 	private final GSRootPanel rootPanel;
 
 	private boolean visible;
 	
 	GSScreen() {
-		super(NarratorManager.EMPTY);
-	
 		rootPanel = new GSRootPanel();
 		
 		visible = false;
@@ -30,7 +27,7 @@ final class GSScreen extends Screen {
 	protected void init() {
 		super.init();
 	
-		minecraft.keyboard.enableRepeatEvents(true);
+		minecraft.keyboardHandler.setSendRepeatsToGui(true);
 		rootPanel.setBounds(0, 0, width, height);
 		
 		setVisibleImpl(true);
@@ -40,7 +37,7 @@ final class GSScreen extends Screen {
 	public void removed() {
 		super.removed();
 
-		minecraft.keyboard.enableRepeatEvents(false);
+		minecraft.keyboardHandler.setSendRepeatsToGui(false);
 
 		setVisibleImpl(false);
 	}
@@ -68,7 +65,7 @@ final class GSScreen extends Screen {
 		
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
-		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance().getBuffer(),
+		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance().getBuilder(),
 				mouseX, mouseY, width, height);
 		
 		rootPanel.preRender(renderer);
@@ -83,21 +80,20 @@ final class GSScreen extends Screen {
 		GlStateManager.enableTexture();
 	}
 
-	@Override
 	public void mouseMoved(double mouseX, double mouseY) {
 		GSPanelContext.getEventDispatcher().mouseMoved((float)mouseX, (float)mouseY);
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		int modifiers = ((GSIMouseAccess)minecraft.mouse).gs_getPreviousEventModifiers();
+		int modifiers = ((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousEventModifiers();
 		GSPanelContext.getEventDispatcher().mousePressed(button, (float)mouseX, (float)mouseY, modifiers);
 		return true;
 	}
 
 	@Override
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		int modifiers = ((GSIMouseAccess)minecraft.mouse).gs_getPreviousEventModifiers();
+		int modifiers = ((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousEventModifiers();
 		GSPanelContext.getEventDispatcher().mouseReleased(button, (float)mouseX, (float)mouseY, modifiers);
 		return true;
 	}
@@ -109,15 +105,17 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
-		float scrollX = (float)((GSIMouseAccess)minecraft.mouse).gs_getPreviousEventScrollX();
-		GSPanelContext.getEventDispatcher().mouseScroll((float)mouseX, (float)mouseY, scrollX, (float)scrollY);
+	public boolean mouseScrolled(double scrollY) {
+		float mouseX = (float)((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousMouseX();
+		float mouseY = (float)((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousMouseY();
+		float scrollX = (float)((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousEventScrollX();
+		GSPanelContext.getEventDispatcher().mouseScroll(mouseX, mouseY, scrollX, (float)scrollY);
 		return true;
 	}
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (((GSIKeyboardAccess)minecraft.keyboard).gs_isPreviousEventRepeating()) {
+		if (((GSIKeyboardHandlerAccess)minecraft.keyboardHandler).gs_isPreviousEventRepeating()) {
 			GSPanelContext.getEventDispatcher().keyRepeated(keyCode, scanCode, modifiers);
 		} else {
 			GSPanelContext.getEventDispatcher().keyPressed(keyCode, scanCode, modifiers);

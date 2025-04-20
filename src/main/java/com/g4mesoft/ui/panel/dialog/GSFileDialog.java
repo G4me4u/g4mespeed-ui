@@ -55,7 +55,7 @@ import com.g4mesoft.ui.util.GSPathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 import com.google.common.base.Objects;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.text.Text;
 
 public class GSFileDialog extends GSParentPanel {
@@ -671,8 +671,8 @@ public class GSFileDialog extends GSParentPanel {
 			return home;
 		}
 		// Fallback to the game directory (%appdata%/.minecraft on windows)
-		MinecraftClient client = MinecraftClient.getInstance();
-		return (client != null) ? client.runDirectory.toPath() : null;
+		Minecraft client = Minecraft.getInstance();
+		return (client != null) ? client.runDir.toPath() : null;
 	}
 	
 	public void onSelectionChanged() {

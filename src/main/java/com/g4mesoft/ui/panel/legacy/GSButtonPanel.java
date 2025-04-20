@@ -7,8 +7,8 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.renderer.GSTexture;
 import com.g4mesoft.ui.util.GSTextUtil;
 
+import net.minecraft.resource.Identifier;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyListener {
 

@@ -10,8 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import com.g4mesoft.ui.renderer.GSClipAdjuster;
 import com.g4mesoft.ui.renderer.GSClipRect;
-
-import net.minecraft.client.render.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 @Mixin(BufferBuilder.class)
 public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
@@ -28,7 +27,7 @@ public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 	private final GSClipAdjuster gs_adjuster = new GSClipAdjuster();
 
 	@Inject(
-		method = "next", 
+		method = "nextVertex", 
 		at = @At("RETURN")
 	)
 	public void onNextReturn(CallbackInfo ci) {

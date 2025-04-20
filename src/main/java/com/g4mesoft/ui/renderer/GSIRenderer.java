@@ -2,7 +2,7 @@ package com.g4mesoft.ui.renderer;
 
 import org.lwjgl.opengl.GL11;
 
-import net.minecraft.client.render.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
 public abstract interface GSIRenderer {
 

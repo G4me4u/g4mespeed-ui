@@ -50,6 +50,7 @@ public class GSEventDispatcher {
 		int x = convertMouseX(mouseX);
 		int y = convertMouseY(mouseY);
 
+		
 		GSPanel panel = getTopPanelAt(x, y);
 		if (panel != null) {
 			setCurrentCursor(panel.getCursor());

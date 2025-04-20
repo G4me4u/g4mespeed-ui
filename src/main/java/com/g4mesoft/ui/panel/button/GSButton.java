@@ -20,7 +20,7 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.instance.SimpleSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -218,7 +218,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	
 	protected void playClickSound() {
 		if (clickSound != null)
-			GSPanelContext.playSound(PositionedSoundInstance.master(clickSound, 1.0F));
+			GSPanelContext.playSound(SimpleSoundInstance.of(clickSound, 1.0F));
 	}
 	
 	public GSIcon getIcon() {

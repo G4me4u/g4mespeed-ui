@@ -1,10 +1,10 @@
 package com.g4mesoft.ui.access.client;
 
-import net.minecraft.client.font.FontStorage;
+import net.minecraft.client.render.font.FontSet;
 
 public interface GSITextRendererAccess {
 
-	public FontStorage getFontStorage();
+	public FontSet getFonts();
 
 	public void setEscapeTextFlag(boolean escapeFormatting);
 
