@@ -54,8 +54,8 @@ public class GSTableRowHeaderPanel extends GSPanel implements GSIScrollable {
 		GSITableModel model = table.getModel();
 		GSCellContext context = new GSCellContext();
 		GSRectangle bounds = new GSRectangle();
-		bounds.x = clipBounds.x;
-		bounds.width = clipBounds.width;
+		bounds.x = 0;
+		bounds.width = width;
 		bounds.y = table.getHorizontalBorderHeight();
 		for (int r = 0; r < model.getRowCount() && bounds.y < clipBounds.y + clipBounds.height; r++) {
 			GSITableRow row = model.getRow(r);
