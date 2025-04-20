@@ -10,7 +10,7 @@ import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.FontStorage;
@@ -257,8 +257,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (building)
 			throw new IllegalStateException("Batches are not supported when drawing textures");
 		
-		RenderSystem.enableTexture();
-		RenderSystem.color4f(r, g, b, opacity);
+		GlStateManager.enableTexture();
+		GlStateManager.color4f(r, g, b, opacity);
 		client.getTextureManager().bindTexture(texture.getTexture().getIdentifier());
 		
 		float x0 = (float)x;
@@ -273,8 +273,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		vert(x0, y0, DEFAULT_Z_OFFSET).tex(texture.getU0(), texture.getV0()).next();
 		finish();
 		
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		RenderSystem.disableTexture();
+		GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+		GlStateManager.disableTexture();
 	}
 
 	@Override
@@ -375,16 +375,18 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		x += transform.offsetX;
 		y += transform.offsetY;
 		
+		GlStateManager.enableTexture();
+		
 		if (shadowed) {
 			client.textRenderer.drawWithShadow(text.toString(), x, y, color);
 		} else {
 			client.textRenderer.draw(text.toString(), x, y, color);
 		}
 		
-		RenderSystem.disableTexture();
-		RenderSystem.shadeModel(GL11.GL_SMOOTH);
-		RenderSystem.enableBlend();
-		RenderSystem.disableAlphaTest();
+		GlStateManager.disableTexture();
+		GlStateManager.shadeModel(GL11.GL_SMOOTH);
+		GlStateManager.enableBlend();
+		GlStateManager.disableAlphaTest();
 	}
 	
 	@Override

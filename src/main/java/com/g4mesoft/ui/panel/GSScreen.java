@@ -6,7 +6,7 @@ import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 import com.g4mesoft.ui.access.client.GSIMouseAccess;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Tessellator;
@@ -58,12 +58,13 @@ final class GSScreen extends Screen {
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
 		
-		RenderSystem.disableTexture();
-		RenderSystem.disableAlphaTest();
-		RenderSystem.shadeModel(GL11.GL_SMOOTH);
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+		GlStateManager.disableTexture();
+		GlStateManager.disableAlphaTest();
+		GlStateManager.shadeModel(GL11.GL_SMOOTH);
+		GlStateManager.enableBlend();
+		GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+				GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+		GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 		
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
@@ -76,10 +77,10 @@ final class GSScreen extends Screen {
 		
 		((GSBasicRenderer2D)renderer).end();
 		
-		RenderSystem.disableBlend();
-		RenderSystem.shadeModel(GL11.GL_FLAT);
-		RenderSystem.enableAlphaTest();
-		RenderSystem.enableTexture();
+		GlStateManager.disableBlend();
+		GlStateManager.shadeModel(GL11.GL_FLAT);
+		GlStateManager.enableAlphaTest();
+		GlStateManager.enableTexture();
 	}
 
 	@Override

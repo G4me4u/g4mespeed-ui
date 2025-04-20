@@ -1,10 +1,6 @@
 package com.g4mesoft.ui.access.client;
 
-import java.nio.ByteBuffer;
-
 import com.g4mesoft.ui.renderer.GSClipRect;
-
-import net.minecraft.client.render.VertexFormat;
 
 public interface GSIBufferBuilderAccess {
 
@@ -16,20 +12,10 @@ public interface GSIBufferBuilderAccess {
 
 	public GSClipRect gs_getClip();
 
-	public ByteBuffer gs_getByteBuffer();
-
-	public int gs_getDrawMode();
-
-	public VertexFormat gs_getVertexFormat();
-
-	public int gs_getBuildStart();
-
 	public int gs_getVertexCount();
 
 	public void gs_setVertexCount(int vertexCount);
 
-	public void gs_setElementOffset(int elementOffset);
-	
 	public void gs_clipPreviousShape();
 	
 }

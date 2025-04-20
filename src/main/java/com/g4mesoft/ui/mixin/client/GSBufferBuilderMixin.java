@@ -1,7 +1,5 @@
 package com.g4mesoft.ui.mixin.client;
 
-import java.nio.ByteBuffer;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,20 +12,17 @@ import com.g4mesoft.ui.renderer.GSClipAdjuster;
 import com.g4mesoft.ui.renderer.GSClipRect;
 
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
 
 @Mixin(BufferBuilder.class)
 public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 
-	@Shadow private ByteBuffer buffer;
-	@Shadow private int drawMode;
-	@Shadow private VertexFormat format;
-
 	@Shadow private boolean building;
 	
-	@Shadow private int buildStart;
 	@Shadow private int vertexCount;
-	@Shadow private int elementOffset;
+	
+	@Shadow private double offsetX;
+	@Shadow private double offsetY;
+	@Shadow private double offsetZ;
 	
 	@Unique
 	private final GSClipAdjuster gs_adjuster = new GSClipAdjuster();
@@ -65,26 +60,6 @@ public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 	}
 
 	@Override
-	public ByteBuffer gs_getByteBuffer() {
-		return buffer;
-	}
-
-	@Override
-	public int gs_getDrawMode() {
-		return drawMode;
-	}
-
-	@Override
-	public VertexFormat gs_getVertexFormat() {
-		return format;
-	}
-
-	@Override
-	public int gs_getBuildStart() {
-		return buildStart;
-	}
-	
-	@Override
 	public int gs_getVertexCount() {
 		return vertexCount;
 	}
@@ -94,11 +69,6 @@ public class GSBufferBuilderMixin implements GSIBufferBuilderAccess {
 		this.vertexCount = vertexCount;
 	}
 
-	@Override
-	public void gs_setElementOffset(int elementOffset) {
-		this.elementOffset = elementOffset;
-	}
-	
 	@Override
 	public void gs_clipPreviousShape() {
 		if (building && vertexCount >= 4)

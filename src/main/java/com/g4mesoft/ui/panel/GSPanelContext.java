@@ -236,7 +236,7 @@ public final class GSPanelContext {
 			standardCursors.put(cursorType, cursorPtr);
 		}
 
-		GLFW.glfwSetCursor(client.getWindow().getHandle(), cursorPtr);
+		GLFW.glfwSetCursor(client.window.getHandle(), cursorPtr);
 	}
 	
 	private String getClipboardStringImpl() {

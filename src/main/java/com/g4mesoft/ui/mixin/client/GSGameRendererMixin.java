@@ -10,26 +10,22 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
 import com.g4mesoft.ui.renderer.GSERenderPhase;
 import com.g4mesoft.ui.renderer.GSIRenderable3D;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilderStorage;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.util.math.Matrix4f;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.resource.ResourceManager;
 
-@Mixin(WorldRenderer.class)
-public abstract class GSWorldRendererMixin {
+@Mixin(GameRenderer.class)
+public abstract class GSGameRendererMixin {
 
 	@Shadow @Final private MinecraftClient client;
 	
@@ -40,59 +36,68 @@ public abstract class GSWorldRendererMixin {
 		method = "<init>",
 		at = @At("RETURN")
 	)
-	private void onInit(MinecraftClient client, BufferBuilderStorage builderStorage, CallbackInfo ci) {
+	private void onInit(MinecraftClient client, ResourceManager resourceManager, CallbackInfo ci) {
 		gs_renderer3d = new GSBasicRenderer3D();
 	}
 	
 	@Inject(
-		method = "render",
+		method = "renderCenter",
 		allow = 1,
+		slice = @Slice(
+			from = @At(
+				value = "CONSTANT",
+				args = "stringValue=translucent",
+				shift = Shift.AFTER
+			)
+		),
 		at = @At(
 			value = "INVOKE",
 			shift = Shift.AFTER,
 			target =
-				"Lnet/minecraft/client/render/WorldRenderer;renderWorldBorder(" +
+				"Lnet/minecraft/client/render/WorldRenderer;renderLayer(" +
+					"Lnet/minecraft/client/render/RenderLayer;" +
 					"Lnet/minecraft/client/render/Camera;" +
-				")V"
+				")I"
 		)
 	)
-	private void onRenderTransparentLastDefault(MatrixStack matrixStack, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
-		handleOnRenderTransparentLast(matrixStack);
+	private void onRenderTransparentLastDefault(CallbackInfo ci) {
+		handleOnRenderTransparentLast();
 	}
 
 	@Unique
-	private void handleOnRenderTransparentLast(MatrixStack matrixStack) {
+	private void handleOnRenderTransparentLast() {
 		Collection<GSIRenderable3D> renderables = G4mespeedUIMod.getRenderables();
 		
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {
 			// Rendering world border sometimes has depth and
 			// depth mask disabled. Fix it here.
-			RenderSystem.depthMask(true);
-			RenderSystem.enableDepthTest();
+			GlStateManager.depthMask(true);
+			GlStateManager.enableDepthTest();
 
 			// Sometimes face culling is disabled
-			RenderSystem.enableCull();
+			GlStateManager.enableCull();
 			
-			RenderSystem.enableBlend();
-			RenderSystem.defaultBlendFunc();
-			RenderSystem.shadeModel(GL11.GL_SMOOTH);
-			RenderSystem.disableTexture();
+			GlStateManager.enableBlend();
+			GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+					GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+			GlStateManager.shadeModel(GL11.GL_SMOOTH);
+			GlStateManager.disableTexture();
 			
 			// Fix model matrix
-			RenderSystem.pushMatrix();
-			RenderSystem.loadIdentity();
+			GlStateManager.pushMatrix();
+			GlStateManager.loadIdentity();
 			
-			gs_renderer3d.begin(Tessellator.getInstance().getBuffer(), matrixStack);
+			gs_renderer3d.begin(Tessellator.getInstance().getBuffer());
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);
 			}
 			gs_renderer3d.end();
 	
-			RenderSystem.popMatrix();
+			GlStateManager.popMatrix();
 	
-			RenderSystem.enableTexture();
-			RenderSystem.disableBlend();
+			GlStateManager.enableTexture();
+			GlStateManager.disableBlend();
 		}
 	}
 	

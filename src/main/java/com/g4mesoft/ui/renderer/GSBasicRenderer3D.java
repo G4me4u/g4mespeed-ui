@@ -1,56 +1,55 @@
 package com.g4mesoft.ui.renderer;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Quaternion;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	private BufferBuilder builder;
-	private MatrixStack matrixStack;
 	
 	private boolean building;
 	private int buildingShape;
 	
-	public void begin(BufferBuilder builder, MatrixStack matrixStack) {
+	public void begin(BufferBuilder builder) {
 		this.builder = builder;
-		this.matrixStack = matrixStack;
 	}
 	
 	public void end() {
 		if (building)
 			throw new IllegalStateException("Renderer is still building");
 
-		matrixStack = null;
 		builder = null;
 	}
 	
 	@Override
 	public void pushMatrix() {
-		matrixStack.push();
+		GlStateManager.pushMatrix();
 	}
 
 	@Override
 	public void popMatrix() {
-		matrixStack.pop();
+		GlStateManager.popMatrix();
 	}
 
 	@Override
 	public void translate(float tx, float ty, float tz) {
-		matrixStack.translate(tx, ty, tz);
+		GlStateManager.translatef(tx, ty, tz);
 	}
 
 	@Override
 	public void rotate(float rx, float ry, float rz) {
-		matrixStack.multiply(new Quaternion(rx, ry, rz, false));
+		GlStateManager.rotatef(rx, 1.0f, 0.0f, 0.0f);
+		GlStateManager.rotatef(ry, 0.0f, 1.0f, 0.0f);
+		GlStateManager.rotatef(rz, 0.0f, 0.0f, 1.0f);
 	}
 
 	@Override
 	public void scale(float sx, float sy, float sz) {
-		matrixStack.scale(sx, sy, sz);
+		GlStateManager.scalef(sx, sy, sz);
 	}
 	
 	@Override
@@ -164,7 +163,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public GSBasicRenderer3D vert(float x, float y, float z) {
-		builder.vertex(matrixStack.peek().getModel(), x, y, z);
+		builder.vertex(x, y, z);
 		return this;
 	}
 

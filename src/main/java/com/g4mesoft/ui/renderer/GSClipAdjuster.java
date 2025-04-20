@@ -28,17 +28,17 @@ public class GSClipAdjuster {
 	}
 	
 	public void clipPreviousShape(BufferBuilder builder) {
-		if (clipRectStack.isEmpty() || ((GSIBufferBuilderAccess)builder).gs_getDrawMode() != GL11.GL_QUADS)
+		if (clipRectStack.isEmpty() || builder.getDrawMode() != GL11.GL_QUADS)
 			return;
 		
 		int vertexStart = ((GSIBufferBuilderAccess)builder).gs_getVertexCount() - 4;
 		if (vertexStart < 0)
 			return;
 
-		VertexFormat format = ((GSIBufferBuilderAccess)builder).gs_getVertexFormat();
-		ByteBuffer buffer = ((GSIBufferBuilderAccess)builder).gs_getByteBuffer();
+		VertexFormat format = builder.getVertexFormat();
+		ByteBuffer buffer = builder.getByteBuffer();
 		
-		int startIndex = ((GSIBufferBuilderAccess)builder).gs_getBuildStart() + vertexStart * format.getVertexSize();
+		int startIndex = vertexStart * format.getVertexSize();
 		
 		// Assume the quad is on the x-y plane where z = z0 for
 		// all the vertices. Also assume that the sides of the
@@ -75,11 +75,9 @@ public class GSClipAdjuster {
 		    y1 < clipRect.y0 || y0 >= clipRect.y1) {
 			
 			((GSIBufferBuilderAccess)builder).gs_setVertexCount(vertexStart);
-			((GSIBufferBuilderAccess)builder).gs_setElementOffset(startIndex);
 			
 			return;
 		}
-
 
 		// Check what rotation anti-clockwise orientation would require
 		// of the corners tli and bri.

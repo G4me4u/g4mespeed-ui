@@ -10,7 +10,7 @@
     "client.GSMouseMixin",
     "client.GSBufferBuilderMixin",
     "client.GSIVertexFormatElementAccess",
-    "client.GSWorldRendererMixin",
+    "client.GSGameRendererMixin",
     "client.GSTextRendererMixin"
   ],
   "injectors": {
