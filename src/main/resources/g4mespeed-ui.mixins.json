@@ -6,8 +6,6 @@
   ],
   "client": [
     "client.GSMinecraftMixin",
-    "client.GSBufferBuilderMixin",
-    "client.GSIVertexFormatElementAccess",
     "client.GSGameRendererMixin",
     "client.GSTextRendererMixin",
     "client.GSILanguageAccessor"

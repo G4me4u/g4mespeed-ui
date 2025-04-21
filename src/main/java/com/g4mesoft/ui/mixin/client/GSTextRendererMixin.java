@@ -14,17 +14,6 @@ public class GSTextRendererMixin implements GSITextRendererAccess {
 
 	@Unique
 	private boolean gs_escapeFormatting;
-	
-	@ModifyConstant(
-		method = "drawLayer(Ljava/lang/String;Z)V",
-		allow = 1,
-		constant = @Constant(
-			intValue = 167
-		)
-	)
-	private int onDrawLayerModify167(int value) {
-		return gs_escapeFormatting ? -1 : value;
-	}
 
 	@ModifyConstant(
 		method = "getWidth(C)I",
@@ -34,6 +23,17 @@ public class GSTextRendererMixin implements GSITextRendererAccess {
 		)
 	)
 	private int onGetWidthModify167(int value) {
+		return gs_escapeFormatting ? -1 : value;
+	}
+	
+	@ModifyConstant(
+		method = "drawLayer(Ljava/lang/String;Z)V",
+		allow = 1,
+		constant = @Constant(
+			intValue = 167
+		)
+	)
+	private int onDrawLayerModify167(int value) {
 		return gs_escapeFormatting ? -1 : value;
 	}
 	
