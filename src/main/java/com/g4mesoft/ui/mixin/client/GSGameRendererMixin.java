@@ -41,7 +41,7 @@ public abstract class GSGameRendererMixin {
 	}
 	
 	@Inject(
-		method = "render(FJ)V",
+		method = "render(IFJ)V",
 		allow = 1,
 		slice = @Slice(
 			from = @At(
@@ -57,6 +57,7 @@ public abstract class GSGameRendererMixin {
 				"Lnet/minecraft/client/render/world/WorldRenderer;render(" +
 					"Lnet/minecraft/client/render/block/BlockLayer;" +
 					"D" +
+					"I" +
 					"Lnet/minecraft/entity/Entity;" +
 				")I"
 		)

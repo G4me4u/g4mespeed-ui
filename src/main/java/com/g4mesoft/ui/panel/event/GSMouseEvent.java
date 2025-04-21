@@ -1,7 +1,5 @@
 package com.g4mesoft.ui.panel.event;
 
-import org.lwjgl.glfw.GLFW;
-
 import com.g4mesoft.ui.panel.GSLocation;
 
 public final class GSMouseEvent extends GSEvent {
@@ -19,21 +17,22 @@ public final class GSMouseEvent extends GSEvent {
 	
 	public static final int UNKNOWN_BUTTON = -1;
 	
-	public static final int BUTTON_1 = GLFW.GLFW_MOUSE_BUTTON_1;
-	public static final int BUTTON_2 = GLFW.GLFW_MOUSE_BUTTON_2;
-	public static final int BUTTON_3 = GLFW.GLFW_MOUSE_BUTTON_3;
-	public static final int BUTTON_4 = GLFW.GLFW_MOUSE_BUTTON_4;
-	public static final int BUTTON_5 = GLFW.GLFW_MOUSE_BUTTON_5;
-	public static final int BUTTON_6 = GLFW.GLFW_MOUSE_BUTTON_6;
-	public static final int BUTTON_7 = GLFW.GLFW_MOUSE_BUTTON_7;
-	public static final int BUTTON_8 = GLFW.GLFW_MOUSE_BUTTON_8;
+	/* Mouse buttons in LWJGL 2 are 0 to Mouse.getButtonCount() - 1. */
+	public static final int BUTTON_1 = 0;
+	public static final int BUTTON_2 = 1;
+	public static final int BUTTON_3 = 2;
+	public static final int BUTTON_4 = 3;
+	public static final int BUTTON_5 = 4;
+	public static final int BUTTON_6 = 5;
+	public static final int BUTTON_7 = 6;
+	public static final int BUTTON_8 = 7;
 
-	public static final int BUTTON_LEFT   = GLFW.GLFW_MOUSE_BUTTON_LEFT;
-	public static final int BUTTON_MIDDLE = GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
-	public static final int BUTTON_RIGHT  = GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+	public static final int BUTTON_LEFT   = BUTTON_1;
+	public static final int BUTTON_MIDDLE = BUTTON_3;
+	public static final int BUTTON_RIGHT  = BUTTON_2;
 	
-	private static final int FIRST_BUTTON = GLFW.GLFW_MOUSE_BUTTON_1;
-	private static final int LAST_BUTTON  = GLFW.GLFW_MOUSE_BUTTON_8;
+	private static final int FIRST_BUTTON = BUTTON_1;
+	private static final int LAST_BUTTON  = BUTTON_8;
 	
 	/* The type of mouse event */
 	private final int type;

@@ -1,11 +1,14 @@
 package com.g4mesoft.ui.panel;
 
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import com.g4mesoft.ui.access.client.GSIKeyboardHandlerAccess;
-import com.g4mesoft.ui.access.client.GSIMouseHandlerAccess;
+import com.g4mesoft.ui.panel.event.GSEvent;
+import com.g4mesoft.ui.panel.event.GSEventDispatcher;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.Tessellator;
 
@@ -14,8 +17,18 @@ import net.minecraft.client.gui.screen.Screen;
 public final class GSScreen extends Screen {
 
 	private final GSRootPanel rootPanel;
-
+	
 	private boolean visible;
+
+	// Mouse (unscaled) event position.
+	private int prevMouseDraggedEventX;
+	private int prevMouseDraggedEventY;
+	// Mouse (scaled) position.
+	private int prevMouseX;
+	private int prevMouseY;
+	// Mouse active button used for dragging.
+	private int currentActiveMouseButton;
+	private int pressedMouseButtonCount;
 	
 	GSScreen() {
 		rootPanel = new GSRootPanel();
@@ -24,10 +37,15 @@ public final class GSScreen extends Screen {
 	}
 
 	@Override
-	protected void init() {
+	public void init() {
 		super.init();
-	
-		minecraft.keyboardHandler.setSendRepeatsToGui(true);
+
+		prevMouseDraggedEventX = prevMouseDraggedEventY = Integer.MIN_VALUE;
+		prevMouseX = prevMouseY = Integer.MIN_VALUE;
+		pressedMouseButtonCount = 0;
+		currentActiveMouseButton = -1;
+		
+		Keyboard.enableRepeatEvents(true);
 		rootPanel.setBounds(0, 0, width, height);
 		
 		setVisibleImpl(true);
@@ -37,8 +55,8 @@ public final class GSScreen extends Screen {
 	public void removed() {
 		super.removed();
 
-		minecraft.keyboardHandler.setSendRepeatsToGui(false);
-
+		Keyboard.enableRepeatEvents(false);
+		
 		setVisibleImpl(false);
 	}
 	
@@ -80,59 +98,125 @@ public final class GSScreen extends Screen {
 		GlStateManager.enableTexture();
 	}
 
-	public void mouseMoved(double mouseX, double mouseY) {
-		GSPanelContext.getEventDispatcher().mouseMoved((float)mouseX, (float)mouseY);
+	private int getModifiers() {
+	    int modifiers = 0;
+	    if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
+	        modifiers |= GSEvent.MODIFIER_SHIFT;
+	    // Control
+	    if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+	        modifiers |= GSEvent.MODIFIER_CONTROL;
+	    // Alt / Options
+	    if (Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU))
+	        modifiers |= GSEvent.MODIFIER_ALT;
+	    // Windows / Command
+	    if (Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA))
+	        modifiers |= GSEvent.MODIFIER_SUPER;
+	    // Caps Lock
+	    if (Keyboard.isKeyDown(Keyboard.KEY_CAPITAL))
+	        modifiers |= GSEvent.MODIFIER_CAPS_LOCK;
+	    // Num Lock
+	    if (Keyboard.isKeyDown(Keyboard.KEY_NUMLOCK))
+	        modifiers |= GSEvent.MODIFIER_NUM_LOCK;
+	    return modifiers;
 	}
-
+	
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		int modifiers = ((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousEventModifiers();
-		GSPanelContext.getEventDispatcher().mousePressed(button, (float)mouseX, (float)mouseY, modifiers);
-		return true;
-	}
-
-	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		int modifiers = ((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousEventModifiers();
-		GSPanelContext.getEventDispatcher().mouseReleased(button, (float)mouseX, (float)mouseY, modifiers);
-		return true;
-	}
-
-	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-		GSPanelContext.getEventDispatcher().mouseDragged(button, (float)mouseX, (float)mouseY, (float)deltaX, (float)deltaY);
-		return true;
-	}
-
-	@Override
-	public boolean mouseScrolled(double scrollY) {
-		float mouseX = (float)((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousMouseX();
-		float mouseY = (float)((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousMouseY();
-		float scrollX = (float)((GSIMouseHandlerAccess)minecraft.mouseHandler).gs_getPreviousEventScrollX();
-		GSPanelContext.getEventDispatcher().mouseScroll(mouseX, mouseY, scrollX, (float)scrollY);
-		return true;
-	}
-
-	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (((GSIKeyboardHandlerAccess)minecraft.keyboardHandler).gs_isPreviousEventRepeating()) {
-			GSPanelContext.getEventDispatcher().keyRepeated(keyCode, scanCode, modifiers);
-		} else {
-			GSPanelContext.getEventDispatcher().keyPressed(keyCode, scanCode, modifiers);
+	public void handleKeyboard() {
+		GSEventDispatcher dispatcher = GSPanelContext.getEventDispatcher();
+		int keyCode = Keyboard.getEventKey();
+		if (keyCode != Keyboard.KEY_NONE) {
+			int modifiers = getModifiers();
+			if (Keyboard.getEventKeyState()) {
+				// Press/Repeat.
+				if (Keyboard.isRepeatEvent()) {
+					dispatcher.keyRepeated(keyCode, keyCode, modifiers);
+				} else {
+					dispatcher.keyPressed(keyCode, keyCode, modifiers);
+				}
+			} else {
+				// Release.
+				dispatcher.keyReleased(keyCode, keyCode, modifiers);
+			}
 		}
-		return true;
+		int codePoint = (int)Keyboard.getEventCharacter();
+		if (codePoint != Keyboard.CHAR_NONE) {
+			// Typed.
+			dispatcher.keyTyped(codePoint);
+		}
+		// Note: handles full screen, etc.
+		super.handleKeyboard();
 	}
 
 	@Override
-	public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-		GSPanelContext.getEventDispatcher().keyReleased(keyCode, scanCode, modifiers);
-		return true;
+	protected void keyPressed(char c, int keyCode) {
+		// Do nothing.
 	}
 
 	@Override
-	public boolean charTyped(char chr, int keyCode) {
-		GSPanelContext.getEventDispatcher().keyTyped((int)chr);
-		return true;
+	public void handleMouse() {
+		GSEventDispatcher dispatcher = GSPanelContext.getEventDispatcher();
+		// Translate eventX and eventY relative to top-left.
+		int eventX = Mouse.getEventX();
+		int eventY = minecraft.height - 1 - Mouse.getEventY();
+		// Compute scaled mouseX and mouseY.
+		int mouseX = (int)((double)eventX * width / minecraft.width);
+		int mouseY = (int)((double)eventY * height / minecraft.height);
+		int button = Mouse.getEventButton();
+		if (button != -1) {
+			// Press/Release.
+			if (Mouse.getEventButtonState()) {
+				pressedMouseButtonCount++;
+				// Note: on touch screen we only allow one pressed button.
+				if (!minecraft.options.touchscreen || pressedMouseButtonCount == 0) {
+					dispatcher.mousePressed(button, mouseX, mouseY, getModifiers());
+					currentActiveMouseButton = button;
+				}
+			} else {
+				pressedMouseButtonCount = Math.max(pressedMouseButtonCount - 1, 0);
+				// Note: on touch screen we only allow one pressed button.
+				if (!minecraft.options.touchscreen || pressedMouseButtonCount == 0) {
+					dispatcher.mouseReleased(button, mouseX, mouseY, getModifiers());
+					currentActiveMouseButton = -1;
+					prevMouseDraggedEventX = prevMouseDraggedEventY = Integer.MIN_VALUE;
+				}
+			}
+		}
+		// Scroll.
+		int scrollY = Mouse.getEventDWheel();
+		if (scrollY != 0) {
+			// Scroll seems to be fixed to -120 to 120. Translate to -1, 1.
+			scrollY = GSMathUtil.clamp(scrollY, -1, 1);
+			// Note: horizontal scroll is not supported in LWJGL 2.
+			dispatcher.mouseScroll(mouseX, mouseY, 0.0f, scrollY);
+		}
+		// Move.
+		if (mouseX != prevMouseX || mouseY != prevMouseY) {
+			dispatcher.mouseMoved(mouseX, mouseY);
+			// Dragged.
+			if (prevMouseDraggedEventX != Integer.MIN_VALUE && currentActiveMouseButton != -1) {
+				int unscaledDeltaX = eventX - prevMouseDraggedEventX;
+				int unscaledDeltaY = eventY - prevMouseDraggedEventY;
+				float deltaX = (float)((double)unscaledDeltaX * width / minecraft.width);
+				float deltaY = (float)((double)unscaledDeltaY * height / minecraft.height);
+				dispatcher.mouseDragged(currentActiveMouseButton, mouseX, mouseY, deltaX, deltaY);
+			}
+			prevMouseDraggedEventX = eventX;
+			prevMouseDraggedEventY = eventY;
+		}
+		prevMouseX = mouseX;
+		prevMouseY = mouseY;
+		// Does nothing, but might be injected by others.
+		super.handleMouse();
+	}
+
+	@Override
+	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+		// Do nothing.
+	}
+
+	@Override
+	protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
+		// Do nothing.
 	}
 
 	public GSRootPanel getRootPanel() {

@@ -1,13 +1,13 @@
 package com.g4mesoft.ui.panel;
 
 import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Queue;
 
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 
+import com.g4mesoft.ui.mixin.client.GSILanguageAccessor;
 import com.g4mesoft.ui.panel.event.GSEventDispatcher;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
@@ -20,7 +20,6 @@ import com.g4mesoft.ui.renderer.GSTexture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.sound.instance.SoundInstance;
-import net.minecraft.locale.Language;
 import net.minecraft.resource.Identifier;
 
 public final class GSPanelContext {
@@ -36,10 +35,9 @@ public final class GSPanelContext {
 	private final GSEventDispatcher eventDispatcher;
 
 	private final GSTexture sheetTexture;
-	private final Map<Integer, Long> standardCursors;
-	
+
 	private final Queue<Runnable> taskQueue;
-	
+
 	private GSPanelContext(Minecraft client) {
 		this.client = client;
 		
@@ -49,7 +47,6 @@ public final class GSPanelContext {
 		eventDispatcher = new GSEventDispatcher(screen.getRootPanel());
 
 		sheetTexture = new GSTexture(UI_TEXTURE_IDENTIFIER, 512, 512);
-		standardCursors = new HashMap<>();
 	
 		taskQueue = new ArrayDeque<>();
 	}
@@ -168,10 +165,6 @@ public final class GSPanelContext {
 		// If the screen is currently visible, hide it.
 		if (client.screen == screen)
 			openContent(null);
-		// Destroy the standard cursors
-		for (Long cursorPtr : standardCursors.values())
-			GLFW.glfwDestroyCursor(cursorPtr.longValue());
-		standardCursors.clear();
 	}
 	
 	private void setContentImpl(GSPanel content) {
@@ -195,56 +188,55 @@ public final class GSPanelContext {
 				client.openScreen(null);
 		}
 	}
-	
+
 	private void setCursorImpl(GSECursorType cursor) {
 		if (cursor == null)
 			throw new IllegalArgumentException("cursor is null!");
 		
 		switch (cursor) {
 		case DEFAULT:
-			setGLFWCursor(GLFW.GLFW_ARROW_CURSOR);
+			setCursorFromAWTCursorId(java.awt.Cursor.DEFAULT_CURSOR);
 			break;
 		case IBEAM:
-			setGLFWCursor(GLFW.GLFW_IBEAM_CURSOR);
+			setCursorFromAWTCursorId(java.awt.Cursor.TEXT_CURSOR);
 			break;
 		case CROSSHAIR:
-			setGLFWCursor(GLFW.GLFW_CROSSHAIR_CURSOR);
+			setCursorFromAWTCursorId(java.awt.Cursor.CROSSHAIR_CURSOR);
 			break;
 		case HAND:
-			setGLFWCursor(GLFW.GLFW_HAND_CURSOR);
+			setCursorFromAWTCursorId(java.awt.Cursor.HAND_CURSOR);
 			break;
 		case HRESIZE:
-			setGLFWCursor(GLFW.GLFW_HRESIZE_CURSOR);
+			setCursorFromAWTCursorId(java.awt.Cursor.W_RESIZE_CURSOR);
 			break;
 		case VRESIZE:
-			setGLFWCursor(GLFW.GLFW_VRESIZE_CURSOR);
+			setCursorFromAWTCursorId(java.awt.Cursor.N_RESIZE_CURSOR);
 			break;
 		default:
 			throw new IllegalStateException("Unsupported cursor");
 		}
 	}
 	
-	private void setGLFWCursor(int cursorType) {
-		long cursorPtr;
-		
-		if (cursorType == GLFW.GLFW_ARROW_CURSOR) {
-			cursorPtr = MemoryUtil.NULL;
-		} else if (standardCursors.containsKey(cursorType)) {
-			cursorPtr = standardCursors.get(cursorType);
-		} else {
-			cursorPtr = GLFW.glfwCreateStandardCursor(cursorType);
-			standardCursors.put(cursorType, cursorPtr);
+	private void setCursorFromAWTCursorId(int awtCursorId) {
+		java.awt.Canvas parent = Display.getParent();
+		if (parent != null) {
+			// Ensure that LWJGL does not override the cursor.
+			try {
+				Mouse.setNativeCursor(null);
+			} catch (LWJGLException e) {
+				// ignore, as it is likely null already.
+			}
+			// Update Canvas cursor.
+			parent.setCursor(java.awt.Cursor.getPredefinedCursor(awtCursorId));
 		}
-
-		GLFW.glfwSetCursor(client.window.getWindow(), cursorPtr);
 	}
 	
 	private String getClipboardStringImpl() {
-		return client.keyboardHandler.getClipboard();
+		return Screen.getClipboard();
 	}
 
 	private void setClipboardStringImpl(String clipboard) {
-		client.keyboardHandler.setClipboard(clipboard);
+		Screen.setClipboard(clipboard);
 	}
 	
 	private boolean hasClipboardStringImpl() {
@@ -252,11 +244,11 @@ public final class GSPanelContext {
 	}
 
 	private boolean hasI18nTranslationImpl(String key) {
-		return Language.getInstance().contains(key);
+		return GSILanguageAccessor.gs_getInstance().hasTranslation(key);
 	}
-	
+
 	private String i18nTranslateImpl(String key) {
-		return Language.getInstance().translate(key);
+		return GSILanguageAccessor.gs_getInstance().translate(key);
 	}
 
 	private String i18nTranslateFormattedImpl(String key, Object... args) {
