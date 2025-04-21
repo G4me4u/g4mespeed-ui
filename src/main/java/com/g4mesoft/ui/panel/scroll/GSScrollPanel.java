@@ -1,6 +1,7 @@
 package com.g4mesoft.ui.panel.scroll;
 
 import com.g4mesoft.ui.panel.GSPanel;
+import com.g4mesoft.ui.panel.GSPanelUtil;
 import com.g4mesoft.ui.panel.GSParentPanel;
 import com.g4mesoft.ui.panel.event.GSILayoutEventListener;
 import com.g4mesoft.ui.panel.event.GSIMouseListener;
@@ -290,7 +291,7 @@ public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GS
 	public void mouseScrolled(GSMouseEvent event) {
 		// In case the user is trying to zoom in or out we should not
 		// scroll. This has different behavior on different platforms.
-		if (!event.isConsumed() && !Screen.isControlDown() && !Screen.isAltDown()) {
+		if (!event.isConsumed() && !Screen.isControlDown() && !GSPanelUtil.isAltDown()) {
 			float newScrollX = horizontalScrollBar.getScroll();
 			float newScrollY = verticalScrollBar.getScroll();
 			

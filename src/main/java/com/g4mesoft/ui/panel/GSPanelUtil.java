@@ -10,10 +10,14 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
 
+import org.lwjgl.input.Keyboard;
+
+import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.panel.scroll.GSViewport;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 public final class GSPanelUtil {
@@ -117,6 +121,34 @@ public final class GSPanelUtil {
 		}
 		
 		return new GSDimension(w, h);
+	}
+	
+	public static boolean isAltDown() {
+		return Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU);
+	}
+	
+	private static boolean isOnlyControlDown() {
+		if (Screen.isShiftDown())
+			return false;
+		if (isAltDown())
+			return false;
+		return Screen.isControlDown();
+	}
+	
+	public static boolean isSelectAll(int keyCode) {
+		return keyCode == GSKeyEvent.KEY_A && isOnlyControlDown();
+	}
+
+	public static boolean isCopy(int keyCode) {
+		return keyCode == GSKeyEvent.KEY_C && isOnlyControlDown();
+	}
+
+	public static boolean isCut(int keyCode) {
+		return keyCode == GSKeyEvent.KEY_X && isOnlyControlDown();
+	}
+
+	public static boolean isPaste(int keyCode) {
+		return keyCode == GSKeyEvent.KEY_V && isOnlyControlDown();
 	}
 	
 	/**

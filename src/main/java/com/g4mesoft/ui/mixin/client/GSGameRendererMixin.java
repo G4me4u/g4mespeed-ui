@@ -3,6 +3,7 @@ package com.g4mesoft.ui.mixin.client;
 import java.util.Collection;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,8 +18,7 @@ import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
 import com.g4mesoft.ui.renderer.GSERenderPhase;
 import com.g4mesoft.ui.renderer.GSIRenderable3D;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.GameRenderer;
@@ -41,12 +41,14 @@ public abstract class GSGameRendererMixin {
 	}
 	
 	@Inject(
-		method = "render(IFJ)V",
-		allow = 1,
+		method = "renderWorld(FJ)V",
+		require = 3,
+		allow = 3,
 		slice = @Slice(
 			from = @At(
 				value = "CONSTANT",
-				args = "stringValue=translucent",
+				ordinal = 0,
+				args = "stringValue=water",
 				shift = Shift.AFTER
 			)
 		),
@@ -55,10 +57,9 @@ public abstract class GSGameRendererMixin {
 			shift = Shift.AFTER,
 			target =
 				"Lnet/minecraft/client/render/world/WorldRenderer;render(" +
-					"Lnet/minecraft/client/render/block/BlockLayer;" +
-					"D" +
+					"Lnet/minecraft/entity/living/LivingEntity;" +
 					"I" +
-					"Lnet/minecraft/entity/Entity;" +
+					"D" +
 				")I"
 		)
 	)
@@ -73,32 +74,33 @@ public abstract class GSGameRendererMixin {
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {
 			// Rendering world border sometimes has depth and
 			// depth mask disabled. Fix it here.
-			GlStateManager.depthMask(true);
-			GlStateManager.enableDepthTest();
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
 
 			// Sometimes face culling is disabled
-			GlStateManager.enableCull();
-			
-			GlStateManager.enableBlend();
-			GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-			GlStateManager.shadeModel(GL11.GL_SMOOTH);
-			GlStateManager.disableTexture();
-			
+			GL11.glEnable(GL11.GL_CULL_FACE);
+
+			GL11.glEnable(GL11.GL_BLEND);
+			GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+			GL11.glShadeModel(GL11.GL_SMOOTH);
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+
 			// Fix model matrix
-			GlStateManager.pushMatrix();
-			GlStateManager.loadIdentity();
-			
-			gs_renderer3d.begin(Tessellator.getInstance().getBuilder());
+			GL11.glPushMatrix();
+			GL11.glLoadIdentity();
+
+			gs_renderer3d.begin(BufferBuilder.INSTANCE);
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);
 			}
 			gs_renderer3d.end();
-	
-			GlStateManager.popMatrix();
-	
-			GlStateManager.enableTexture();
-			GlStateManager.disableBlend();
+
+			GL11.glPopMatrix();
+
+			GL11.glShadeModel(GL11.GL_FLAT);
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			GL11.glDisable(GL11.GL_BLEND);
 		}
 	}
 	

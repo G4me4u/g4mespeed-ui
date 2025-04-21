@@ -25,7 +25,6 @@ import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
 public class GSTextField extends GSPanel implements GSITextCaretListener, GSITextModelListener, 
@@ -502,15 +501,15 @@ public class GSTextField extends GSPanel implements GSITextCaretListener, GSITex
 	
 	@Override
 	public void keyPressed(GSKeyEvent event) {
-		if (Screen.isCopy(event.getKeyCode())) {
+		if (GSPanelUtil.isCopy(event.getKeyCode())) {
 			if (!event.isRepeating())
 				copyToClipboard();
 			event.consume();
-		} else if (Screen.isCut(event.getKeyCode())) {
+		} else if (GSPanelUtil.isCut(event.getKeyCode())) {
 			if (isEditingText() && !event.isRepeating())
 				cutToClipboard();
 			event.consume();
-		} else if (Screen.isPaste(event.getKeyCode())) {
+		} else if (GSPanelUtil.isPaste(event.getKeyCode())) {
 			if (isEditingText())
 				pasteFromClipboard();
 			event.consume();

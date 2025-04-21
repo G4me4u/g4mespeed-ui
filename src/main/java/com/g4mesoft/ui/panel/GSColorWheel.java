@@ -7,7 +7,6 @@ import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
 public class GSColorWheel extends GSPanel implements GSIMouseListener {
 
@@ -45,7 +44,7 @@ public class GSColorWheel extends GSPanel implements GSIMouseListener {
 	
 	@Override
 	public void render(GSIRenderer2D renderer) {
-		renderer.build(GSIRenderer2D.QUADS, DefaultVertexFormat.POSITION_COLOR);
+		renderer.build(GSIRenderer2D.QUADS, GSIRenderer2D.FORMAT_POSITION_COLOR);
 		
 		drawColorWheel(renderer);
 		drawCursor(renderer);

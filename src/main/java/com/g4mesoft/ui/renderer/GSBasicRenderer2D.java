@@ -10,11 +10,7 @@ import org.lwjgl.opengl.GL11;
 import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tessellator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Window;
@@ -36,6 +32,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	private boolean building;
 	private int buildingShape;
+	
+	private double nextVertexX;
+	private double nextVertexY;
+	private double nextVertexZ;
 	
 	private GSTransform2D transform;
 	private final Deque<GSTransform2D> transformStack;
@@ -147,7 +147,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	private void setScissor(GSClipRect clip) {
 		if (clip != null) {
-			Window window = new Window(client);
+			Window window = new Window(client, client.width, client.height);
 			double s = window.getScale();
 			int h = client.height;
 			
@@ -217,7 +217,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
+			build(QUADS, FORMAT_POSITION_COLOR);
 		
 		float x0 = (float)x;
 		float y0 = (float)y;
@@ -247,7 +247,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
+			build(QUADS, FORMAT_POSITION_COLOR);
 		
 		drawHLine(x, x + width, y, color);
 		drawHLine(x, x + width, y + height - 1, color);
@@ -279,24 +279,24 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (building)
 			throw new IllegalStateException("Batches are not supported when drawing textures");
 		
-		GlStateManager.enableTexture();
-		GlStateManager.color4f(r, g, b, opacity);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glColor4f(r, g, b, opacity);
 		client.getTextureManager().bind(texture.getTexture().getIdentifier());
-		
+
 		float x0 = (float)x;
 		float y0 = (float)y;
 		float x1 = x0 + texture.getRegionWidth();
 		float y1 = y0 + texture.getRegionHeight();
-		
-		build(QUADS, DefaultVertexFormat.POSITION_TEX);
+
+		build(QUADS, FORMAT_POSITION_TEXTURE);
 		vert(x0, y1, DEFAULT_Z_OFFSET).tex(texture.getU0(), texture.getV1()).next();
 		vert(x1, y1, DEFAULT_Z_OFFSET).tex(texture.getU1(), texture.getV1()).next();
 		vert(x1, y0, DEFAULT_Z_OFFSET).tex(texture.getU1(), texture.getV0()).next();
 		vert(x0, y0, DEFAULT_Z_OFFSET).tex(texture.getU0(), texture.getV0()).next();
 		finish();
-		
-		GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		GlStateManager.disableTexture();
+
+		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}
 
 	@Override
@@ -316,7 +316,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
+			build(QUADS, FORMAT_POSITION_COLOR);
 		
 		int n = (y1 - y0) / (length + spacing);
 		
@@ -337,7 +337,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
+			build(QUADS, FORMAT_POSITION_COLOR);
 		
 		int n = (x1 - x0) / (length + spacing);
 		
@@ -398,18 +398,18 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		x += transform.offsetX;
 		y += transform.offsetY;
 		
-		GlStateManager.enableTexture();
-		
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+
 		if (shadowed) {
 			client.textRenderer.drawWithShadow(text.toString(), x, y, color);
 		} else {
 			client.textRenderer.draw(text.toString(), x, y, color);
 		}
-		
-		GlStateManager.disableTexture();
-		GlStateManager.shadeModel(GL11.GL_SMOOTH);
-		GlStateManager.enableBlend();
-		GlStateManager.disableAlphaTest();
+
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glShadeModel(GL11.GL_SMOOTH);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glDisable(GL11.GL_ALPHA_TEST);
 	}
 	
 	@Override
@@ -496,11 +496,11 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public void build(int shape, VertexFormat format) {
+	public void build(int shape, int format) {
 		if (building)
 			throw new IllegalStateException("Already building!");
 		
-		builder.begin(shape, format);
+		builder.start(shape);
 		
 		buildingShape = shape;
 		building = true;
@@ -508,7 +508,9 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public GSBasicRenderer2D vert(float x, float y, float z) {
-		builder.vertex(x + transform.offsetX, y + transform.offsetY, z);
+		nextVertexX = x + transform.offsetX;
+		nextVertexY = y + transform.offsetY;
+		nextVertexZ = z;
 		return this;
 	}
 
@@ -526,7 +528,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public GSBasicRenderer2D next() {
-		builder.nextVertex();
+		builder.vertex(nextVertexX, nextVertexY, nextVertexZ);
 		return this;
 	}
 	
@@ -535,7 +537,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (!building)
 			throw new IllegalStateException("Not building!");
 		
-		Tessellator.getInstance().end();
+		builder.end();
 		building = false;
 	}
 

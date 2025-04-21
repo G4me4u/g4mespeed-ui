@@ -20,8 +20,8 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
+import net.minecraft.client.resource.Identifier;
 import net.minecraft.client.sound.instance.SimpleSoundInstance;
-import net.minecraft.resource.Identifier;
 import net.minecraft.text.Text;
 
 public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListener {

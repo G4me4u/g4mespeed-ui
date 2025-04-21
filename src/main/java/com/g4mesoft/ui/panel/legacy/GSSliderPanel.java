@@ -7,7 +7,7 @@ import com.g4mesoft.ui.renderer.GSTexture;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.resource.Identifier;
+import net.minecraft.client.resource.Identifier;
 import net.minecraft.text.Text;
 
 public class GSSliderPanel extends GSAbstractTextActionPanel {

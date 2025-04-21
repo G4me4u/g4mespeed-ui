@@ -4,7 +4,6 @@ import com.g4mesoft.ui.panel.event.GSILayoutEventListener;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
 public class GSPopup extends GSParentPanel {
 
@@ -258,7 +257,7 @@ public class GSPopup extends GSParentPanel {
 		// Translate to top-left of shadow
 		renderer.translate(SHADOW_OFFSET_X - SHADOW_WIDTH,
 		                   SHADOW_OFFSET_Y - SHADOW_WIDTH);
-		renderer.build(GSIRenderer2D.QUADS, DefaultVertexFormat.POSITION_COLOR);
+		renderer.build(GSIRenderer2D.QUADS, GSIRenderer2D.FORMAT_POSITION_COLOR);
 
 		int w  = width  - SHADOW_OFFSET_X;
 		int h  = height - SHADOW_OFFSET_Y;

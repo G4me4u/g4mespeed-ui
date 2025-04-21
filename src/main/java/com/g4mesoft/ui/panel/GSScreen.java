@@ -3,14 +3,14 @@ package com.g4mesoft.ui.panel;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 
 import com.g4mesoft.ui.panel.event.GSEvent;
 import com.g4mesoft.ui.panel.event.GSEventDispatcher;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSMathUtil;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import net.minecraft.client.gui.screen.Screen;
 
@@ -73,28 +73,27 @@ public final class GSScreen extends Screen {
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
 		
-		GlStateManager.disableTexture();
-		GlStateManager.disableAlphaTest();
-		GlStateManager.shadeModel(GL11.GL_SMOOTH);
-		GlStateManager.enableBlend();
-		GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-		GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_ALPHA_TEST);
+		GL11.glShadeModel(GL11.GL_SMOOTH);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
-		
-		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance().getBuilder(),
-				mouseX, mouseY, width, height);
-		
+
+		((GSBasicRenderer2D)renderer).begin(BufferBuilder.INSTANCE, mouseX, mouseY, width, height);
+
 		rootPanel.preRender(renderer);
 		rootPanel.render(renderer);
 		rootPanel.postRender(renderer);
-		
+
 		((GSBasicRenderer2D)renderer).end();
-		
-		GlStateManager.disableBlend();
-		GlStateManager.shadeModel(GL11.GL_FLAT);
-		GlStateManager.enableAlphaTest();
-		GlStateManager.enableTexture();
+
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glShadeModel(GL11.GL_FLAT);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
 
 	private int getModifiers() {

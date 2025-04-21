@@ -1,6 +1,6 @@
 package com.g4mesoft.ui.renderer;
 
-import net.minecraft.resource.Identifier;
+import net.minecraft.client.resource.Identifier;
 
 public class GSTexture implements GSITextureRegion {
 

@@ -19,8 +19,8 @@ import com.g4mesoft.ui.renderer.GSTexture;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.resource.Identifier;
 import net.minecraft.client.sound.instance.SoundInstance;
-import net.minecraft.resource.Identifier;
 
 public final class GSPanelContext {
 

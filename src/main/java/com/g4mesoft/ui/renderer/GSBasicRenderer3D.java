@@ -1,10 +1,8 @@
 package com.g4mesoft.ui.renderer;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import org.lwjgl.opengl.GL11;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tessellator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
@@ -12,6 +10,10 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	
 	private boolean building;
 	private int buildingShape;
+	
+	private double nextVertexX;
+	private double nextVertexY;
+	private double nextVertexZ;
 	
 	public void begin(BufferBuilder builder) {
 		this.builder = builder;
@@ -23,34 +25,34 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 		builder = null;
 	}
-	
+
 	@Override
 	public void pushMatrix() {
-		GlStateManager.pushMatrix();
+	    GL11.glPushMatrix();
 	}
 
 	@Override
 	public void popMatrix() {
-		GlStateManager.popMatrix();
+	    GL11.glPopMatrix();
 	}
 
 	@Override
 	public void translate(float tx, float ty, float tz) {
-		GlStateManager.translatef(tx, ty, tz);
+	    GL11.glTranslatef(tx, ty, tz);
 	}
 
 	@Override
 	public void rotate(float rx, float ry, float rz) {
-		GlStateManager.rotatef(rx, 1.0f, 0.0f, 0.0f);
-		GlStateManager.rotatef(ry, 0.0f, 1.0f, 0.0f);
-		GlStateManager.rotatef(rz, 0.0f, 0.0f, 1.0f);
+	    GL11.glRotatef(rx, 1.0f, 0.0f, 0.0f);
+	    GL11.glRotatef(ry, 0.0f, 1.0f, 0.0f);
+	    GL11.glRotatef(rz, 0.0f, 0.0f, 1.0f);
 	}
 
 	@Override
 	public void scale(float sx, float sy, float sz) {
-		GlStateManager.scalef(sx, sy, sz);
+	    GL11.glScalef(sx, sy, sz);
 	}
-	
+
 	@Override
 	public void fillCuboid(float x0, float y0, float z0,
 	                       float x1, float y1, float z1,
@@ -61,7 +63,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, DefaultVertexFormat.POSITION_COLOR);
+			build(QUADS, FORMAT_POSITION_COLOR);
 		
 		// Back Face
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -113,7 +115,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(LINES, DefaultVertexFormat.POSITION_COLOR);
+			build(LINES, FORMAT_POSITION_COLOR);
 		
 		// Lines on X-axis
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -150,11 +152,11 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 
 	@Override
-	public void build(int shape, VertexFormat format) {
+	public void build(int shape, int format) {
 		if (building)
 			throw new IllegalStateException("Already building!");
 		
-		builder.begin(shape, format);
+		builder.start(shape);
 		
 		buildingShape = shape;
 		building = true;
@@ -162,7 +164,9 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public GSBasicRenderer3D vert(float x, float y, float z) {
-		builder.vertex(x, y, z);
+		nextVertexX = x;
+		nextVertexY = y;
+		nextVertexZ = z;
 		return this;
 	}
 
@@ -180,16 +184,16 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public GSBasicRenderer3D next() {
-		builder.nextVertex();
+		builder.vertex(nextVertexX, nextVertexY, nextVertexZ);
 		return this;
 	}
-	
+
 	@Override
 	public void finish() {
 		if (!building)
 			throw new IllegalStateException("Not building!");
 		
-		Tessellator.getInstance().end();
+		builder.end();
 		building = false;
 	}
 }
