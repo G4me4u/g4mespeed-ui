@@ -8,8 +8,6 @@
     "client.GSMinecraftClientMixin",
     "client.GSKeyboardMixin",
     "client.GSMouseMixin",
-    "client.GSBufferBuilderMixin",
-    "client.GSIVertexFormatElementAccess",
     "client.GSGameRendererMixin",
     "client.GSTextRendererMixin"
   ],
