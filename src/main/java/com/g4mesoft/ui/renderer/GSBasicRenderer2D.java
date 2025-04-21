@@ -1,12 +1,12 @@
 package com.g4mesoft.ui.renderer;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Deque;
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
-import com.g4mesoft.ui.access.client.GSIBufferBuilderAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -16,6 +16,7 @@ import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
@@ -40,9 +41,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	private int buildingShape;
 	
 	private GSTransform2D transform;
-	private final LinkedList<GSTransform2D> transformStack;
+	private final Deque<GSTransform2D> transformStack;
+	private final Deque<GSClipRect> clipStack;
 	private float opacity;
-	private final LinkedList<Float> opacityStack;
+	private final Deque<Float> opacityStack;
 	
 	private GSRectangle cachedClippedBounds;
 	
@@ -50,9 +52,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		this.client = client;
 		
 		transform = new GSTransform2D();
-		transformStack = new LinkedList<>();
+		transformStack = new ArrayDeque<>();
+		clipStack = new ArrayDeque<>();
 		opacity = 1.0f;
-		opacityStack = new LinkedList<>();
+		opacityStack = new ArrayDeque<>();
 		
 		cachedClippedBounds = null;
 	}
@@ -74,7 +77,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transform.reset();
 		builder = null;
 
-		invalidateClippedBounds();
+		invalidateClipBounds();
 	}
 
 	@Override
@@ -103,7 +106,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transform = transformStack.pop();
 		matrixStack.pop();
 		
-		invalidateClippedBounds();
+		invalidateClipBounds();
 	}
 
 	@Override
@@ -113,7 +116,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 		matrixStack.translate(x, y, 0.0f);
 		
-		invalidateClippedBounds();
+		invalidateClipBounds();
 	}
 	
 	@Override
@@ -123,33 +126,53 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void pushClip(int x, int y, int width, int height) {
-		// Translate clip according to current transform
-		int x0 = x + transform.offsetX;
-		int y0 = y + transform.offsetY;
-		int x1 = x0 + width;
-		int y1 = y0 + height;
-		
-		((GSIBufferBuilderAccess)builder).gs_pushClip(x0, y0, x1, y1);
-		
-		invalidateClippedBounds();
+		pushClip(new GSClipRect(x, y, x + width, y + height));
 	}
 
 	@Override
 	public void pushClip(GSClipRect clip) {
-		// Translate clip according to current transform
+		// Translate clip according to current transform.
 		clip = clip.offset(transform.offsetX, transform.offsetY);
-		((GSIBufferBuilderAccess)builder).gs_pushClip(clip);
+		// Ensure previous clip bounds are still in effect.
+		GSClipRect prevClip = clipStack.peek();
+		if (prevClip != null) {
+			clip = prevClip.intersection(clip);
+		}
 		
-		invalidateClippedBounds();
+		clipStack.push(clip);
+		
+		invalidateClipBounds();
+		// Compute the clip bounds and update scissor
+		setScissor(clipStack.peek());
 	}
 
 	@Override
 	public GSClipRect popClip() {
-		GSClipRect oldClip = ((GSIBufferBuilderAccess)builder).gs_popClip();
+		if (clipStack.isEmpty())
+			throw new IllegalStateException("Clip stack is empty!");
 		
-		invalidateClippedBounds();
+		GSClipRect oldClip = clipStack.pop();
+		
+		invalidateClipBounds();
+		setScissor(clipStack.peek());
 		
 		return oldClip;
+	}
+	
+	private void setScissor(GSClipRect clip) {
+		if (clip != null) {
+			Window window = MinecraftClient.getInstance().getWindow();
+			double s = window.getScaleFactor();
+			int h = window.getFramebufferHeight();
+			
+			int x = (int)Math.round(clip.x0 * s);
+			int y = h - (int)Math.round(clip.y1 * s);
+			int width = (int)Math.round((clip.x1 - clip.x0) * s);
+			int height = (int)Math.round((clip.y1 - clip.y0) * s);
+			RenderSystem.enableScissor(x, y, width, height);
+		} else {
+			RenderSystem.disableScissor();
+		}
 	}
 	
 	@Override
@@ -159,14 +182,13 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		return new GSRectangle(cachedClippedBounds);
 	}
 	
-	private void invalidateClippedBounds() {
+	private void invalidateClipBounds() {
 		// Should be invoked whenever the transform, clip, or viewport size changes.
 		cachedClippedBounds = null;
 	}
 	
 	private GSRectangle computeClippedBounds() {
-		GSClipRect clip = ((GSIBufferBuilderAccess)builder).gs_getClip();
-		
+		GSClipRect clip = clipStack.peek();
 		if (clip == null) {
 			// Clipped by viewport edges.
 			return new GSRectangle(-transform.offsetX, -transform.offsetY, viewportWidth, viewportHeight);
