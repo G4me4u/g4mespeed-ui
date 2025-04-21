@@ -8,7 +8,7 @@
     "client.GSMinecraftMixin",
     "client.GSGameRendererMixin",
     "client.GSTextRendererMixin",
-    "client.GSILanguageAccessor"
+    "client.GSITextRendererInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

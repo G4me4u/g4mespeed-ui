@@ -10,20 +10,19 @@ import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
-
-import net.minecraft.text.Text;
+import com.g4mesoft.ui.renderer.text.GSText;
 
 public class GSDropdownAction extends GSDropdownItem implements GSIMouseListener {
 
 	private final GSIcon icon;
-	private final Text title;
+	private final GSText title;
 	private final GSIActionListener listener;
 	
-	public GSDropdownAction(Text text, GSIActionListener listener) {
+	public GSDropdownAction(GSText text, GSIActionListener listener) {
 		this(null, text, listener);
 	}
 	
-	public GSDropdownAction(GSIcon icon, Text title, GSIActionListener listener) {
+	public GSDropdownAction(GSIcon icon, GSText title, GSIActionListener listener) {
 		this.icon = icon;
 		this.title = title;
 		this.listener = listener;
@@ -109,7 +108,7 @@ public class GSDropdownAction extends GSDropdownItem implements GSIMouseListener
 			listener.actionPerformed();
 	}
 	
-	public Text getText() {
+	public GSText getText() {
 		return title;
 	}
 	

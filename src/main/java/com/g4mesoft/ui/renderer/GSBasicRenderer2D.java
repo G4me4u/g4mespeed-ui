@@ -9,12 +9,13 @@ import org.lwjgl.opengl.GL11;
 
 import com.g4mesoft.ui.access.client.GSITextRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSMathUtil;
+import com.g4mesoft.ui.util.GSTextUtil;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Window;
-import net.minecraft.text.Text;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
 
@@ -280,7 +281,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glColor4f(r, g, b, opacity);
-		client.getTextureManager().bind(texture.getTexture().getIdentifier());
+		client.textureManager.bind(texture.getTexture().getIdentifier());
 
 		float x0 = (float)x;
 		float y0 = (float)y;
@@ -490,8 +491,8 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public Text trimString(Text text, int availableWidth, Text ellipsis) {
-		return Text.literal(trimString(text.buildString(true), availableWidth, ellipsis.buildString(true)));
+	public GSText trimString(GSText text, int availableWidth, GSText ellipsis) {
+		return GSTextUtil.literal(trimString(text.build(true), availableWidth, ellipsis.build(true)));
 	}
 	
 	@Override

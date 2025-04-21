@@ -3,14 +3,13 @@ package com.g4mesoft.ui.renderer;
 import java.util.List;
 
 import com.g4mesoft.ui.panel.GSRectangle;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public interface GSIRenderer2D extends GSIRenderer {
 
 	public static final String DEFAULT_ELLIPSIS = "...";
-	public static final Text DEFAULT_ELLIPSIS_TEXT = GSTextUtil.literal(DEFAULT_ELLIPSIS);
+	public static final GSText DEFAULT_ELLIPSIS_TEXT = GSTextUtil.literal(DEFAULT_ELLIPSIS);
 	
 	public int getMouseX();
 
@@ -177,8 +176,8 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public float getTextWidthNoStyle(CharSequence text);
 
-	default public float getTextWidth(Text text) {
-		return getTextWidth(text.buildString(true));
+	default public float getTextWidth(GSText text) {
+		return getTextWidth(text.build(true));
 	}
 	
 	default public void drawCenteredText(CharSequence text, int xc, int y, int color) {
@@ -209,20 +208,20 @@ public interface GSIRenderer2D extends GSIRenderer {
 	
 	public void drawTextNoStyle(CharSequence text, int x, int y, int color, boolean shadowed);
 	
-	default public void drawCenteredText(Text text, int xc, int y, int color) {
+	default public void drawCenteredText(GSText text, int xc, int y, int color) {
 		drawCenteredText(text, xc, y, color, true);
 	}
 	
-	default public void drawCenteredText(Text text, int xc, int y, int color, boolean shadowed) {
+	default public void drawCenteredText(GSText text, int xc, int y, int color, boolean shadowed) {
 		drawText(text, xc - (int)Math.ceil(getTextWidth(text)) / 2, y, color, shadowed);
 	}
 	
-	default public void drawText(Text text, int x, int y, int color) {
+	default public void drawText(GSText text, int x, int y, int color) {
 		drawText(text, x, y, color, true);
 	}
 
-	default public void drawText(Text text, int x, int y, int color, boolean shadowed) {
-		drawText(text.buildString(true), x, y, color, shadowed);
+	default public void drawText(GSText text, int x, int y, int color, boolean shadowed) {
+		drawText(text.build(true), x, y, color, shadowed);
 	}
 
 	default public String trimString(String text, int availableWidth) {
@@ -233,11 +232,11 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public List<String> splitToLines(String text, int availableWidth);
 
-	default public Text trimString(Text text, int availableWidth) {
+	default public GSText trimString(GSText text, int availableWidth) {
 		return trimString(text, availableWidth, DEFAULT_ELLIPSIS_TEXT);
 	}
 	
-	public Text trimString(Text text, int availableWidth, Text ellipsis);
+	public GSText trimString(GSText text, int availableWidth, GSText ellipsis);
 	
 	default public void vert(float x, float y) {
 		vert(x, y, 0.0f);

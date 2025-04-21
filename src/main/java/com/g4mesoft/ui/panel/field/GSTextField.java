@@ -21,11 +21,10 @@ import com.g4mesoft.ui.panel.event.GSIFocusEventListener;
 import com.g4mesoft.ui.panel.event.GSIKeyListener;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public class GSTextField extends GSPanel implements GSITextCaretListener, GSITextModelListener, 
                                                     GSIKeyListener, GSIFocusEventListener {
@@ -50,10 +49,10 @@ public class GSTextField extends GSPanel implements GSITextCaretListener, GSITex
 	private static final int BACKSPACE_CONTROL_CHARACTER = 0x08;
 	private static final int DELETE_CONTROL_CHARACTER    = 0x7F;
 	
-	private static final Text CUT_TEXT = GSTextUtil.translatable("panel.textfield.cut");
-	private static final Text COPY_TEXT = GSTextUtil.translatable("panel.textfield.copy");
-	private static final Text PASTE_TEXT = GSTextUtil.translatable("panel.textfield.paste");
-	private static final Text SELECT_ALL_TEXT = GSTextUtil.translatable("panel.textfield.selectall");
+	private static final GSText CUT_TEXT = GSTextUtil.translatable("panel.textfield.cut");
+	private static final GSText COPY_TEXT = GSTextUtil.translatable("panel.textfield.copy");
+	private static final GSText PASTE_TEXT = GSTextUtil.translatable("panel.textfield.paste");
+	private static final GSText SELECT_ALL_TEXT = GSTextUtil.translatable("panel.textfield.selectall");
 	
 	private GSITextModel textModel;
 	private final List<GSIModelListener> modelListeners;

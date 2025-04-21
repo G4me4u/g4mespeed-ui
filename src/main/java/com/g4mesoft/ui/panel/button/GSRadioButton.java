@@ -16,9 +16,8 @@ import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public class GSRadioButton extends GSPanel implements GSIMouseListener, GSIKeyListener {
 
@@ -37,7 +36,7 @@ public class GSRadioButton extends GSPanel implements GSIMouseListener, GSIKeyLi
 	
 	private static final int DEFAULT_ICON_SPACING = 2;
 	
-	private Text text;
+	private GSText text;
 
 	private GSIcon icon;
 	private GSIcon hoveredIcon;
@@ -63,7 +62,7 @@ public class GSRadioButton extends GSPanel implements GSIMouseListener, GSIKeyLi
 	
 	private boolean selected;
 
-	public GSRadioButton(Text text) {
+	public GSRadioButton(GSText text) {
 		this.text = text;
 
 		icon = new GSUnselectedIcon(DEFAULT_ICON_COLOR, DEFAULT_ICON_SIZE);
@@ -168,7 +167,7 @@ public class GSRadioButton extends GSPanel implements GSIMouseListener, GSIKeyLi
 		}
 	}
 	
-	public Text getText() {
+	public GSText getText() {
 		return text;
 	}
 
@@ -176,7 +175,7 @@ public class GSRadioButton extends GSPanel implements GSIMouseListener, GSIKeyLi
 		setText(GSTextUtil.literal(text));
 	}
 	
-	public void setText(Text text) {
+	public void setText(GSText text) {
 		this.text = text;
 	}
 

@@ -1,8 +1,7 @@
 package com.g4mesoft.ui.panel.dialog;
 
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public final class GSConfirmOption implements Comparable<GSConfirmOption> {
 
@@ -23,19 +22,19 @@ public final class GSConfirmOption implements Comparable<GSConfirmOption> {
 		GSEConfirmOptionPlacement.CENTER
 	);
 	
-	private final Text text;
+	private final GSText text;
 	private final GSEConfirmOptionPlacement placement;
 
-	public GSConfirmOption(Text text) {
+	public GSConfirmOption(GSText text) {
 		this(text, GSEConfirmOptionPlacement.RIGHT);
 	}
 	
-	public GSConfirmOption(Text text, GSEConfirmOptionPlacement placement) {
+	public GSConfirmOption(GSText text, GSEConfirmOptionPlacement placement) {
 		this.text = text;
 		this.placement = placement;
 	}
 	
-	public Text getText() {
+	public GSText getText() {
 		return text;
 	}
 	

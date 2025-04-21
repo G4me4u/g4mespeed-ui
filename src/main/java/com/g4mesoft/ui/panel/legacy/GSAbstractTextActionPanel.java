@@ -2,18 +2,17 @@ package com.g4mesoft.ui.panel.legacy;
 
 import com.g4mesoft.ui.panel.GSIActionListener;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public abstract class GSAbstractTextActionPanel extends GSAbstractActionPanel {
 
 	private static final int TEXT_COLOR          = 0xFFFCFCFC;
 	private static final int DISABLED_TEXT_COLOR = 0xFFA0A0A0;
 	
-	private Text text;
+	private GSText text;
 
-	protected GSAbstractTextActionPanel(Text text, GSIActionListener listener) {
+	protected GSAbstractTextActionPanel(GSText text, GSIActionListener listener) {
 		super(listener);
 	
 		this.text = text;
@@ -38,7 +37,7 @@ public abstract class GSAbstractTextActionPanel extends GSAbstractActionPanel {
 		renderer.drawCenteredText(text, tx, ty, color, true);
 	}
 	
-	public Text getText() {
+	public GSText getText() {
 		return text;
 	}
 
@@ -49,7 +48,7 @@ public abstract class GSAbstractTextActionPanel extends GSAbstractActionPanel {
 		setText(GSTextUtil.literal(text));
 	}
 
-	public void setText(Text text) {
+	public void setText(GSText text) {
 		if (text == null)
 			throw new IllegalArgumentException("text is null!");
 		

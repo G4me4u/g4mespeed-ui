@@ -1,6 +1,7 @@
 package com.g4mesoft.ui.mixin.client;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
@@ -11,6 +12,12 @@ import net.minecraft.client.render.TextRenderer;
 
 @Mixin(TextRenderer.class)
 public class GSTextRendererMixin implements GSITextRendererAccess {
+
+	@Shadow
+	private native static boolean isColor(char chr);
+
+	@Shadow
+	private native static boolean isFormatting(char chr);
 
 	@Unique
 	private boolean gs_escapeFormatting;

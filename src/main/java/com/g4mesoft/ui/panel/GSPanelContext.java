@@ -7,7 +7,6 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import com.g4mesoft.ui.mixin.client.GSILanguageAccessor;
 import com.g4mesoft.ui.panel.event.GSEventDispatcher;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
@@ -19,11 +18,11 @@ import com.g4mesoft.ui.renderer.GSTexture;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resource.Identifier;
+import net.minecraft.locale.LanguageManager;
 
 public final class GSPanelContext {
 
-	private static final Identifier UI_TEXTURE_IDENTIFIER = new Identifier("g4mespeed-ui", "textures/ui.png");
+	private static final String UI_TEXTURE_IDENTIFIER = "/assets/g4mespeed-ui/textures/ui.png";
 	
 	private static GSPanelContext instance;
 	
@@ -251,11 +250,11 @@ public final class GSPanelContext {
 	}
 
 	private boolean hasI18nTranslationImpl(String key) {
-		return GSILanguageAccessor.gs_getInstance().hasTranslation(key);
+		return LanguageManager.getInstance().hasTranslation(key);
 	}
 
 	private String i18nTranslateImpl(String key) {
-		return GSILanguageAccessor.gs_getInstance().translate(key);
+		return LanguageManager.getInstance().translate(key);
 	}
 
 	private String i18nTranslateFormattedImpl(String key, Object... args) {

@@ -1,29 +1,31 @@
 package com.g4mesoft.ui.util;
 
-import net.minecraft.text.Text;
+import com.g4mesoft.ui.renderer.text.GSLiteralText;
+import com.g4mesoft.ui.renderer.text.GSText;
+import com.g4mesoft.ui.renderer.text.GSTranslatableText;
 
 public final class GSTextUtil {
 
-	public static final Text EMPTY = Text.literal("");
+	public static final GSText EMPTY = literal("");
 
 	private GSTextUtil() {
 	}
 
-	public static Text literal(String text) {
+	public static GSText literal(String text) {
 		if (text == null)
 			throw new IllegalArgumentException("text is null");
-		return Text.literal(text);
+		return new GSLiteralText(text);
 	}
 
-	public static Text translatable(String key) {
+	public static GSText translatable(String key) {
 		if (key == null)
 			throw new IllegalArgumentException("text is null");
-		return Text.translatable(key);
+		return new GSTranslatableText(key);
 	}
 
-	public static Text translatable(String key, Object... params) {
+	public static GSText translatable(String key, Object... params) {
 		if (key == null)
 			throw new IllegalArgumentException("text is null");
-		return Text.translatable(key, params);
+		return new GSTranslatableText(key, params);
 	}
 }

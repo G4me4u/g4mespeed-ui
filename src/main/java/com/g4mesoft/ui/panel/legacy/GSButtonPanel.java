@@ -5,14 +5,12 @@ import com.g4mesoft.ui.panel.event.GSIKeyListener;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.renderer.GSTexture;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.client.resource.Identifier;
-import net.minecraft.text.Text;
 
 public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyListener {
 
-	private static final Identifier TEXTURE_IDENTIFIER = new Identifier("textures/gui/widgets.png");
+	private static final String TEXTURE_IDENTIFIER = "textures/gui/widgets.png";
 	private static final GSTexture BUTTON_TEXTURE = new GSTexture(TEXTURE_IDENTIFIER, 256, 256);
 	
 	public static final int BUTTON_HEIGHT = 20;
@@ -21,7 +19,7 @@ public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyLi
 		this(GSTextUtil.literal(text), listener);
 	}
 	
-	public GSButtonPanel(Text text, GSIActionListener listener) {
+	public GSButtonPanel(GSText text, GSIActionListener listener) {
 		super(text, listener);
 	
 		addKeyEventListener(this);

@@ -18,9 +18,8 @@ import com.g4mesoft.ui.panel.button.GSButton;
 import com.g4mesoft.ui.panel.event.GSKeyButtonStroke;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.field.GSTextLabel;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public class GSConfirmDialog extends GSParentPanel {
 
@@ -35,7 +34,7 @@ public class GSConfirmDialog extends GSParentPanel {
 	public static final GSConfirmOption[] OK_OPTIONS = {
 		GSConfirmOption.OK
 	};
-	public static final Text ARE_YOU_SURE_TEXT =
+	public static final GSText ARE_YOU_SURE_TEXT =
 			GSTextUtil.translatable("panel.confirmDialog.areYouSure");
 	
 	private static final GSMargin OUTER_MARGIN   = new GSMargin(5);
@@ -51,11 +50,11 @@ public class GSConfirmDialog extends GSParentPanel {
 
 	private List<GSIActionListener> actionListeners;
 
-	public GSConfirmDialog(Text title, GSConfirmOption[] options) {
+	public GSConfirmDialog(GSText title, GSConfirmOption[] options) {
 		this(title, options, null);
 	}
 
-	public GSConfirmDialog(Text title, GSConfirmOption[] options, GSPanel content) {
+	public GSConfirmDialog(GSText title, GSConfirmOption[] options, GSPanel content) {
 		if (options == null)
 			throw new IllegalArgumentException("options is null");
 		// Ensure that all options are non-null
@@ -193,7 +192,7 @@ public class GSConfirmDialog extends GSParentPanel {
 		setTitle((text != null) ? GSTextUtil.literal(text) : null);
 	}
 	
-	public void setTitle(Text text) {
+	public void setTitle(GSText text) {
 		title.setText(text);
 	}
 	
@@ -235,14 +234,14 @@ public class GSConfirmDialog extends GSParentPanel {
 	/**
 	 * Shows a dialog with a YES and NO option, and a title asking whether
 	 * the user is sure about performing the operation which resulted in the
-	 * dialog. See {@link #showDialog(GSPanel, Text, GSConfirmOption[]))} for
+	 * dialog. See {@link #showDialog(GSPanel, GSText, GSConfirmOption[]))} for
 	 * more info.
 	 * 
 	 * @param source - the panel responsible for this dialog
 	 * 
 	 * @return The instance of the confirm dialog that is shown.
 	 * 
-	 * @see #showDialog(GSPanel, Text, GSConfirmOption[])
+	 * @see #showDialog(GSPanel, GSText, GSConfirmOption[])
 	 */
 	public static GSConfirmDialog showYesNoDialog(GSPanel source) {
 		return showDialog(source, ARE_YOU_SURE_TEXT, OK_OPTIONS);
@@ -251,14 +250,14 @@ public class GSConfirmDialog extends GSParentPanel {
 	/**
 	 * Shows a dialog with a YES and CANCEL option, and a title asking whether
 	 * the user is sure about performing the operation which resulted in the
-	 * dialog. See {@link #showDialog(GSPanel, Text, GSConfirmOption[]))} for
+	 * dialog. See {@link #showDialog(GSPanel, GSText, GSConfirmOption[]))} for
 	 * more info.
 	 * 
 	 * @param source - the panel responsible for this dialog
 	 * 
 	 * @return The instance of the confirm dialog that is shown.
 	 * 
-	 * @see #showDialog(GSPanel, Text, GSConfirmOption[])
+	 * @see #showDialog(GSPanel, GSText, GSConfirmOption[])
 	 */
 	public static GSConfirmDialog showYesCancelDialog(GSPanel source) {
 		return showDialog(source, ARE_YOU_SURE_TEXT, OK_OPTIONS);
@@ -266,16 +265,16 @@ public class GSConfirmDialog extends GSParentPanel {
 	
 	/**
 	 * Shows a dialog with an OK option, with the specified title. See
-	 * {@link #showDialog(GSPanel, Text, GSConfirmOption[]))} for more info.
+	 * {@link #showDialog(GSPanel, GSText, GSConfirmOption[]))} for more info.
 	 * 
 	 * @param source - the panel responsible for this dialog
 	 * @param title - the title of the dialog
 	 * 
 	 * @return The instance of the confirm dialog that is shown.
 	 * 
-	 * @see #showDialog(GSPanel, Text, GSConfirmOption[])
+	 * @see #showDialog(GSPanel, GSText, GSConfirmOption[])
 	 */
-	public static GSConfirmDialog showOkDialog(GSPanel source, Text title) {
+	public static GSConfirmDialog showOkDialog(GSPanel source, GSText title) {
 		return showDialog(source, title, OK_OPTIONS);
 	}
 	
@@ -304,7 +303,7 @@ public class GSConfirmDialog extends GSParentPanel {
 	 * 
 	 * @return The instance of the confirm dialog that is shown.
 	 */
-	public static GSConfirmDialog showDialog(GSPanel source, Text title, GSConfirmOption[] options) {
+	public static GSConfirmDialog showDialog(GSPanel source, GSText title, GSConfirmOption[] options) {
 		GSConfirmDialog dialog = new GSConfirmDialog(title, options);
 		GSPopup popup = new GSPopup(dialog, true);
 		popup.show(source, 0, 0, GSEPopupPlacement.CENTER);

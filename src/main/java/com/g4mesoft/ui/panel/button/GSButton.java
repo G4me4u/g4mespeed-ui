@@ -17,10 +17,9 @@ import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListener {
 
@@ -46,7 +45,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	public static final String UI_BUTTON_CLICK_SOUND = "random.click";
 	
 	private GSIcon icon;
-	private Text text;
+	private GSText text;
 
 	private GSIcon hoveredIcon;
 	private GSIcon disabledIcon;
@@ -84,15 +83,15 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		this(icon, GSTextUtil.literal(text));
 	}
 
-	public GSButton(Text text) {
+	public GSButton(GSText text) {
 		this(null, text);
 	}
 
 	public GSButton(GSIcon icon) {
-		this(icon, (Text)null);
+		this(icon, (GSText)null);
 	}
 	
-	public GSButton(GSIcon icon, Text text) {
+	public GSButton(GSIcon icon, GSText text) {
 		this.icon = icon;
 		this.text = text;
 		
@@ -228,7 +227,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		this.icon = icon;
 	}
 	
-	public Text getText() {
+	public GSText getText() {
 		return text;
 	}
 
@@ -236,7 +235,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		setText((text != null) ? GSTextUtil.literal(text) : null);
 	}
 	
-	public void setText(Text text) {
+	public void setText(GSText text) {
 		this.text = text;
 	}
 

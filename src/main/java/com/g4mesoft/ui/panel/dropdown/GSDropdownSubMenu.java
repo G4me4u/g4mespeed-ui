@@ -14,26 +14,25 @@ import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.renderer.GSITextureRegion;
-
-import net.minecraft.text.Text;
+import com.g4mesoft.ui.renderer.text.GSText;
 
 public class GSDropdownSubMenu extends GSDropdownItem {
 
 	private static final GSITextureRegion ARROW_TEXTURE = GSPanelContext.getTexture(30, 42, 30, 20);
 	
 	private final GSIcon icon;
-	private final Text title;
+	private final GSText title;
 	private final GSDropdown dropdown;
 
 	private GSPopup popup;
 	private final GSIMouseListener mouseListener;
 	private final GSIActionListener actionListener;
 	
-	public GSDropdownSubMenu(Text text, GSDropdown dropdown) {
+	public GSDropdownSubMenu(GSText text, GSDropdown dropdown) {
 		this(null, text, dropdown);
 	}
 	
-	public GSDropdownSubMenu(GSIcon icon, Text title, GSDropdown dropdown) {
+	public GSDropdownSubMenu(GSIcon icon, GSText title, GSDropdown dropdown) {
 		if (dropdown == null)
 			throw new IllegalArgumentException("dropdown is null");
 		
@@ -121,7 +120,7 @@ public class GSDropdownSubMenu extends GSDropdownItem {
 		return new GSDimension(w + 2 * PADDING, h + 2 * PADDING);
 	}
 	
-	public Text getText() {
+	public GSText getText() {
 		return title;
 	}
 	

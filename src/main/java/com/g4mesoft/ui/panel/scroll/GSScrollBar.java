@@ -15,9 +15,8 @@ import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.renderer.GSITextureRegion;
+import com.g4mesoft.ui.renderer.text.GSText;
 import com.g4mesoft.ui.util.GSTextUtil;
-
-import net.minecraft.text.Text;
 
 public class GSScrollBar extends GSPanel implements GSIMouseListener, GSIFocusEventListener,
                                                     GSIChangeListener, GSIScrollListener {
@@ -36,19 +35,19 @@ public class GSScrollBar extends GSPanel implements GSIMouseListener, GSIFocusEv
 	private static final int DEFAULT_BUTTON_HEIGHT = 10;
 	private static final int DEFAULT_MINIMUM_NOB_SIZE = 10;
 	
-	private static final Text SCROLL_HERE_TEXT  = GSTextUtil.translatable("panel.scrollbar.scrollhere");
-	private static final Text TOP_TEXT          = GSTextUtil.translatable("panel.scrollbar.top");
-	private static final Text BOTTOM_TEXT       = GSTextUtil.translatable("panel.scrollbar.bottom");
-	private static final Text PAGE_UP_TEXT      = GSTextUtil.translatable("panel.scrollbar.pageup");
-	private static final Text PAGE_DOWN_TEXT    = GSTextUtil.translatable("panel.scrollbar.pagedown");
-	private static final Text SCROLL_UP_TEXT    = GSTextUtil.translatable("panel.scrollbar.scrollup");
-	private static final Text SCROLL_DOWN_TEXT  = GSTextUtil.translatable("panel.scrollbar.scrolldown");
-	private static final Text LEFT_EDGE_TEXT    = GSTextUtil.translatable("panel.scrollbar.leftedge");
-	private static final Text RIGHT_EDGE_TEXT   = GSTextUtil.translatable("panel.scrollbar.rightedge");
-	private static final Text PAGE_LEFT_TEXT    = GSTextUtil.translatable("panel.scrollbar.pageleft");
-	private static final Text PAGE_RIGHT_TEXT   = GSTextUtil.translatable("panel.scrollbar.pageright");
-	private static final Text SCROLL_LEFT_TEXT  = GSTextUtil.translatable("panel.scrollbar.scrollleft");
-	private static final Text SCROLL_RIGHT_TEXT = GSTextUtil.translatable("panel.scrollbar.scrollright");
+	private static final GSText SCROLL_HERE_TEXT  = GSTextUtil.translatable("panel.scrollbar.scrollhere");
+	private static final GSText TOP_TEXT          = GSTextUtil.translatable("panel.scrollbar.top");
+	private static final GSText BOTTOM_TEXT       = GSTextUtil.translatable("panel.scrollbar.bottom");
+	private static final GSText PAGE_UP_TEXT      = GSTextUtil.translatable("panel.scrollbar.pageup");
+	private static final GSText PAGE_DOWN_TEXT    = GSTextUtil.translatable("panel.scrollbar.pagedown");
+	private static final GSText SCROLL_UP_TEXT    = GSTextUtil.translatable("panel.scrollbar.scrollup");
+	private static final GSText SCROLL_DOWN_TEXT  = GSTextUtil.translatable("panel.scrollbar.scrolldown");
+	private static final GSText LEFT_EDGE_TEXT    = GSTextUtil.translatable("panel.scrollbar.leftedge");
+	private static final GSText RIGHT_EDGE_TEXT   = GSTextUtil.translatable("panel.scrollbar.rightedge");
+	private static final GSText PAGE_LEFT_TEXT    = GSTextUtil.translatable("panel.scrollbar.pageleft");
+	private static final GSText PAGE_RIGHT_TEXT   = GSTextUtil.translatable("panel.scrollbar.pageright");
+	private static final GSText SCROLL_LEFT_TEXT  = GSTextUtil.translatable("panel.scrollbar.scrollleft");
+	private static final GSText SCROLL_RIGHT_TEXT = GSTextUtil.translatable("panel.scrollbar.scrollright");
 	
 	protected boolean vertical;
 	protected GSIScrollBarModel model;
