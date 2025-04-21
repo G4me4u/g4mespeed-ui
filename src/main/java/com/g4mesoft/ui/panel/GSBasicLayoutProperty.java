@@ -1,8 +1,8 @@
 package com.g4mesoft.ui.panel;
 
 import java.util.Map;
-import java.util.function.Function;
 
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 
 class GSBasicLayoutProperty<T> implements GSILayoutProperty<T> {

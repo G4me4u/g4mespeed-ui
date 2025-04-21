@@ -1,8 +1,7 @@
 package com.g4mesoft.ui.panel;
 
-import java.util.function.Function;
-
 import com.g4mesoft.ui.util.GSMathUtil;
+import com.google.common.base.Function;
 
 public final class GSIntLayoutProperty extends GSBasicLayoutProperty<Integer> {
 
