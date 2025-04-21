@@ -80,8 +80,7 @@ public abstract class GSGameRendererMixin {
 			GlStateManager.enableCull();
 			
 			GlStateManager.enableBlend();
-			GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-					GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+			GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
 			GlStateManager.shadeModel(GL11.GL_SMOOTH);
 			GlStateManager.disableTexture();
 			
