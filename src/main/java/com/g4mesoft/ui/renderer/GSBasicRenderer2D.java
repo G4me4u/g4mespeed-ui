@@ -13,7 +13,6 @@ import com.g4mesoft.ui.util.GSMathUtil;
 import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
@@ -379,11 +378,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public float getTextWidthNoStyle(CharSequence text) {
-		float w = 0.0f;
-		FontStorage fontStorage = ((GSITextRendererAccess)client.textRenderer).getFontStorage();
-		for (int i = 0; i < text.length(); i++)
-			w += fontStorage.getGlyph(text.charAt(i)).getAdvance();
-		return (float)Math.ceil(w);
+		try {
+			((GSITextRendererAccess)client.textRenderer).setEscapeTextFlag(true);
+			return getTextWidth(text);
+		} finally {
+			((GSITextRendererAccess)client.textRenderer).setEscapeTextFlag(false);
+		}
 	}
 
 	@Override

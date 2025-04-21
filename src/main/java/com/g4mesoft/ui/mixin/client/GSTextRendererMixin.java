@@ -19,6 +19,17 @@ public class GSTextRendererMixin implements GSITextRendererAccess {
 	
 	@Unique
 	private boolean gs_escapeFormatting;
+
+	@ModifyConstant(
+		method = "getStringWidth(Ljava/lang/String;)I",
+		allow = 1,
+		constant = @Constant(
+			intValue = 167
+		)
+	)
+	private int onGetStringWidthModify167(int value) {
+		return gs_escapeFormatting ? -1 : value;
+	}
 	
 	@ModifyConstant(
 		method = "drawLayer",
@@ -31,11 +42,6 @@ public class GSTextRendererMixin implements GSITextRendererAccess {
 		return gs_escapeFormatting ? -1 : value;
 	}
 	
-	@Override
-	public FontStorage getFontStorage() {
-		return this.fontStorage;
-	}
-
 	@Override
 	public void setEscapeTextFlag(boolean escapeFormatting) {
 		gs_escapeFormatting = escapeFormatting;
