@@ -20,7 +20,6 @@ import com.g4mesoft.ui.renderer.GSTexture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.Identifier;
-import net.minecraft.client.sound.instance.SoundInstance;
 
 public final class GSPanelContext {
 
@@ -105,8 +104,16 @@ public final class GSPanelContext {
 		return getContext().getRendererImpl();
 	}
 	
-	public static void playSound(SoundInstance sound) {
-		getContext().playSoundImpl(sound);
+	public static void playSound(String soundId) {
+		getContext().playSoundImpl(soundId, 1.0f, 1.0f);
+	}
+
+	public static void playSound(String soundId, float volume) {
+		getContext().playSoundImpl(soundId, volume, 1.0f);
+	}
+
+	public static void playSound(String soundId, float volume, float pitch) {
+		getContext().playSoundImpl(soundId, volume, pitch);
 	}
 	
 	public static void requestFocus(GSPanel panel) {
@@ -262,8 +269,8 @@ public final class GSPanelContext {
 		return renderer;
 	}
 
-	private void playSoundImpl(SoundInstance sound) {
-		client.getSoundManager().play(sound);
+	private void playSoundImpl(String soundId, float volume, float pitch) {
+		client.soundSystem.play(soundId, volume, pitch);
 	}
 	
 	private void requestFocusImpl(GSPanel panel) {

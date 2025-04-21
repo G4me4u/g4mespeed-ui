@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.G4mespeedUIMod;
@@ -22,7 +21,6 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.resource.manager.ResourceManager;
 
 @Mixin(GameRenderer.class)
 public abstract class GSGameRendererMixin {
@@ -36,31 +34,20 @@ public abstract class GSGameRendererMixin {
 		method = "<init>",
 		at = @At("RETURN")
 	)
-	private void onInit(Minecraft client, ResourceManager resourceManager, CallbackInfo ci) {
+	private void onInit(Minecraft client, CallbackInfo ci) {
 		gs_renderer3d = new GSBasicRenderer3D();
 	}
 	
 	@Inject(
 		method = "renderWorld(FJ)V",
-		require = 3,
-		allow = 3,
-		slice = @Slice(
-			from = @At(
-				value = "CONSTANT",
-				ordinal = 0,
-				args = "stringValue=water",
-				shift = Shift.AFTER
-			)
-		),
+		allow = 1,
 		at = @At(
 			value = "INVOKE",
 			shift = Shift.AFTER,
 			target =
-				"Lnet/minecraft/client/render/world/WorldRenderer;render(" +
-					"Lnet/minecraft/entity/living/LivingEntity;" +
-					"I" +
-					"D" +
-				")I"
+				"Lnet/minecraft/client/render/GameRenderer;renderSnowAndRain(" +
+					"F" +
+				")V"
 		)
 	)
 	private void onRenderTransparentLastDefault(CallbackInfo ci) {

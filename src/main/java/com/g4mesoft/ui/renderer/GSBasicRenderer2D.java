@@ -14,7 +14,6 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Window;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
@@ -147,7 +146,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	private void setScissor(GSClipRect clip) {
 		if (clip != null) {
-			Window window = new Window(client, client.width, client.height);
+			Window window = new Window(client.options, client.width, client.height);
 			double s = window.getScale();
 			int h = client.height;
 			
@@ -492,7 +491,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public Text trimString(Text text, int availableWidth, Text ellipsis) {
-		return new LiteralText(trimString(text.getFormattedString(), availableWidth, ellipsis.getFormattedString()));
+		return Text.literal(trimString(text.buildString(true), availableWidth, ellipsis.buildString(true)));
 	}
 	
 	@Override

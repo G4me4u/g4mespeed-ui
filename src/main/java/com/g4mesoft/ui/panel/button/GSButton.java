@@ -20,8 +20,6 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.client.resource.Identifier;
-import net.minecraft.client.sound.instance.SimpleSoundInstance;
 import net.minecraft.text.Text;
 
 public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListener {
@@ -45,7 +43,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	private static final int DEFAULT_ICON_SPACING = 2;
 	private static final int VERTICAL_PADDING = 2;
 	
-	public static final Identifier UI_BUTTON_CLICK_SOUND = new Identifier("gui.button.press");
+	public static final String UI_BUTTON_CLICK_SOUND = "random.click";
 	
 	private GSIcon icon;
 	private Text text;
@@ -76,7 +74,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	
 	private int iconSpacing;
 	
-	private Identifier clickSound;
+	private String clickSound;
 	
 	public GSButton(String text) {
 		this(null, text);
@@ -219,7 +217,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	
 	protected void playClickSound() {
 		if (clickSound != null)
-			GSPanelContext.playSound(SimpleSoundInstance.of(clickSound, 1.0F));
+			GSPanelContext.playSound(clickSound);
 	}
 	
 	public GSIcon getIcon() {
@@ -404,11 +402,11 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		this.iconSpacing = iconSpacing;
 	}
 	
-	public Identifier getClickSound() {
+	public String getClickSound() {
 		return clickSound;
 	}
 
-	public void setClickSound(Identifier clickSound) {
+	public void setClickSound(String clickSound) {
 		this.clickSound = clickSound;
 	}
 }

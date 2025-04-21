@@ -178,7 +178,7 @@ public interface GSIRenderer2D extends GSIRenderer {
 	public float getTextWidthNoStyle(CharSequence text);
 
 	default public float getTextWidth(Text text) {
-		return getTextWidth(text.getFormattedString());
+		return getTextWidth(text.buildString(true));
 	}
 	
 	default public void drawCenteredText(CharSequence text, int xc, int y, int color) {
@@ -222,7 +222,7 @@ public interface GSIRenderer2D extends GSIRenderer {
 	}
 
 	default public void drawText(Text text, int x, int y, int color, boolean shadowed) {
-		drawText(text.getFormattedString(), x, y, color, shadowed);
+		drawText(text.buildString(true), x, y, color, shadowed);
 	}
 
 	default public String trimString(String text, int availableWidth) {
