@@ -2,37 +2,36 @@ package com.g4mesoft.ui.renderer;
 
 import org.joml.Quaternionf;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
 
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormat.DrawMode;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
-	private Tessellator tessellator;
 	private MatrixStack matrixStack;
+	private VertexConsumerProvider.Immediate vertexConsumers;
 	
-	private DrawMode buildingDrawMode;
-	private BufferBuilder currBuilder;
+	private RenderLayer currentRenderLayer;
+	private VertexConsumer currentVertexConsumer;
 	
-	public void begin(Tessellator tessellator, MatrixStack matrixStack) {
-		this.tessellator = tessellator;
+	public void begin(VertexConsumerProvider.Immediate vertexConsumers, MatrixStack matrixStack) {
+		this.vertexConsumers = vertexConsumers;
 		this.matrixStack = matrixStack;
 	}
 	
 	public void end() {
 		if (isBuilding())
 			throw new IllegalStateException("Renderer is still building");
+
+		vertexConsumers.draw();
 		
+		vertexConsumers = null;
 		matrixStack = null;
-		tessellator = null;
 	}
 	
 	@Override
@@ -64,8 +63,8 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	public void fillCuboid(float x0, float y0, float z0,
 	                       float x1, float y1, float z1,
 	                       float r, float g, float b, float a) {
-		
-		if (isBuilding() && buildingDrawMode != DrawMode.QUADS)
+
+		if (isBuilding() && !isBuilding(DrawMode.QUADS, VertexFormats.POSITION_COLOR))
 			throw new IllegalStateException("Building quads is required!");
 		
 		boolean wasBuilding = isBuilding();
@@ -117,7 +116,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	                              float x1, float y1, float z1,
 	                              float r, float g, float b, float a) {
 		
-		if (isBuilding() && buildingDrawMode != DrawMode.LINES)
+		if (isBuilding() && !isBuilding(DrawMode.LINES, VertexFormats.POSITION_COLOR))
 			throw new IllegalStateException("Building lines is required!");
 		
 		boolean wasBuilding = isBuilding();
@@ -163,49 +162,40 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		if (isBuilding())
 			throw new IllegalStateException("Already building!");
 		
-		if (format == VertexFormats.POSITION) {
-			RenderSystem.setShader(ShaderProgramKeys.POSITION);
-		} else if (format == VertexFormats.POSITION_COLOR) {
-			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-		} else if (format == VertexFormats.POSITION_COLOR_LIGHT) {
-			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR_LIGHTMAP);
-		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
-			RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR_TEX_LIGHTMAP);
-		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL) {
-			RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_SOLID);
-		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL) {			
-			RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_ENTITY_SOLID);
-		} else if (format == VertexFormats.POSITION_TEXTURE) {
-			RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
-		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
-			RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_LIGHT) {
-			RenderSystem.setShader(ShaderProgramKeys.PARTICLE);			
-		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR_NORMAL) {
-			RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_CLOUDS);
+		if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
+			build(GSRenderLayers.POSITION_COLOR_QUADS);
+		} else if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
+			build(GSRenderLayers.POSITION_COLOR_LINES);
 		} else {
-			throw new IllegalArgumentException("Unsupported vertex format!");
+			throw new IllegalArgumentException("Unsupported draw mode and vertex format!");
 		}
-		
-		currBuilder = tessellator.begin(drawMode, format);
-		buildingDrawMode = drawMode;
+	}
+	
+	@Override
+	public void build(RenderLayer renderLayer) {
+		if (isBuilding())
+			throw new IllegalStateException("Already building!");
+	
+		currentRenderLayer = renderLayer;
+		// Retrieve appropriate buffer for render layer.
+		currentVertexConsumer = vertexConsumers.getBuffer(renderLayer);
 	}
 
 	@Override
 	public GSBasicRenderer3D vert(float x, float y, float z) {
-		currBuilder.vertex(matrixStack.peek().getPositionMatrix(), x, y, z);
+		currentVertexConsumer.vertex(matrixStack.peek().getPositionMatrix(), x, y, z);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D color(float r, float g, float b, float a) {
-		currBuilder.color(r, g, b, a);
+		currentVertexConsumer.color(r, g, b, a);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D tex(float u, float v) {
-		currBuilder.texture(u, v);
+		currentVertexConsumer.texture(u, v);
 		return this;
 	}
 
@@ -219,17 +209,24 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	public void finish() {
 		if (!isBuilding())
 			throw new IllegalStateException("Not building!");
-		
-		BuiltBuffer buffer = currBuilder.endNullable();
-		if (buffer != null) {
-			// Simply draw with the current program.
-	        BufferRenderer.drawWithGlobalProgram(buffer);
-		}
-		currBuilder = null;
+	
+		currentRenderLayer = null;
+		currentVertexConsumer = null;
 	}
 	
 	@Override
 	public boolean isBuilding() {
-		return currBuilder != null;
+		return currentRenderLayer != null;
+	}
+	
+	@Override
+	public boolean isBuilding(DrawMode drawMode, VertexFormat format) {
+		if (!isBuilding())
+			return false;
+		if (currentRenderLayer.getDrawMode() != drawMode)
+			return false;
+		if (!currentRenderLayer.getVertexFormat().equals(format))
+			return false;
+		return true;
 	}
 }

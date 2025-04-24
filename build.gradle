@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.8-SNAPSHOT'
+	id 'fabric-loom' version '1.10-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -24,6 +24,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	// Include resource loader for loading custom ui textures
 	includeMod(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
+	includeMod(fabricApi.module("fabric-transitive-access-wideners-v1", project.fabric_version))
 }
 
 processResources {

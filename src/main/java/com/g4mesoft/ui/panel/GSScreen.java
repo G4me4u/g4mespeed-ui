@@ -4,11 +4,9 @@ import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 import com.g4mesoft.ui.access.client.GSIMouseAccess;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.NarratorManager;
 
 final class GSScreen extends Screen {
@@ -54,21 +52,15 @@ final class GSScreen extends Screen {
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
 		
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
-		((GSBasicRenderer2D)renderer).begin(Tessellator.getInstance(),
-				context, mouseX, mouseY, width, height);
+		((GSBasicRenderer2D)renderer).begin(context, mouseX, mouseY, width, height);
 		
 		rootPanel.preRender(renderer);
 		rootPanel.render(renderer);
 		rootPanel.postRender(renderer);
 		
 		((GSBasicRenderer2D)renderer).end();
-		
-		RenderSystem.disableBlend();
 	}
 
 	@Override

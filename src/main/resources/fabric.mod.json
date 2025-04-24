@@ -25,7 +25,6 @@
   "mixins": [
     "g4mespeed-ui.mixins.json"
   ],
-
   "depends": {
   	"minecraft": "1.21.x",
   	"fabric-resource-loader-v0": "*"

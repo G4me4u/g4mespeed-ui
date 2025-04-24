@@ -1,7 +1,9 @@
 package com.g4mesoft.ui.renderer;
 
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormat.DrawMode;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+
+import net.minecraft.client.render.RenderLayer;
 
 public abstract interface GSIRenderer {
 
@@ -12,7 +14,9 @@ public abstract interface GSIRenderer {
 	public static final DrawMode QUADS          = DrawMode.QUADS;
 	
 	public void build(DrawMode drawMode, VertexFormat format);
-
+	
+	public void build(RenderLayer layer);
+	
 	public GSIRenderer vert(float x, float y, float z);
 	
 	default public GSIRenderer color(int color) {
@@ -37,5 +41,7 @@ public abstract interface GSIRenderer {
 	public void finish();
 	
 	public boolean isBuilding();
+	
+	public boolean isBuilding(DrawMode drawMode, VertexFormat format);
 	
 }
