@@ -20,7 +20,7 @@ public final class GSRenderPipelines {
 			.withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.QUADS)
 			.build();
 
-	public static final RenderPipeline POSITION_COLOR_LINES = RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET)
+	public static final RenderPipeline POSITION_COLOR_LINES = RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
 			.withLocation("gs_ui/position_color_lines")
 			.withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.LINES)
 			.withCull(false)

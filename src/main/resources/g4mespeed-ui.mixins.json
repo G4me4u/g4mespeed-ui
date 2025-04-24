@@ -10,8 +10,7 @@
     "client.GSMouseMixin",
     "client.GSWorldRendererMixin",
     "client.GSIGameRendererAccess",
-    "client.GSIDrawContextAccess",
-    "client.GSRenderPipelinesMixin"
+    "client.GSIDrawContextAccess"
   ],
   "injectors": {
     "defaultRequire": 1

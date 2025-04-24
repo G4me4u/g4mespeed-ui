@@ -129,6 +129,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		invalidateClipBounds();
 	}
+	
+	@Override
+	public void identity() {
+		matrixStack.loadIdentity();
+		transform.offsetX = transform.offsetY = 0;
+	}
 
 	@Override
 	public void translate(int x, int y) {
@@ -399,32 +405,33 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public void drawMenuBackground(int x, int y, int width, int height, boolean inWorld) {
+	public void drawMenuBackground(boolean inWorld) {
 		if (!inWorld)
-			drawPanoramaBackground(x, y, width, height);
+			drawPanoramaBackground();
 		// Apply blur
-		applyBlur(x, y, width, height, client.options.getMenuBackgroundBlurrinessValue());
+		applyBlur(client.options.getMenuBackgroundBlurrinessValue());
 		// Draw darkening texture
+		pushMatrix();
+		identity();
 		GSTexture darkening = inWorld ? INWORLD_MENU_BACKGROUND_TEXTURE : MENU_BACKGROUND_TEXTURE;
-		drawTexture(darkening.getRegion(x, y, width, height), x, y);
+		drawTexture(darkening.getRegion(0, 0, viewportWidth, viewportHeight), 0, 0);
+		popMatrix();
 	}
 	
 	@Override
-	public void drawPanoramaBackground(int x, int y, int width, int height) {
+	public void drawPanoramaBackground() {
 		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported while drawing panorama!");
 		pushMatrix();
-		translate(x, y);
-		pushClip(0, 0, width, height);
+		identity();
 		// Note: context uses the same matrix stack as we do.
-		ROTATING_PANORAMA_RENDERER.render(context, width, height, 1.0f, getPanoramaTickDelta());
-		popClip();
+		ROTATING_PANORAMA_RENDERER.render(context, viewportWidth, viewportHeight, 1.0f, getPanoramaTickDelta());
 		popMatrix();
 	}
 	
 	@Override
 	@SuppressWarnings("deprecation")
-	public void applyBlur(int x, int y, int width, int height, float radius) {
+	public void applyBlur(float radius) {
 		if (isBuilding())
 			throw new IllegalStateException("Batches are not supported while blurring!");
 		
@@ -432,11 +439,9 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		PostEffectProcessor blurPostProcessor = client.getShaderLoader().loadPostEffect(BLUR_EFFECT_IDENTIFIER, DefaultFramebufferSet.MAIN_ONLY);
 		if (blurPostProcessor != null && radius >= 1.0f) {
 			// Finish writing frame buffer.
-			pushClip(x, y, width, height);
 			blurPostProcessor.render(this.client.getFramebuffer(),
 					((GSIGameRendererAccess)client.gameRenderer).getPool(),
 					pass -> pass.setUniform("Radius", radius));
-			popClip();
 		}
 	}
 

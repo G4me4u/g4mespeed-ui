@@ -45,6 +45,11 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 
 	@Override
+	public void identity() {
+		matrixStack.loadIdentity();
+	}
+	
+	@Override
 	public void translate(float tx, float ty, float tz) {
 		matrixStack.translate(tx, ty, tz);
 	}
@@ -164,7 +169,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
 			build(GSRenderLayers.POSITION_COLOR_QUADS);
-		} else if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
+		} else if (drawMode == LINES && format == VertexFormats.POSITION_COLOR) {
 			build(GSRenderLayers.POSITION_COLOR_LINES);
 		} else {
 			throw new IllegalArgumentException("Unsupported draw mode and vertex format!");

@@ -6,6 +6,8 @@ public interface GSIRenderer3D extends GSIRenderer {
 	
 	public void popMatrix();
 	
+	public void identity();
+	
 	public void translate(float tx, float ty, float tz);
 
 	public void rotate(float rx, float ry, float rz);

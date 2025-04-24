@@ -1,5 +1,7 @@
 package com.g4mesoft.ui.renderer;
 
+import java.util.OptionalDouble;
+
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 
@@ -36,6 +38,7 @@ public final class GSRenderLayers {
 			true,
 			GSRenderPipelines.POSITION_COLOR_LINES,
 			RenderLayer.MultiPhaseParameters.builder()
+					.lineWidth(new RenderPhase.LineWidth(OptionalDouble.empty()))
 					.target(RenderPhase.TRANSLUCENT_TARGET)
 					.build(false)
 	);
