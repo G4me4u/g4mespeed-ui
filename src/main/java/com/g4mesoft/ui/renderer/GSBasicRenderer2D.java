@@ -481,8 +481,11 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 		
+		RenderSystem.depthMask(false);
+		
 		context.drawText(client.textRenderer, text, x, y, color, shadowed);
 
+		RenderSystem.depthMask(true);
 		// Note: context.drawText(...) enables depth test.
 		RenderSystem.disableDepthTest();
 		RenderSystem.enableBlend();
@@ -506,8 +509,11 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 
+		RenderSystem.depthMask(false);
+		
 		context.drawText(client.textRenderer, text, x, y, color, shadowed);
 
+		RenderSystem.depthMask(true);
 		// Note: context.drawText(...) enables depth test.
 		RenderSystem.disableDepthTest();
 		RenderSystem.enableBlend();
