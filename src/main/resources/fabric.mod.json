@@ -27,7 +27,8 @@
   ],
   "depends": {
   	"minecraft": "1.21.x",
-  	"fabric-resource-loader-v0": "*"
+  	"fabric-resource-loader-v0": "*",
+  	"fabric-transitive-access-wideners-v1": ">=6.3.17"
   },
   "breaks": {
   	"g4mespeed": "<0.4.2"
