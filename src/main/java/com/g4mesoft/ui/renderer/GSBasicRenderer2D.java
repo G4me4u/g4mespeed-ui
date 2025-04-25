@@ -507,7 +507,6 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int alpha = (int)((color >>> 24) * opacity);
 		color = (alpha << 24) | (color & 0x00FFFFFF);
 
-		// TODO(Christian): disable depth mask somehow...
 		context.drawText(client.textRenderer, text, x, y, color, shadowed);
 		// Note: immediately draw to handle scissor.
 		context.draw();
@@ -602,7 +601,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	@Override
 	public void build(DrawMode drawMode, VertexFormat format) {
 		if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
-			build(RenderLayer.getGui());
+			build(GSRenderLayers.GUI);
 		} else {
 			throw new IllegalArgumentException("Unsupported draw mode and vertex format!");
 		}

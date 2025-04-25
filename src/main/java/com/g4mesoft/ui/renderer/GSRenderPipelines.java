@@ -9,22 +9,35 @@ import net.minecraft.client.render.VertexFormats;
 
 public final class GSRenderPipelines {
 	
-	public static final RenderPipeline POSITION_COLOR_QUADS = RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET)
+	public static final RenderPipeline GUI = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+			.withLocation("gs_ui/gui")
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+			.build()
+	);
+	
+	public static final RenderPipeline POSITION_COLOR_QUADS = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET)
 			.withLocation("gs_ui/position_color_quads")
 			.withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.QUADS)
-			.build();
+			.build()
+	);
 	
-	public static final RenderPipeline POSITION_COLOR_QUADS_NO_DEPTH = RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET)
+	public static final RenderPipeline POSITION_COLOR_QUADS_NO_DEPTH = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET)
 			.withLocation("gs_ui/position_color_quads")
 			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 			.withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.QUADS)
-			.build();
+			.build()
+	);
 
-	public static final RenderPipeline POSITION_COLOR_LINES = RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
+	public static final RenderPipeline POSITION_COLOR_LINES = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
 			.withLocation("gs_ui/position_color_lines")
 			.withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.LINES)
 			.withCull(false)
-			.build();
+			.build()
+	);
 	
 	private GSRenderPipelines() {
 	}
