@@ -85,18 +85,12 @@ public abstract class GSGameRendererMixin {
 			GL11.glShadeModel(GL11.GL_SMOOTH);
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-			// Fix model matrix
-			GL11.glPushMatrix();
-			GL11.glLoadIdentity();
-
 			gs_renderer3d.begin(BufferBuilder.INSTANCE);
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);
 			}
 			gs_renderer3d.end();
-
-			GL11.glPopMatrix();
 
 			GL11.glShadeModel(GL11.GL_FLAT);
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
