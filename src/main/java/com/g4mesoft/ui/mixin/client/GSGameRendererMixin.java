@@ -83,18 +83,12 @@ public abstract class GSGameRendererMixin {
 			GlStateManager.shadeModel(GL11.GL_SMOOTH);
 			GlStateManager.disableTexture();
 			
-			// Fix model matrix
-			GlStateManager.pushMatrix();
-			GlStateManager.loadIdentity();
-			
 			gs_renderer3d.begin(Tessellator.getInstance().getBuffer());
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);
 			}
 			gs_renderer3d.end();
-	
-			GlStateManager.popMatrix();
 	
 			GlStateManager.enableTexture();
 			GlStateManager.disableBlend();
