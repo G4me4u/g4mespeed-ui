@@ -28,7 +28,6 @@ public final class GSScreen extends Screen {
 	private int prevMouseY;
 	// Mouse active button used for dragging.
 	private int currentActiveMouseButton;
-	private int pressedMouseButtonCount;
 	
 	GSScreen() {
 		rootPanel = new GSRootPanel();
@@ -42,7 +41,6 @@ public final class GSScreen extends Screen {
 
 		prevMouseDraggedEventX = prevMouseDraggedEventY = Integer.MIN_VALUE;
 		prevMouseX = prevMouseY = Integer.MIN_VALUE;
-		pressedMouseButtonCount = 0;
 		currentActiveMouseButton = -1;
 		
 		Keyboard.enableRepeatEvents(true);
@@ -163,20 +161,12 @@ public final class GSScreen extends Screen {
 		if (button != -1) {
 			// Press/Release.
 			if (Mouse.getEventButtonState()) {
-				pressedMouseButtonCount++;
-				// Note: on touch screen we only allow one pressed button.
-				if (!minecraft.options.touchscreen || pressedMouseButtonCount == 0) {
-					dispatcher.mousePressed(button, mouseX, mouseY, getModifiers());
-					currentActiveMouseButton = button;
-				}
+				dispatcher.mousePressed(button, mouseX, mouseY, getModifiers());
+				currentActiveMouseButton = button;
 			} else {
-				pressedMouseButtonCount = Math.max(pressedMouseButtonCount - 1, 0);
-				// Note: on touch screen we only allow one pressed button.
-				if (!minecraft.options.touchscreen || pressedMouseButtonCount == 0) {
-					dispatcher.mouseReleased(button, mouseX, mouseY, getModifiers());
-					currentActiveMouseButton = -1;
-					prevMouseDraggedEventX = prevMouseDraggedEventY = Integer.MIN_VALUE;
-				}
+				dispatcher.mouseReleased(button, mouseX, mouseY, getModifiers());
+				currentActiveMouseButton = -1;
+				prevMouseDraggedEventX = prevMouseDraggedEventY = Integer.MIN_VALUE;
 			}
 		}
 		// Scroll.
