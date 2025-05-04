@@ -373,17 +373,35 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public float getTextWidth(CharSequence text) {
-		return client.textRenderer.getWidth(text.toString());
+		int textWidth = 0;
+		int extraCharWidth = 0;
+		for (int k = 0; k < text.length(); k++) {
+			char c = text.charAt(k);
+			int charWidth = client.textRenderer.getWidth(c);
+			if (charWidth < 0 && k < text.length() - 1) {
+				c = text.charAt(++k);
+				if (c == 'l' || c == 'L') {
+					// Bold characters are wider.
+					extraCharWidth = 1;
+				} else if (c == 'r' || c == 'R') {
+					extraCharWidth = 0;
+				}
+			} else {
+				textWidth += charWidth + extraCharWidth;
+			}
+		}
+		return textWidth;
 	}
 
 	@Override
 	public float getTextWidthNoStyle(CharSequence text) {
-		try {
-			((GSITextRendererAccess)client.textRenderer).setEscapeTextFlag(true);
-			return getTextWidth(text);
-		} finally {
-			((GSITextRendererAccess)client.textRenderer).setEscapeTextFlag(false);
+		int textWidth = 0;
+		for (int k = 0; k < text.length(); k++) {
+			char c = text.charAt(k);
+			int charWidth = client.textRenderer.getWidth(c);
+			textWidth += Math.max(0, charWidth);
 		}
+		return textWidth;
 	}
 
 	@Override
