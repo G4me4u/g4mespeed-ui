@@ -63,7 +63,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, FORMAT_POSITION_COLOR);
+			build(QUADS);
 		
 		// Back Face
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -115,7 +115,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(LINES, FORMAT_POSITION_COLOR);
+			build(LINES);
 		
 		// Lines on X-axis
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -152,7 +152,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 
 	@Override
-	public void build(int shape, int format) {
+	public void build(int shape) {
 		if (building)
 			throw new IllegalStateException("Already building!");
 		
