@@ -44,7 +44,7 @@ public class GSColorWheel extends GSPanel implements GSIMouseListener {
 	
 	@Override
 	public void render(GSIRenderer2D renderer) {
-		renderer.build(GSIRenderer2D.QUADS, GSIRenderer2D.FORMAT_POSITION_COLOR);
+		renderer.build(GSIRenderer2D.QUADS);
 		
 		drawColorWheel(renderer);
 		drawCursor(renderer);

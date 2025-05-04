@@ -216,7 +216,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, FORMAT_POSITION_COLOR);
+			build(QUADS);
 		
 		float x0 = (float)x;
 		float y0 = (float)y;
@@ -246,7 +246,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, FORMAT_POSITION_COLOR);
+			build(QUADS);
 		
 		drawHLine(x, x + width, y, color);
 		drawHLine(x, x + width, y + height - 1, color);
@@ -287,7 +287,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		float x1 = x0 + texture.getRegionWidth();
 		float y1 = y0 + texture.getRegionHeight();
 
-		build(QUADS, FORMAT_POSITION_TEXTURE);
+		build(QUADS);
 		vert(x0, y1, DEFAULT_Z_OFFSET).tex(texture.getU0(), texture.getV1()).next();
 		vert(x1, y1, DEFAULT_Z_OFFSET).tex(texture.getU1(), texture.getV1()).next();
 		vert(x1, y0, DEFAULT_Z_OFFSET).tex(texture.getU1(), texture.getV0()).next();
@@ -315,7 +315,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, FORMAT_POSITION_COLOR);
+			build(QUADS);
 		
 		int n = (y1 - y0) / (length + spacing);
 		
@@ -336,7 +336,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(QUADS, FORMAT_POSITION_COLOR);
+			build(QUADS);
 		
 		int n = (x1 - x0) / (length + spacing);
 		
@@ -495,7 +495,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public void build(int shape, int format) {
+	public void build(int shape) {
 		if (building)
 			throw new IllegalStateException("Already building!");
 		
