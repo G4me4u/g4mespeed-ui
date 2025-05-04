@@ -7,6 +7,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import com.g4mesoft.ui.access.client.GSILanguageManagerAccess;
 import com.g4mesoft.ui.panel.event.GSEventDispatcher;
 import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
@@ -250,7 +251,7 @@ public final class GSPanelContext {
 	}
 
 	private boolean hasI18nTranslationImpl(String key) {
-		return LanguageManager.getInstance().hasTranslation(key);
+		return ((GSILanguageManagerAccess)LanguageManager.getInstance()).gs_hasTranslation(key);
 	}
 
 	private String i18nTranslateImpl(String key) {

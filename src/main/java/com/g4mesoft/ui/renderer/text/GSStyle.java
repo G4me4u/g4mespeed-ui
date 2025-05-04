@@ -1,7 +1,5 @@
 package com.g4mesoft.ui.renderer.text;
 
-import net.minecraft.text.Formatting;
-
 public class GSStyle {
 
 	public static final GSStyle EMPTY = new GSStyle(false);
@@ -9,6 +7,14 @@ public class GSStyle {
 
 	/* Visible for GSText */
 	static final char STYLING_CHAR = '\u00A7';
+	
+	// Formatting codes
+	private static final char OBFUSCATED_FORMAT_CODE = 'k';
+	private static final char BOLD_FORMAT_CODE = 'l';
+	private static final char STRIKETHROUGH_FORMAT_CODE = 'm';
+	private static final char UNDERLINE_FORMAT_CODE = 'n';
+	private static final char ITALIC_FORMAT_CODE = 'o';
+	private static final char RESET_FORMAT_CODE = 'r';
 	
 	private final GSETextColor color;
 	private final boolean obfuscated;
@@ -88,28 +94,28 @@ public class GSStyle {
 		return new GSStyle(color, obfuscated, bold, strikethrough, underline, newItalic);
 	}
 	
-	private void appendFormatting(Formatting formatting, StringBuilder dst) {
+	private void appendFormatting(char formatCode, StringBuilder dst) {
 		dst.append(STYLING_CHAR);
-		dst.append(formatting.getCode());
+		dst.append(formatCode);
 	}
 
 	/* Visible for GSText */
 	void build(StringBuilder dst) {
 		if (reset) {
-			appendFormatting(Formatting.RESET, dst);
+			appendFormatting(RESET_FORMAT_CODE, dst);
 			return;
 		}
 		if (color != null)
-			appendFormatting(color.getFormatting(), dst);
+			appendFormatting(color.getFormatCode(), dst);
 		if (obfuscated)
-			appendFormatting(Formatting.OBFUSCATED, dst);
+			appendFormatting(OBFUSCATED_FORMAT_CODE, dst);
 		if (bold)
-			appendFormatting(Formatting.BOLD, dst);
+			appendFormatting(BOLD_FORMAT_CODE, dst);
 		if (strikethrough)
-			appendFormatting(Formatting.STRIKETHROUGH, dst);
+			appendFormatting(STRIKETHROUGH_FORMAT_CODE, dst);
 		if (underline)
-			appendFormatting(Formatting.UNDERLINE, dst);
+			appendFormatting(UNDERLINE_FORMAT_CODE, dst);
 		if (italic)
-			appendFormatting(Formatting.ITALIC, dst);
+			appendFormatting(ITALIC_FORMAT_CODE, dst);
 	}
 }

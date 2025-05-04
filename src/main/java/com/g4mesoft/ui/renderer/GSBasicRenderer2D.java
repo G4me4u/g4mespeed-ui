@@ -281,7 +281,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glColor4f(r, g, b, opacity);
-		client.textureManager.bind(texture.getTexture().getIdentifier());
+		client.textureManager.bind(client.textureManager.load(texture.getTexture().getIdentifier()));
 
 		float x0 = (float)x;
 		float y0 = (float)y;

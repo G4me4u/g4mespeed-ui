@@ -1,33 +1,31 @@
 package com.g4mesoft.ui.renderer.text;
 
-import net.minecraft.text.Formatting;
-
 public enum GSETextColor {
 
-	BLACK(Formatting.BLACK),
-	WHITE(Formatting.WHITE),
-	GRAY(Formatting.GRAY),
-	DARK_GRAY(Formatting.DARK_GRAY),
-	BLUE(Formatting.BLUE),
-	DARK_BLUE(Formatting.DARK_BLUE),
-	GREEN(Formatting.GREEN),
-	DARK_GREEN(Formatting.DARK_GREEN),
-	AQUA(Formatting.AQUA),
-	DARK_AQUA(Formatting.DARK_AQUA),
-	RED(Formatting.RED),
-	DARK_RED(Formatting.DARK_RED),
-	YELLOW(Formatting.YELLOW),
-	GOLD(Formatting.GOLD),
-	LIGHT_PURPLE(Formatting.LIGHT_PURPLE);
+	BLACK('0'),
+	WHITE('f'),
+	GRAY('7'),
+	DARK_GRAY('8'),
+	BLUE('9'),
+	DARK_BLUE('1'),
+	GREEN('a'),
+	DARK_GREEN('2'),
+	AQUA('b'),
+	DARK_AQUA('3'),
+	RED('c'),
+	DARK_RED('4'),
+	YELLOW('e'),
+	GOLD('6'),
+	LIGHT_PURPLE('d');
 	
-	private final Formatting formatting;
+	private final char formatCode;
 	
-	private GSETextColor(Formatting formatting) {
-		this.formatting = formatting;
+	private GSETextColor(char formatCode) {
+		this.formatCode = formatCode;
 	}
 
 	/* Visible for GSStyle */
-	Formatting getFormatting() {
-		return formatting;
+	char getFormatCode() {
+		return formatCode;
 	}
 }
