@@ -24,10 +24,8 @@ public class GSCompoundText extends GSText {
 	}
 	
 	@Override
-	public String build(boolean withStyling) {
-		StringBuilder sb = new StringBuilder();
+	protected void buildImpl(boolean withStyling, StringBuilder dst) {
 		for (GSText text : children)
-			sb.append(text.build(withStyling));
-		return sb.toString();
+			dst.append(text.build(withStyling));
 	}
 }

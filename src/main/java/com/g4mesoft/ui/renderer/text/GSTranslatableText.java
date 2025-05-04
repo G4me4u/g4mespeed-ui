@@ -22,7 +22,7 @@ public class GSTranslatableText extends GSText {
 	}
 
 	@Override
-	public String build(boolean withStyling) {
+	protected void buildImpl(boolean withStyling, StringBuilder dst) {
 		LanguageManager language = LanguageManager.getInstance();
 		// Attempt to use cached translation.
 		String text;
@@ -38,6 +38,10 @@ public class GSTranslatableText extends GSText {
 			cachedText = text;
 			cachedTextLanguage = language.getCurrentLanguage();
 		}
-		return withStyling ? text : stripStyling(text);
+		if (withStyling) {
+			dst.append(text);
+		} else {
+			stripStyling(text, dst);
+		}
 	}
 }

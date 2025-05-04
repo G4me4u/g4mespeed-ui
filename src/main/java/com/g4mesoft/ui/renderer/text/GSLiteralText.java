@@ -9,7 +9,11 @@ public class GSLiteralText extends GSText {
 	}
 
 	@Override
-	public String build(boolean withStyling) {
-		return withStyling ? text : stripStyling(text);
+	protected void buildImpl(boolean withStyling, StringBuilder dst) {
+		if (withStyling) {
+			dst.append(text);
+		} else {
+			stripStyling(text, dst);
+		}
 	}
 }
