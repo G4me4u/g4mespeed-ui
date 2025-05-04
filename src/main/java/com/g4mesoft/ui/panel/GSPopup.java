@@ -257,7 +257,7 @@ public class GSPopup extends GSParentPanel {
 		// Translate to top-left of shadow
 		renderer.translate(SHADOW_OFFSET_X - SHADOW_WIDTH,
 		                   SHADOW_OFFSET_Y - SHADOW_WIDTH);
-		renderer.build(GSIRenderer2D.QUADS, GSIRenderer2D.FORMAT_POSITION_COLOR);
+		renderer.build(GSIRenderer2D.QUADS);
 
 		int w  = width  - SHADOW_OFFSET_X;
 		int h  = height - SHADOW_OFFSET_Y;
