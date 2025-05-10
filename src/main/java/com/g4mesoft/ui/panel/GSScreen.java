@@ -103,22 +103,23 @@ public final class GSScreen extends Screen {
 
 	private int getModifiers() {
 	    int modifiers = 0;
+	    // Shift
 	    if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 	        modifiers |= GSEvent.MODIFIER_SHIFT;
 	    // Control
 	    if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
 	        modifiers |= GSEvent.MODIFIER_CONTROL;
-	    // Alt / Options
+	    // Alt / Option
 	    if (Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU))
 	        modifiers |= GSEvent.MODIFIER_ALT;
 	    // Windows / Command
 	    if (Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA))
 	        modifiers |= GSEvent.MODIFIER_SUPER;
 	    // Caps Lock
-	    if (Keyboard.isKeyDown(Keyboard.KEY_CAPITAL))
+	    if (java.awt.Toolkit.getDefaultToolkit().getLockingKeyState(java.awt.event.KeyEvent.VK_CAPS_LOCK))
 	        modifiers |= GSEvent.MODIFIER_CAPS_LOCK;
 	    // Num Lock
-	    if (Keyboard.isKeyDown(Keyboard.KEY_NUMLOCK))
+	    if (java.awt.Toolkit.getDefaultToolkit().getLockingKeyState(java.awt.event.KeyEvent.VK_NUM_LOCK))
 	        modifiers |= GSEvent.MODIFIER_NUM_LOCK;
 	    return modifiers;
 	}
