@@ -20,6 +20,9 @@ public final class GSScreen extends Screen {
 	
 	private boolean visible;
 
+	// Keyboard UTF-16 character handling.
+	private char pendingHighSurrogate;
+
 	// Mouse (unscaled) event position.
 	private int prevMouseDraggedEventX;
 	private int prevMouseDraggedEventY;
@@ -39,6 +42,8 @@ public final class GSScreen extends Screen {
 	@Override
 	public void init() {
 		super.init();
+
+		pendingHighSurrogate = '\0';
 
 		prevMouseDraggedEventX = prevMouseDraggedEventY = Integer.MIN_VALUE;
 		prevMouseX = prevMouseY = Integer.MIN_VALUE;
@@ -136,8 +141,22 @@ public final class GSScreen extends Screen {
 				dispatcher.keyReleased(keyCode, keyCode, modifiers);
 			}
 		}
-		int codePoint = (int)Keyboard.getEventCharacter();
-		if (codePoint != Keyboard.CHAR_NONE) {
+		// Handle key event character (UTF-16 encoded).
+		char c = Keyboard.getEventCharacter();
+		int codePoint = Keyboard.CHAR_NONE;
+		if (Character.isHighSurrogate(c)) {
+			pendingHighSurrogate = c;
+		} else if (Character.isLowSurrogate(c) && pendingHighSurrogate != '\0') {
+			// Valid surrogate pair.
+			codePoint = Character.toCodePoint(pendingHighSurrogate, c);
+			pendingHighSurrogate = '\0';
+		} else {
+			// BMP character or invalid surrogate pair.
+			if (!Character.isLowSurrogate(c))
+				codePoint = (int)c;
+			pendingHighSurrogate = '\0';
+		}
+		if (codePoint != Keyboard.CHAR_NONE && !Character.isISOControl(codePoint)) {
 			// Typed.
 			dispatcher.keyTyped(codePoint);
 		}
