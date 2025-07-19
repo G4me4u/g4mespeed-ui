@@ -3,6 +3,7 @@ package com.g4mesoft.ui.renderer;
 import java.util.List;
 
 import com.g4mesoft.ui.panel.GSRectangle;
+import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
 import net.minecraft.text.OrderedText;
@@ -37,8 +38,6 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public void translate(int x, int y);
 	
-	public void translateDepth(float z);
-	
 	public void pushClip(int x, int y, int width, int height);
 	
 	public void pushClip(GSClipRect clipRect);
@@ -51,116 +50,76 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public float popOpacity();
 
-	default public void fillRect(int x, int y, int width, int height, int color) {
-		float a = ((color >>> 24) & 0xFF) / 255.0f;
-		float r = ((color >>> 16) & 0xFF) / 255.0f;
-		float g = ((color >>>  8) & 0xFF) / 255.0f;
-		float b = ((color       ) & 0xFF) / 255.0f;
-		
-		fillRect(x, y, width, height, r, g, b, a);
+	default public void fillRect(int x, int y, int width, int height, float r, float g, float b, float a) {
+		fillRect(x, y, width, height, GSColorUtil.denormalizeRGBA(r, g, b, a));
 	}
 
-	default public void fillRect(int x, int y, int width, int height, float r, float g, float b, float a) {
-		fillGradient(x, y, width, height, r, g, b, a, r, g, b, a, r, g, b, a, r, g, b, a, false);
+	default public void fillRect(int x, int y, int width, int height, int color) {
+		fillGradient(x, y, width, height, color, color, color, color, false);
 	}
-	
-	default public void fillHGradient(int x, int y, int width, int height, int leftColor, int rightColor) {
-		float al = ((leftColor >>> 24) & 0xFF) / 255.0f;
-		float rl = ((leftColor >>> 16) & 0xFF) / 255.0f;
-		float gl = ((leftColor >>>  8) & 0xFF) / 255.0f;
-		float bl = ((leftColor       ) & 0xFF) / 255.0f;
-		
-		float ar = ((rightColor >>> 24) & 0xFF) / 255.0f;
-		float rr = ((rightColor >>> 16) & 0xFF) / 255.0f;
-		float gr = ((rightColor >>>  8) & 0xFF) / 255.0f;
-		float br = ((rightColor       ) & 0xFF) / 255.0f;
-		
-		fillHGradient(x, y, width, height, rl, gl, bl, al, rr, gr, br, ar);
-	}
-	
+
 	default public void fillHGradient(int x, int y, int width, int height,
 	                                  float rl, float gl, float bl, float al,
 	                                  float rr, float gr, float br, float ar) {
-		
-		fillGradient(x, y, width, height, rl, gl, bl, al,
-		                                  rr, gr, br, ar,
-		                                  rl, gl, bl, al,
-		                                  rr, gr, br, ar,
-		                                  false);
+
+		fillHGradient(x, y, width, height,
+		              GSColorUtil.denormalizeRGBA(rl, gl, bl, al),
+		              GSColorUtil.denormalizeRGBA(rr, gr, br, ar));
 	}
-
-	default public void fillVGradient(int x, int y, int width, int height, int topColor, int botColor) {
-		float at = ((topColor >>> 24) & 0xFF) / 255.0f;
-		float rt = ((topColor >>> 16) & 0xFF) / 255.0f;
-		float gt = ((topColor >>>  8) & 0xFF) / 255.0f;
-		float bt = ((topColor       ) & 0xFF) / 255.0f;
-
-		float ab = ((botColor >>> 24) & 0xFF) / 255.0f;
-		float rb = ((botColor >>> 16) & 0xFF) / 255.0f;
-		float gb = ((botColor >>>  8) & 0xFF) / 255.0f;
-		float bb = ((botColor       ) & 0xFF) / 255.0f;
-		
-		fillVGradient(x, y, width, height, rt, gt, bt, at, rb, gb, bb, ab);
+	
+	default public void fillHGradient(int x, int y, int width, int height, int leftColor, int rightColor) {
+		fillGradient(x, y, width, height, leftColor, rightColor, leftColor, rightColor, false);
 	}
-
+	
 	default public void fillVGradient(int x, int y, int width, int height,
 	                                  float rt, float gt, float bt, float at,
 	                                  float rb, float gb, float bb, float ab) {
 		
-		fillGradient(x, y, width, height, rt, gt, bt, at, 
-		                                  rt, gt, bt, at,
-		                                  rb, gb, bb, ab,
-		                                  rb, gb, bb, ab,
-		                                  false);
+		fillVGradient(x, y, width, height,
+		              GSColorUtil.denormalizeRGBA(rt, gt, bt, at),
+		              GSColorUtil.denormalizeRGBA(rb, gb, bb, ab));
 	}
 	
-	default void fillGradient(int x, int y, int width, int height,
-	                          int tlColor, int trColor, int blColor, int brColor,
-	                          boolean mirror) {
-		
-		float atl = ((tlColor >>> 24) & 0xFF) / 255.0f;
-		float rtl = ((tlColor >>> 16) & 0xFF) / 255.0f;
-		float gtl = ((tlColor >>>  8) & 0xFF) / 255.0f;
-		float btl = ((tlColor       ) & 0xFF) / 255.0f;
-
-		float atr = ((trColor >>> 24) & 0xFF) / 255.0f;
-		float rtr = ((trColor >>> 16) & 0xFF) / 255.0f;
-		float gtr = ((trColor >>>  8) & 0xFF) / 255.0f;
-		float btr = ((trColor       ) & 0xFF) / 255.0f;
-		
-		float abl = ((blColor >>> 24) & 0xFF) / 255.0f;
-		float rbl = ((blColor >>> 16) & 0xFF) / 255.0f;
-		float gbl = ((blColor >>>  8) & 0xFF) / 255.0f;
-		float bbl = ((blColor       ) & 0xFF) / 255.0f;
-
-		float abr = ((brColor >>> 24) & 0xFF) / 255.0f;
-		float rbr = ((brColor >>> 16) & 0xFF) / 255.0f;
-		float gbr = ((brColor >>>  8) & 0xFF) / 255.0f;
-		float bbr = ((brColor       ) & 0xFF) / 255.0f;
-		
-		fillGradient(x, y, width, height, rtl, gtl, btl, atl, 
-		                                  rtr, gtr, btr, atr,
-		                                  rbl, gbl, bbl, abl,
-		                                  rbr, gbr, bbr, abr,
-		                                  mirror);
+	default public void fillVGradient(int x, int y, int width, int height, int topColor, int bottomColor) {
+		fillGradient(x, y, width, height, topColor, topColor, bottomColor, bottomColor, false);
 	}
 
+	default public void fillGradient(int x, int y, int width, int height,
+	                                 float rtl, float gtl, float btl, float atl,
+	                                 float rtr, float gtr, float btr, float atr,
+	                                 float rbl, float gbl, float bbl, float abl,
+	                                 float rbr, float gbr, float bbr, float abr,
+	                                 boolean mirror) {
+		
+		fillGradient(x, y, width, height,
+		             GSColorUtil.denormalizeRGBA(rtl, gtl, btl, atl),
+		             GSColorUtil.denormalizeRGBA(rtr, gtr, btr, atr),
+		             GSColorUtil.denormalizeRGBA(rbl, gbl, bbl, abl),
+		             GSColorUtil.denormalizeRGBA(rbr, gbr, bbr, abr),
+		             mirror);
+	}
+	
 	public void fillGradient(int x, int y, int width, int height,
-	                         float rtl, float gtl, float btl, float atl,
-	                         float rtr, float gtr, float btr, float atr,
-	                         float rbl, float gbl, float bbl, float abl,
-	                         float rbr, float gbr, float bbr, float abr,
+	                         int tlColor, int trColor, int blColor, int brColor,
 	                         boolean mirror);
 
 	public void drawRect(int x, int y, int width, int height, int color);
 
 	public void drawTexture(GSITextureRegion texture, int x, int y, int width, int height, int sx, int sy);
 
-	public void drawTexture(GSITextureRegion texture, int x, int y, int width, int height, int sx, int sy, float r, float g, float b);
+	default public void drawTexture(GSITextureRegion texture, int x, int y, int width, int height, int sx, int sy, float r, float g, float b) {
+		drawTexture(texture, x, y, width, height, sx, sy, GSColorUtil.denormalizeRGB(r, g, b));
+	}
+
+	public void drawTexture(GSITextureRegion texture, int x, int y, int width, int height, int sx, int sy, int color);
 	
 	public void drawTexture(GSITextureRegion texture, int x, int y);
 
-	public void drawTexture(GSITextureRegion texture, int x, int y, float r, float g, float b);
+	default public void drawTexture(GSITextureRegion texture, int x, int y, float r, float g, float b) {
+		drawTexture(texture, x, y, GSColorUtil.denormalizeRGB(r, g, b));
+	}
+
+	public void drawTexture(GSITextureRegion texture, int x, int y, int color);
 
 	public void drawVLine(int x, int y0, int y1, int color);
 	
@@ -174,7 +133,7 @@ public interface GSIRenderer2D extends GSIRenderer {
 
 	public void drawPanoramaBackground();
 
-	public void applyBlur(float radius);
+	public void applyBlur();
 	
 	public int getTextAscent();
 	
@@ -268,7 +227,4 @@ public interface GSIRenderer2D extends GSIRenderer {
 	
 	public List<OrderedText> splitToLines(Text text, int availableWidth);
 
-	default public void vert(float x, float y) {
-		vert(x, y, 0.0f);
-	}
 }

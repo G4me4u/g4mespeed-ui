@@ -47,6 +47,11 @@ final class GSScreen extends Screen {
 	}
 	
 	@Override
+	public void renderBackground(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+		// do nothing.
+	}
+	
+	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
 		// Execute scheduled tasks (validate panels etc.)
 		// before rendering.

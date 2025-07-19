@@ -2,10 +2,9 @@ package com.g4mesoft.ui.panel;
 
 import com.g4mesoft.ui.panel.event.GSILayoutEventListener;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
+import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
-
-import net.minecraft.client.render.VertexFormats;
 
 public class GSPopup extends GSParentPanel {
 
@@ -248,14 +247,12 @@ public class GSPopup extends GSParentPanel {
 	
 	@Override
 	public void render(GSIRenderer2D renderer) {
+		((GSBasicRenderer2D)renderer).nextLayer();
 		renderShadow(renderer);
 		renderBackground(renderer);
-		
-		// Fix issues with text rendering (depth enabled)
-		renderer.pushMatrix();
-		renderer.translateDepth(0.1f);
+
+		((GSBasicRenderer2D)renderer).nextLayer();
 		super.render(renderer);
-		renderer.popMatrix();
 	}
 	
 	protected void renderShadow(GSIRenderer2D renderer) {
@@ -263,7 +260,6 @@ public class GSPopup extends GSParentPanel {
 		// Translate to top-left of shadow
 		renderer.translate(SHADOW_OFFSET_X - SHADOW_WIDTH,
 		                   SHADOW_OFFSET_Y - SHADOW_WIDTH);
-		renderer.build(GSIRenderer2D.QUADS, VertexFormats.POSITION_COLOR);
 
 		int w  = width  - SHADOW_OFFSET_X;
 		int h  = height - SHADOW_OFFSET_Y;
@@ -282,7 +278,6 @@ public class GSPopup extends GSParentPanel {
 		renderer.fillGradient( 0, by, SHADOW_WIDTH, SHADOW_WIDTH, 0, SHADOW_COLOR, 0, 0, true);
 		renderer.fillGradient(bx, by, SHADOW_WIDTH, SHADOW_WIDTH, SHADOW_COLOR, 0, 0, 0, false);
 
-		renderer.finish();
 		renderer.popMatrix();
 	}
 	

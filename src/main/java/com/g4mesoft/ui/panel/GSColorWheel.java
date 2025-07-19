@@ -8,8 +8,6 @@ import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 
-import net.minecraft.client.render.VertexFormats;
-
 public class GSColorWheel extends GSPanel implements GSIMouseListener {
 
 	private static final int CURSOR_RADIUS = 2;
@@ -46,12 +44,8 @@ public class GSColorWheel extends GSPanel implements GSIMouseListener {
 	
 	@Override
 	public void render(GSIRenderer2D renderer) {
-		renderer.build(GSIRenderer2D.QUADS, VertexFormats.POSITION_COLOR);
-		
 		drawColorWheel(renderer);
 		drawCursor(renderer);
-		
-		renderer.finish();
 	}
 	
 	private void drawColorWheel(GSIRenderer2D renderer) {

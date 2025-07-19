@@ -14,12 +14,12 @@ import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
 import com.g4mesoft.ui.renderer.GSERenderPhase;
 import com.g4mesoft.ui.renderer.GSIRenderable3D;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.DefaultFramebufferSet;
-import net.minecraft.client.render.Fog;
 import net.minecraft.client.render.FrameGraphBuilder;
 import net.minecraft.client.render.FramePass;
 import net.minecraft.client.render.WorldRenderer;
@@ -50,7 +50,7 @@ public abstract class GSWorldRendererMixin {
 		method = "renderWeather",
 		at = @At("RETURN")
 	)
-	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, Vec3d pos, float tickDelta, Fog fog, CallbackInfo ci) {
+	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, Vec3d pos, float tickDelta, GpuBufferSlice fog, CallbackInfo ci) {
 		Collection<GSIRenderable3D> renderables = G4mespeedUIMod.getRenderables();
 		
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {
