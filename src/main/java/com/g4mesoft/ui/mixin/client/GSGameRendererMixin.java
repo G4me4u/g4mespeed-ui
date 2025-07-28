@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
@@ -22,10 +21,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.Tessellator;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.particle.ParticleManager;
-import net.minecraft.client.render.Culler;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.world.WorldRenderer;
 import net.minecraft.client.resource.manager.ResourceManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
@@ -49,7 +45,6 @@ public abstract class GSGameRendererMixin {
 	@Inject(
 		method = "render(IFJ)V",
 		allow = 1,
-		locals = LocalCapture.CAPTURE_FAILHARD,
 		slice = @Slice(
 			from = @At(
 				value = "CONSTANT",
@@ -69,7 +64,13 @@ public abstract class GSGameRendererMixin {
 				")I"
 		)
 	)
-	private void onRenderTransparentLastDefault(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci, WorldRenderer worldRenderer, ParticleManager particleManager, boolean bl, Culler culler, Entity entity, double cameraX, double cameraY, double cameraZ) {
+	private void onRenderTransparentLastDefault(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci) {
+		Entity camera = minecraft.getCamera();
+		
+		double cameraX = camera.prevTickX + (camera.x - camera.prevTickX) * tickDelta;
+		double cameraY = camera.prevTickY + (camera.y - camera.prevTickY) * tickDelta;
+		double cameraZ = camera.prevTickZ + (camera.z - camera.prevTickZ) * tickDelta;
+	
 		handleOnRenderTransparentLast(tickDelta, new Vec3d(cameraX, cameraY, cameraZ));
 	}
 
