@@ -6,15 +6,21 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tessellator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
+import net.minecraft.util.math.Vec3d;
+
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	private BufferBuilder builder;
+	private float tickDelta;
+	private Vec3d cameraPos;
 	
 	private boolean building;
 	private int buildingShape;
 	
-	public void begin(BufferBuilder builder) {
+	public void begin(BufferBuilder builder, float tickDelta, Vec3d cameraPos) {
 		this.builder = builder;
+		this.tickDelta = tickDelta;
+		this.cameraPos = cameraPos;
 	}
 	
 	public void end() {
@@ -22,6 +28,17 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 			throw new IllegalStateException("Renderer is still building");
 
 		builder = null;
+		cameraPos = null;
+	}
+
+	@Override
+	public float getTickDelta() {
+		return tickDelta;
+	}
+	
+	@Override
+	public Vec3d getCameraPos() {
+		return new Vec3d(cameraPos.x, cameraPos.y, cameraPos.z);
 	}
 	
 	@Override

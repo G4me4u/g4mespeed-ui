@@ -74,6 +74,9 @@ public final class GSScreen extends Screen {
 	
 	@Override
 	public void render(int mouseX, int mouseY, float partialTicks) {
+		// Poll mouse and keyboard events here to make it more responsive.
+		handleInputs();
+		
 		// Execute scheduled tasks (validate panels etc.)
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
