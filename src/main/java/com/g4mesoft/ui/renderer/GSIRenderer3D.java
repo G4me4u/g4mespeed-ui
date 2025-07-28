@@ -1,7 +1,13 @@
 package com.g4mesoft.ui.renderer;
 
+import net.minecraft.util.math.Vec3d;
+
 public interface GSIRenderer3D extends GSIRenderer {
 
+	public float getTickDelta();
+	
+	public Vec3d getCameraPos();
+	
 	public void pushMatrix();
 	
 	public void popMatrix();

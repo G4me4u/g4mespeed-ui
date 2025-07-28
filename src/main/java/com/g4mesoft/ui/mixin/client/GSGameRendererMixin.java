@@ -23,6 +23,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.resource.manager.ResourceManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 
 @Mixin(GameRenderer.class)
 public abstract class GSGameRendererMixin {
@@ -63,12 +65,18 @@ public abstract class GSGameRendererMixin {
 				")I"
 		)
 	)
-	private void onRenderTransparentLastDefault(CallbackInfo ci) {
-		handleOnRenderTransparentLast();
+	private void onRenderTransparentLastDefault(float tickDelta, long renderTimeLimit, CallbackInfo ci) {
+		Entity camera = minecraft.camera;
+		
+		double cameraX = camera.prevTickX + (camera.x - camera.prevTickX) * tickDelta;
+		double cameraY = camera.prevTickY + (camera.y - camera.prevTickY) * tickDelta;
+		double cameraZ = camera.prevTickZ + (camera.z - camera.prevTickZ) * tickDelta;
+	
+		handleOnRenderTransparentLast(tickDelta, Vec3d.of(cameraX, cameraY, cameraZ));
 	}
 
 	@Unique
-	private void handleOnRenderTransparentLast() {
+	private void handleOnRenderTransparentLast(float tickDelta, Vec3d cameraPos) {
 		Collection<GSIRenderable3D> renderables = G4mespeedUIMod.getRenderables();
 		
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {
@@ -85,7 +93,7 @@ public abstract class GSGameRendererMixin {
 			GL11.glShadeModel(GL11.GL_SMOOTH);
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-			gs_renderer3d.begin(BufferBuilder.INSTANCE);
+			gs_renderer3d.begin(BufferBuilder.INSTANCE, tickDelta, cameraPos);
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);
