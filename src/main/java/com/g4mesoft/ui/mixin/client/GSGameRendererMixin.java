@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import com.g4mesoft.ui.G4mespeedUIMod;
 import com.g4mesoft.ui.renderer.GSBasicRenderer3D;
@@ -21,8 +22,13 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.Tessellator;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.particle.ParticleManager;
+import net.minecraft.client.render.Culler;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.world.WorldRenderer;
 import net.minecraft.client.resource.manager.ResourceManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 
 @Mixin(GameRenderer.class)
 public abstract class GSGameRendererMixin {
@@ -43,6 +49,7 @@ public abstract class GSGameRendererMixin {
 	@Inject(
 		method = "render(IFJ)V",
 		allow = 1,
+		locals = LocalCapture.CAPTURE_FAILHARD,
 		slice = @Slice(
 			from = @At(
 				value = "CONSTANT",
@@ -62,12 +69,12 @@ public abstract class GSGameRendererMixin {
 				")I"
 		)
 	)
-	private void onRenderTransparentLastDefault(CallbackInfo ci) {
-		handleOnRenderTransparentLast();
+	private void onRenderTransparentLastDefault(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci, WorldRenderer worldRenderer, ParticleManager particleManager, boolean bl, Culler culler, Entity entity, double cameraX, double cameraY, double cameraZ) {
+		handleOnRenderTransparentLast(tickDelta, new Vec3d(cameraX, cameraY, cameraZ));
 	}
 
 	@Unique
-	private void handleOnRenderTransparentLast() {
+	private void handleOnRenderTransparentLast(float tickDelta, Vec3d cameraPos) {
 		Collection<GSIRenderable3D> renderables = G4mespeedUIMod.getRenderables();
 		
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {
@@ -85,7 +92,7 @@ public abstract class GSGameRendererMixin {
 			GlStateManager.shadeModel(GL11.GL_SMOOTH);
 			GlStateManager.disableTexture();
 			
-			gs_renderer3d.begin(Tessellator.getInstance().getBuilder());
+			gs_renderer3d.begin(Tessellator.getInstance().getBuilder(), tickDelta, cameraPos);
 			for (GSIRenderable3D renderable : renderables) {
 				if (renderable.getRenderPhase() == GSERenderPhase.TRANSPARENT_LAST)
 					renderable.render(gs_renderer3d);
