@@ -28,6 +28,7 @@ public class GSColorPickerField extends GSParentPanel {
 	private final GSColorPicker picker;
 	
 	private final List<GSIActionListener> listeners;
+	private boolean updatingText;
 	
 	private int color;
 
@@ -51,7 +52,7 @@ public class GSColorPickerField extends GSParentPanel {
 			@Override
 			public void focusLost(GSFocusEvent event) {
 				if (!textModel.isValidRGBColor())
-					setFieldColor(color);
+					updateFieldColor(color);
 			}
 		});
 		
@@ -60,6 +61,7 @@ public class GSColorPickerField extends GSParentPanel {
 		picker.addActionListener(this::onPickerChanged);
 		
 		listeners = new ArrayList<>();
+		updatingText = false;
 		
 		add(textField);
 		add(colorButton);
@@ -145,10 +147,12 @@ public class GSColorPickerField extends GSParentPanel {
 	}
 	
 	private void onFieldChanged() {
-		color = GSColorUtil.str2rgba(textField.getText());
-		setButtonColor(color);
-
-		dispatchActionEvent();
+		if (!updatingText) {
+			color = GSColorUtil.str2rgba(textField.getText());
+			updateButtonColor(color);
+	
+			dispatchActionEvent();
+		}
 	}
 
 	private void onButtonPressed() {
@@ -188,17 +192,23 @@ public class GSColorPickerField extends GSParentPanel {
 	public void setColor(int color) {
 		this.color = color;
 		
-		setFieldColor(color);
-		setButtonColor(color);
+		updateFieldColor(color);
+		updateButtonColor(color);
 	}
 	
-	private void setFieldColor(int color) {
+	private void updateFieldColor(int color) {
 		String str = GSColorUtil.rgb2str(color);
-		if (!str.equals(textField.getText()))
-			textField.setText(str);
+		if (!str.equals(textField.getText())) {
+			updatingText = true;
+			try {
+				textField.setText(str);
+			} finally {
+				updatingText = false;
+			}
+		}
 	}
 	
-	private void setButtonColor(int color) {
+	private void updateButtonColor(int color) {
 		colorButton.setBackgroundColor(color);
 		colorButton.setHoveredBackgroundColor(color);
 		colorButton.setDisabledBackgroundColor(color);
