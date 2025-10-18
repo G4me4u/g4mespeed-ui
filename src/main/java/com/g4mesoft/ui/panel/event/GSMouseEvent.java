@@ -114,6 +114,10 @@ public final class GSMouseEvent extends GSEvent {
 	public boolean isModifierHeld(int modifier) {
 		return (modifiers & modifier) == modifier;
 	}
+
+	public boolean isAnyModifierHeld(int modifier) {
+		return (modifiers & modifier) != NO_MODIFIERS;
+	}
 	
 	public float getDragX() {
 		return (type == MOUSE_DRAGGED_TYPE) ? extraX : 0.0f;

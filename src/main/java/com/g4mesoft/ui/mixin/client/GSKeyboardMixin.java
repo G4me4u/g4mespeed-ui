@@ -13,6 +13,7 @@ import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 
 import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.input.KeyInput;
 
 @Mixin(Keyboard.class)
 public class GSKeyboardMixin implements GSIKeyboardAccess {
@@ -23,10 +24,10 @@ public class GSKeyboardMixin implements GSIKeyboardAccess {
 	private boolean gs_prevEventRepeating;
 	
 	@Inject(
-		method = "onKey(JIIII)V",
+		method = "onKey(JILnet/minecraft/client/input/KeyInput;)V",
 		at = @At("HEAD")
 	)
-	private void onKeyEvent(long windowHandle, int key, int scancode, int action, int mods, CallbackInfo ci) {
+	private void onOnKey(long windowHandle, int action, KeyInput input, CallbackInfo ci) {
 		if (windowHandle == client.getWindow().getHandle())
 			gs_prevEventRepeating = (action == GLFW.GLFW_REPEAT);
 	}

@@ -2,6 +2,9 @@ package com.g4mesoft.ui.panel.event;
 
 import org.lwjgl.glfw.GLFW;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.InputUtil;
+
 public final class GSKeyEvent extends GSEvent {
 
 	public static final int KEY_PRESSED_TYPE  = 200;
@@ -247,7 +250,11 @@ public final class GSKeyEvent extends GSEvent {
 		// Fallback to the GLFW GetKeyName function.
 		return (GLFW.glfwGetKeyName(keyCode, scanCode) != null);
 	}
-	
+
+	public static boolean isKeyHeld(int keyCode) {
+		return InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow(), keyCode);
+	}
+
 	public static GSKeyEvent createKeyPressedEvent(int keyCode, int scanCode, int modifiers) {
 		return new GSKeyEvent(KEY_PRESSED_TYPE, keyCode, scanCode, modifiers);
 	}

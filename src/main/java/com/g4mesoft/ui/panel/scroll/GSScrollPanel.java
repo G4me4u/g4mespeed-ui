@@ -1,13 +1,12 @@
 package com.g4mesoft.ui.panel.scroll;
 
 import com.g4mesoft.ui.panel.GSPanel;
+import com.g4mesoft.ui.panel.GSPanelUtil;
 import com.g4mesoft.ui.panel.GSParentPanel;
 import com.g4mesoft.ui.panel.event.GSILayoutEventListener;
 import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
-
-import net.minecraft.client.gui.screen.Screen;
 
 public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GSIScrollListener {
 
@@ -285,12 +284,12 @@ public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GS
 			invalidate();
 		}
 	}
-	
+
 	@Override
 	public void mouseScrolled(GSMouseEvent event) {
 		// In case the user is trying to zoom in or out we should not
 		// scroll. This has different behavior on different platforms.
-		if (!event.isConsumed() && !Screen.hasControlDown() && !Screen.hasAltDown()) {
+		if (!event.isConsumed() && !GSPanelUtil.isControlHeld() && !GSPanelUtil.isAltHeld()) {
 			float newScrollX = horizontalScrollBar.getScroll();
 			float newScrollY = verticalScrollBar.getScroll();
 			
@@ -299,7 +298,7 @@ public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GS
 
 			// Shift will flip the xScroll and yScroll. This makes it
 			// possible to scroll horizontally without any xScroll.
-			if (Screen.hasShiftDown()) {
+			if (GSPanelUtil.isShiftHeld()) {
 				newScrollX -= event.getScrollY() * blockScrollX;
 				newScrollY -= event.getScrollX() * blockScrollY;
 			} else {

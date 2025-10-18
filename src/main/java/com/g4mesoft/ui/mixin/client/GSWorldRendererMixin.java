@@ -23,8 +23,6 @@ import net.minecraft.client.render.DefaultFramebufferSet;
 import net.minecraft.client.render.FrameGraphBuilder;
 import net.minecraft.client.render.FramePass;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -42,7 +40,7 @@ public abstract class GSWorldRendererMixin {
 		method = "<init>",
 		at = @At("RETURN")
 	)
-	private void onInit(MinecraftClient client, EntityRenderDispatcher entityRenderDispatcher, BlockEntityRenderDispatcher blockEntityRenderDispatcher, BufferBuilderStorage bufferBuilders, CallbackInfo ci) {
+	private void onInit(CallbackInfo ci) {
 		gs_renderer3d = new GSBasicRenderer3D();
 	}
 	
@@ -50,7 +48,7 @@ public abstract class GSWorldRendererMixin {
 		method = "renderWeather",
 		at = @At("RETURN")
 	)
-	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, Vec3d pos, float tickDelta, GpuBufferSlice fog, CallbackInfo ci) {
+	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, Vec3d cameraPos, GpuBufferSlice fogBuffer, CallbackInfo ci) {
 		Collection<GSIRenderable3D> renderables = G4mespeedUIMod.getRenderables();
 		
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {
@@ -62,7 +60,7 @@ public abstract class GSWorldRendererMixin {
 			}
 
 			framePass.setRenderer(() -> {
-				RenderSystem.setShaderFog(fog);
+				RenderSystem.setShaderFog(fogBuffer);
 				
 				gs_renderer3d.begin(bufferBuilders.getEntityVertexConsumers(), new MatrixStack());
 				for (GSIRenderable3D renderable : renderables) {

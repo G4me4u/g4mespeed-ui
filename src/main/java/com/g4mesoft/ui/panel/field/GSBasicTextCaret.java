@@ -16,8 +16,6 @@ import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSMathUtil;
 
-import net.minecraft.client.gui.screen.Screen;
-
 /**
  * A basic text caret used by the user to navigate the text area on which this
  * caret is installed. This text caret will handle almost all navigational
@@ -550,10 +548,10 @@ public class GSBasicTextCaret implements GSITextCaret, GSITextModelListener, GSI
 			event.consume();
 		}
 	}
-	
+
 	@Override
 	public void keyPressed(GSKeyEvent event) {
-		if (Screen.isSelectAll(event.getKeyCode())) {
+		if (GSPanelUtil.isSelectAll(event)) {
 			setSelection(0, textModel.getLength());
 			event.consume();
 		} else {

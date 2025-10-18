@@ -2,11 +2,21 @@ package com.g4mesoft.ui.renderer;
 
 import java.util.OptionalDouble;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 
 public final class GSRenderLayers {
 
+	public static final RenderPhase.Target TRANSLUCENT_TARGET = new RenderPhase.Target(
+		"gs_ui_translucent_target",
+		() -> {
+			Framebuffer framebuffer = MinecraftClient.getInstance().worldRenderer.getTranslucentFramebuffer();
+			return framebuffer != null ? framebuffer : MinecraftClient.getInstance().getFramebuffer();
+		}
+	);
+	
 	public static final RenderLayer.MultiPhase GUI = RenderLayer.of(
 		"gs_gui",
 		786432,
@@ -22,7 +32,7 @@ public final class GSRenderLayers {
 		true,
 		GSRenderPipelines.POSITION_COLOR_QUADS,
 		RenderLayer.MultiPhaseParameters.builder()
-			.target(RenderPhase.TRANSLUCENT_TARGET)
+			.target(TRANSLUCENT_TARGET)
 			.build(false)
 	);
 
@@ -33,7 +43,7 @@ public final class GSRenderLayers {
 		true,
 		GSRenderPipelines.POSITION_COLOR_QUADS_NO_DEPTH,
 		RenderLayer.MultiPhaseParameters.builder()
-			.target(RenderPhase.TRANSLUCENT_TARGET)
+			.target(TRANSLUCENT_TARGET)
 			.build(false)
 	);
 	
@@ -45,10 +55,10 @@ public final class GSRenderLayers {
 		GSRenderPipelines.POSITION_COLOR_LINES,
 		RenderLayer.MultiPhaseParameters.builder()
 			.lineWidth(new RenderPhase.LineWidth(OptionalDouble.empty()))
-			.target(RenderPhase.TRANSLUCENT_TARGET)
+			.target(TRANSLUCENT_TARGET)
 			.build(false)
 	);
 	
 	private GSRenderLayers() {
-	}	
+	}
 }

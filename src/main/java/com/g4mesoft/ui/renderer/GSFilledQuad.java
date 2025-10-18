@@ -41,17 +41,17 @@ public class GSFilledQuad implements SimpleGuiElementRenderState {
 	}
 	
 	@Override
-	public void setupVertices(VertexConsumer vertices, float depth) {
+	public void setupVertices(VertexConsumer vertices) {
 		if (mirror) {
-			vertices.vertex(x0, y0, depth).color(tlColor);
-			vertices.vertex(x0, y1, depth).color(blColor);
-			vertices.vertex(x1, y1, depth).color(brColor);
-			vertices.vertex(x1, y0, depth).color(trColor);
+			vertices.vertex(x0, y0, 0.0f).color(tlColor);
+			vertices.vertex(x0, y1, 0.0f).color(blColor);
+			vertices.vertex(x1, y1, 0.0f).color(brColor);
+			vertices.vertex(x1, y0, 0.0f).color(trColor);
 		} else {
-			vertices.vertex(x0, y1, depth).color(blColor);
-			vertices.vertex(x1, y1, depth).color(brColor);
-			vertices.vertex(x1, y0, depth).color(trColor);
-			vertices.vertex(x0, y0, depth).color(tlColor);
+			vertices.vertex(x0, y1, 0.0f).color(blColor);
+			vertices.vertex(x1, y1, 0.0f).color(brColor);
+			vertices.vertex(x1, y0, 0.0f).color(trColor);
+			vertices.vertex(x0, y0, 0.0f).color(tlColor);
 		}
 	}
 	

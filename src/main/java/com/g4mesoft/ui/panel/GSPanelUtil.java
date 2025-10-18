@@ -10,10 +10,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
 
+import com.g4mesoft.ui.panel.event.GSEvent;
+import com.g4mesoft.ui.panel.event.GSKeyEvent;
 import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.panel.scroll.GSViewport;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
+import net.minecraft.client.input.SystemKeycodes;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 
@@ -530,6 +533,48 @@ public final class GSPanelUtil {
 		return (GSPopup)parent;
 	}
 	
+	public static boolean isControlHeld() {
+		if (SystemKeycodes.IS_MAC_OS) {
+			return GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_LEFT_SUPER) || GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_RIGHT_SUPER);
+		} else {
+			return GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_LEFT_CONTROL) || GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_RIGHT_CONTROL);
+		}
+	}
+
+	public static boolean isShiftHeld() {
+		return GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_LEFT_SHIFT) || GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_RIGHT_SHIFT);
+	}
+
+	public static boolean isAltHeld() {
+		return GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_LEFT_ALT) || GSKeyEvent.isKeyHeld(GSKeyEvent.KEY_RIGHT_ALT);
+	}
+
+	private static boolean isControlAndKey(GSKeyEvent event, int keyCode) {
+		// Note: CMD+<keyCode> on MacOS and CTRL+<keyCode> on Windows/Linux.
+		if (!event.isModifierHeld(SystemKeycodes.CTRL_MOD))
+			return false;
+		if (event.getKeyCode() != keyCode)
+			return false;
+		// Note: no other modifiers should be held.
+		return !event.isAnyModifierHeld(GSEvent.MODIFIER_SHIFT | GSEvent.MODIFIER_ALT);
+	}
+
+	public static boolean isCopy(GSKeyEvent event) {
+		return isControlAndKey(event, GSKeyEvent.KEY_C);
+	}
+
+	public static boolean isCut(GSKeyEvent event) {
+		return isControlAndKey(event, GSKeyEvent.KEY_X);
+	}
+
+	public static boolean isPaste(GSKeyEvent event) {
+		return isControlAndKey(event, GSKeyEvent.KEY_V);
+	}
+
+	public static boolean isSelectAll(GSKeyEvent event) {
+		return isControlAndKey(event, GSKeyEvent.KEY_A);
+	}
+
 	private static enum GSEWordCharacterType {
 		
 		LETTER_OR_DIGIT, SYMBOL, OTHER;
