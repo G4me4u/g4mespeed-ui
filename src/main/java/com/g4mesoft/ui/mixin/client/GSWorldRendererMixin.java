@@ -24,7 +24,6 @@ import net.minecraft.client.render.FrameGraphBuilder;
 import net.minecraft.client.render.FramePass;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3d;
 
 @Mixin(WorldRenderer.class)
 public abstract class GSWorldRendererMixin {
@@ -48,7 +47,7 @@ public abstract class GSWorldRendererMixin {
 		method = "renderWeather",
 		at = @At("RETURN")
 	)
-	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, Vec3d cameraPos, GpuBufferSlice fogBuffer, CallbackInfo ci) {
+	private void onRenderWeatherReturn(FrameGraphBuilder frameGraphBuilder, GpuBufferSlice fogBuffer, CallbackInfo ci) {
 		Collection<GSIRenderable3D> renderables = G4mespeedUIMod.getRenderables();
 		
 		if (hasRenderPhase(renderables, GSERenderPhase.TRANSPARENT_LAST)) {

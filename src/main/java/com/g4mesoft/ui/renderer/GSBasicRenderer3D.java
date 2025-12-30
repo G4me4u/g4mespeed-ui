@@ -2,9 +2,11 @@ package com.g4mesoft.ui.renderer;
 
 import org.joml.Quaternionf;
 
+import com.g4mesoft.ui.util.GSColorUtil;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -116,6 +118,13 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 			finish();
 	}
 
+	private final void drawLine(float x0, float y0, float z0,
+	                            float x1, float y1, float z1,
+	                            int argb, float lw) {
+		vert(x0, y0, z0).normal(x1 - x0, y1 - y0, z1 - z0).color(argb).lineWidth(lw).next();
+		vert(x1, y1, z1).normal(x1 - x0, y1 - y0, z1 - z0).color(argb).lineWidth(lw).next();
+	}
+	
 	@Override
 	public void drawCuboidOutline(float x0, float y0, float z0,
 	                              float x1, float y1, float z1,
@@ -126,37 +135,28 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
-			build(DrawMode.LINES, VertexFormats.POSITION_COLOR);
+			build(DrawMode.LINES, VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH);
 		
+		float lw = MinecraftClient.getInstance().getWindow().getMinimumLineWidth();
+		int argb = GSColorUtil.denormalizeRGBA(r, g, b, a);
+
 		// Lines on X-axis
-		vert(x0, y0, z0).color(r, g, b, a).next();
-		vert(x1, y0, z0).color(r, g, b, a).next();
-		vert(x0, y1, z0).color(r, g, b, a).next();
-		vert(x1, y1, z0).color(r, g, b, a).next();
-		vert(x0, y1, z1).color(r, g, b, a).next();
-		vert(x1, y1, z1).color(r, g, b, a).next();
-		vert(x0, y0, z1).color(r, g, b, a).next();
-		vert(x1, y0, z1).color(r, g, b, a).next();
+		drawLine(x0, y0, z0, x1, y0, z0, argb, lw);
+		drawLine(x0, y1, z0, x1, y1, z0, argb, lw);
+		drawLine(x0, y1, z1, x1, y1, z1, argb, lw);
+		drawLine(x0, y0, z1, x1, y0, z1, argb, lw);
 
 		// Lines on Y-axis
-		vert(x0, y0, z0).color(r, g, b, a).next();
-		vert(x0, y1, z0).color(r, g, b, a).next();
-		vert(x1, y0, z0).color(r, g, b, a).next();
-		vert(x1, y1, z0).color(r, g, b, a).next();
-		vert(x1, y0, z1).color(r, g, b, a).next();
-		vert(x1, y1, z1).color(r, g, b, a).next();
-		vert(x0, y0, z1).color(r, g, b, a).next();
-		vert(x0, y1, z1).color(r, g, b, a).next();
-
+		drawLine(x0, y0, z0, x0, y1, z0, argb, lw);
+		drawLine(x1, y0, z0, x1, y1, z0, argb, lw);
+		drawLine(x1, y0, z1, x1, y1, z1, argb, lw);
+		drawLine(x0, y0, z1, x0, y1, z1, argb, lw);
+		
 		// Lines on Z-axis
-		vert(x0, y0, z0).color(r, g, b, a).next();
-		vert(x0, y0, z1).color(r, g, b, a).next();
-		vert(x1, y0, z0).color(r, g, b, a).next();
-		vert(x1, y0, z1).color(r, g, b, a).next();
-		vert(x1, y1, z0).color(r, g, b, a).next();
-		vert(x1, y1, z1).color(r, g, b, a).next();
-		vert(x0, y1, z0).color(r, g, b, a).next();
-		vert(x0, y1, z1).color(r, g, b, a).next();
+		drawLine(x0, y0, z0, x0, y0, z1, argb, lw);
+		drawLine(x1, y0, z0, x1, y0, z1, argb, lw);
+		drawLine(x1, y1, z0, x1, y1, z1, argb, lw);
+		drawLine(x0, y1, z0, x0, y1, z1, argb, lw);
 		
 		if (!wasBuilding)
 			finish();
@@ -169,8 +169,8 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		
 		if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
 			build(GSRenderLayers.POSITION_COLOR_QUADS);
-		} else if (drawMode == LINES && format == VertexFormats.POSITION_COLOR) {
-			build(GSRenderLayers.POSITION_COLOR_LINES);
+		} else if (drawMode == LINES && format == VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH) {
+			build(GSRenderLayers.POSITION_COLOR_NORMAL_LINE_WIDTH_LINES);
 		} else {
 			throw new IllegalArgumentException("Unsupported draw mode and vertex format!");
 		}
@@ -199,8 +199,26 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 
 	@Override
+	public GSBasicRenderer3D color(int argb) {
+		currentVertexConsumer.color(argb);
+		return this;
+	}
+
+	@Override
 	public GSBasicRenderer3D tex(float u, float v) {
 		currentVertexConsumer.texture(u, v);
+		return this;
+	}
+
+	@Override
+	public GSBasicRenderer3D normal(float nx, float ny, float nz) {
+		currentVertexConsumer.normal(matrixStack.peek(), nx, ny, nz);
+		return this;
+	}
+
+	@Override
+	public GSBasicRenderer3D lineWidth(float lw) {
+		currentVertexConsumer.lineWidth(lw);
 		return this;
 	}
 

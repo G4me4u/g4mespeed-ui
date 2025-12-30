@@ -31,11 +31,12 @@ public final class GSRenderPipelines {
 			.build()
 	);
 
-	public static final RenderPipeline POSITION_COLOR_LINES = RenderPipelines.register(
+	public static final RenderPipeline POSITION_COLOR_NORMAL_LINE_WIDTH_LINES = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
-			.withLocation("gs_ui/position_color_lines")
-			.withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.LINES)
+			.withLocation("gs_ui/position_color_normal_line_width_lines")
+			.withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, VertexFormat.DrawMode.LINES)
 			.withCull(false)
+			.withDepthWrite(false)
 			.build()
 	);
 	
