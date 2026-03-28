@@ -11,7 +11,7 @@ import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSMathUtil;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -30,7 +30,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	private final Minecraft client;
 	
-	private GuiGraphics context;
+	private GuiGraphicsExtractor context;
 	private int mouseX;
 	private int mouseY;
 	private int viewportWidth;
@@ -57,7 +57,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		cachedClippedBounds = null;
 	}
 	
-	public void begin(GuiGraphics context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+	public void begin(GuiGraphicsExtractor context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
 		this.context = context;
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
@@ -220,14 +220,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		ScreenRectangle scissorArea = context.scissorStack.peek();
 		ScreenRectangle layerBounds = (scissorArea != null) ? scissorArea : viewBounds;
 
-		context.guiRenderState.submitGuiElement(new GSFilledQuad(x, y, width, height,
-		                                                applyOpacity(tlColor),
-		                                                applyOpacity(trColor),
-		                                                applyOpacity(blColor),
-		                                                applyOpacity(brColor),
-		                                                mirror,
-		                                                scissorArea,
-		                                                layerBounds));
+		context.guiRenderState.addGuiElement(new GSFilledQuad(x, y, width, height,
+		                                                      applyOpacity(tlColor),
+		                                                      applyOpacity(trColor),
+		                                                      applyOpacity(blColor),
+		                                                      applyOpacity(brColor),
+		                                                      mirror,
+		                                                      scissorArea,
+		                                                      layerBounds));
 	}
 	
 	@Override
@@ -261,9 +261,9 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int y1 = y + texture.getRegionHeight();
 		
 		((GSIGuiGraphicsAccess)context).gs_innerBlit(RenderPipelines.GUI_TEXTURED, sprite,
-		                                                    x, x1, y, y1,
-		                                                    texture.getU0(), texture.getU1(), texture.getV0(), texture.getV1(),
-		                                                    applyOpacity(color));
+		                                             x, x1, y, y1,
+		                                             texture.getU0(), texture.getU1(), texture.getV0(), texture.getV1(),
+		                                             applyOpacity(color));
 	}
 
 	public void legacyDrawGuiTexture(Identifier texture, int x, int y, int w, int h) {
@@ -320,7 +320,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	public void drawPanoramaBackground() {
 		pushMatrix();
 		identity();
-		client.gameRenderer.getPanorama().render(context, viewportWidth, viewportHeight, true);
+		client.gameRenderer.getPanorama().extractRenderState(context, viewportWidth, viewportHeight, true);
 		popMatrix();
 	}
 	
@@ -362,7 +362,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public void drawText(String text, int x, int y, int color, boolean shadowed) {
-		context.drawString(client.font, text, x, y, applyOpacity(color), shadowed);
+		context.text(client.font, text, x, y, applyOpacity(color), shadowed);
 	}
 	
 	@Override
@@ -377,7 +377,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public void drawText(FormattedCharSequence text, int x, int y, int color, boolean shadowed) {
-		context.drawString(client.font, text, x, y, applyOpacity(color), shadowed);
+		context.text(client.font, text, x, y, applyOpacity(color), shadowed);
 	}
 	
 	@Override

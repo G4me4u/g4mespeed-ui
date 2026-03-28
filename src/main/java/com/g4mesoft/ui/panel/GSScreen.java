@@ -5,7 +5,7 @@ import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -49,12 +49,12 @@ final class GSScreen extends Screen {
 	}
 	
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+	public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
 		// do nothing.
 	}
 	
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float partialTicks) {
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float partialTicks) {
 		// Execute scheduled tasks (validate panels etc.)
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();

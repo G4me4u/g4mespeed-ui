@@ -15,6 +15,7 @@ class GSBasicLayoutProperty<T> implements GSILayoutProperty<T> {
 		this(name, defValue, Functions.identity());
 	}
 	
+	@SuppressWarnings("unused")
 	public GSBasicLayoutProperty(String name, T defValue, Function<T, T> copyConstructor) {
 		this(name, (ignore -> copyConstructor.apply(defValue)), copyConstructor);
 	}

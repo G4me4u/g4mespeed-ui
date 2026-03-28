@@ -5,10 +5,10 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 
-@Mixin(GuiGraphics.class)
+@Mixin(GuiGraphicsExtractor.class)
 public interface GSIGuiGraphicsAccess {
 
 	@Invoker("innerBlit")
