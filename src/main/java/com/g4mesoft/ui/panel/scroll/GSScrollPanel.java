@@ -7,7 +7,7 @@ import com.g4mesoft.ui.panel.event.GSIMouseListener;
 import com.g4mesoft.ui.panel.event.GSLayoutEvent;
 import com.g4mesoft.ui.panel.event.GSMouseEvent;
 
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 public class GSScrollPanel extends GSParentPanel implements GSIMouseListener, GSIScrollListener {
 

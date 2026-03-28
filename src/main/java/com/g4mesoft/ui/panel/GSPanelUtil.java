@@ -14,8 +14,8 @@ import com.g4mesoft.ui.panel.scroll.GSScrollPanel;
 import com.g4mesoft.ui.panel.scroll.GSViewport;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 public final class GSPanelUtil {
 
@@ -37,14 +37,14 @@ public final class GSPanelUtil {
 	private GSPanelUtil() {
 	}
 	
-	public static void drawLabel(GSIRenderer2D renderer, GSIcon icon, int spacing, Text text, int textColor,
+	public static void drawLabel(GSIRenderer2D renderer, GSIcon icon, int spacing, Component text, int textColor,
 	                             boolean shadowed, GSEIconAlignment iconAlignment, GSETextAlignment textAlignment,
 	                             GSRectangle bounds) {
 		drawLabel(renderer, icon, spacing, text, textColor, shadowed, iconAlignment, textAlignment,
 				bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
 	}
 	
-	public static void drawLabel(GSIRenderer2D renderer, GSIcon icon, int spacing, Text text, int textColor,
+	public static void drawLabel(GSIRenderer2D renderer, GSIcon icon, int spacing, Component text, int textColor,
 	                             boolean shadowed, GSEIconAlignment iconAlignment, GSETextAlignment textAlignment,
 	                             int x, int y, int width, int height) {
 		
@@ -58,7 +58,7 @@ public final class GSPanelUtil {
 		}
 		
 		// Trim text and get text width
-		OrderedText trimmedText = null;
+		FormattedCharSequence trimmedText = null;
 		int tw = 0;
 		if (text != null) {
 			trimmedText = renderer.trimString(text, rw);
@@ -101,7 +101,7 @@ public final class GSPanelUtil {
 		}
 	}
 	
-	public static GSDimension labelPreferredSize(GSIcon icon, Text text, int spacing) {
+	public static GSDimension labelPreferredSize(GSIcon icon, Component text, int spacing) {
 		GSIRenderer2D renderer = GSPanelContext.getRenderer();
 		
 		int w = 0, h = 0;

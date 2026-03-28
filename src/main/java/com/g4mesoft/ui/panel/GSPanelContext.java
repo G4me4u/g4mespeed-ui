@@ -17,19 +17,19 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.renderer.GSITextureRegion;
 import com.g4mesoft.ui.renderer.GSTexture;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.sound.SoundInstance;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.locale.Language;
+import net.minecraft.resources.ResourceLocation;
 
 public final class GSPanelContext {
 
-	private static final Identifier UI_TEXTURE_IDENTIFIER = new Identifier("g4mespeed-ui", "textures/ui.png");
+	private static final ResourceLocation UI_TEXTURE_IDENTIFIER = new ResourceLocation("g4mespeed-ui", "textures/ui.png");
 	
 	private static GSPanelContext instance;
 	
-	private final MinecraftClient client;
+	private final Minecraft client;
 	
 	private final GSIRenderer2D renderer;
 	private final GSScreen screen;
@@ -40,7 +40,7 @@ public final class GSPanelContext {
 	
 	private final Queue<Runnable> taskQueue;
 	
-	private GSPanelContext(MinecraftClient client) {
+	private GSPanelContext(Minecraft client) {
 		this.client = client;
 		
 		renderer = new GSBasicRenderer2D(client);
@@ -54,7 +54,7 @@ public final class GSPanelContext {
 		taskQueue = new ArrayDeque<>();
 	}
 
-	public static void init(MinecraftClient client) {
+	public static void init(Minecraft client) {
 		if (instance == null)
 			instance = new GSPanelContext(client);
 	}
@@ -166,7 +166,7 @@ public final class GSPanelContext {
 	
 	private void disposeImpl() {
 		// If the screen is currently visible, hide it.
-		if (client.currentScreen == screen)
+		if (client.screen == screen)
 			openContent(null);
 		// Destroy the standard cursors
 		for (Long cursorPtr : standardCursors.values())
@@ -188,10 +188,10 @@ public final class GSPanelContext {
 		setContentImpl(content);
 		
 		if (content != null) {
-			if (client.currentScreen != screen)
+			if (client.screen != screen)
 				client.setScreen(screen);
 		} else {
-			if (client.currentScreen != null)
+			if (client.screen != null)
 				client.setScreen(null);
 		}
 	}
@@ -236,15 +236,15 @@ public final class GSPanelContext {
 			standardCursors.put(cursorType, cursorPtr);
 		}
 
-		GLFW.glfwSetCursor(client.getWindow().getHandle(), cursorPtr);
+		GLFW.glfwSetCursor(client.getWindow().getWindow(), cursorPtr);
 	}
 	
 	private String getClipboardStringImpl() {
-		return client.keyboard.getClipboard();
+		return client.keyboardHandler.getClipboard();
 	}
 
 	private void setClipboardStringImpl(String clipboard) {
-		client.keyboard.setClipboard(clipboard);
+		client.keyboardHandler.setClipboard(clipboard);
 	}
 	
 	private boolean hasClipboardStringImpl() {
@@ -252,11 +252,11 @@ public final class GSPanelContext {
 	}
 
 	private boolean hasI18nTranslationImpl(String key) {
-		return Language.getInstance().hasTranslation(key);
+		return Language.getInstance().has(key);
 	}
 	
 	private String i18nTranslateImpl(String key) {
-		return Language.getInstance().get(key);
+		return Language.getInstance().getOrDefault(key);
 	}
 
 	private String i18nTranslateFormattedImpl(String key, Object... args) {

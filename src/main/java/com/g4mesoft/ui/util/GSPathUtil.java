@@ -10,7 +10,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Objects;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public final class GSPathUtil {
 
@@ -128,7 +128,7 @@ public final class GSPathUtil {
 	 * 
 	 * @return The human readable representation of the given size.
 	 */
-	public static Text getSizeAsText(long size) {
+	public static Component getSizeAsText(long size) {
 		int i = 0;
 		for ( ; i < FILE_SIZE_KEYS.length; i++) {
 			if ((size >> (ONE_KIBIBYTE_LOG2 * (i + 1))) == 0L) {

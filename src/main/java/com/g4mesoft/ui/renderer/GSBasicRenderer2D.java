@@ -8,50 +8,50 @@ import java.util.List;
 import com.g4mesoft.ui.mixin.client.GSIGameRendererAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSMathUtil;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.PostEffectProcessor;
-import net.minecraft.client.gui.CubeMapRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.RotatingCubeMapRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormat.DrawMode;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.CubeMap;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.PanoramaRenderer;
+import net.minecraft.client.renderer.PostChain;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	private static final int LINE_SPACING = 2;
 	private static final float DEFAULT_Z_OFFSET = 0.0f;
 	
-	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND_TEXTURE, 16, 16);
-	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(new Identifier("textures/gui/inworld_menu_background.png"), 16, 16);
-	private static final CubeMapRenderer PANORAMA_RENDERER = new CubeMapRenderer(new Identifier("textures/gui/title/background/panorama"));
-	private static final RotatingCubeMapRenderer ROTATING_PANORAMA_RENDERER = new RotatingCubeMapRenderer(PANORAMA_RENDERER);
+	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND, 16, 16);
+	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(new ResourceLocation("textures/gui/inworld_menu_background.png"), 16, 16);
+	private static final CubeMap PANORAMA_RENDERER = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
+	private static final PanoramaRenderer ROTATING_PANORAMA_RENDERER = new PanoramaRenderer(PANORAMA_RENDERER);
 	
-	private final MinecraftClient client;
+	private final Minecraft client;
 	
 	private BufferBuilder builder;
-	private DrawContext context;
-	private MatrixStack matrixStack;
+	private GuiGraphics context;
+	private PoseStack matrixStack;
 	private int mouseX;
 	private int mouseY;
 	private int viewportWidth;
 	private int viewportHeight;
 	
 	private boolean building;
-	private DrawMode buildingDrawMode;
+	private Mode buildingDrawMode;
 	
 	private GSTransform2D transform;
 	private final Deque<GSTransform2D> transformStack;
@@ -63,7 +63,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	private long lastPanoramaTickTime;
 	
-	public GSBasicRenderer2D(MinecraftClient client) {
+	public GSBasicRenderer2D(Minecraft client) {
 		this.client = client;
 		
 		transform = new GSTransform2D();
@@ -77,10 +77,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		lastPanoramaTickTime = System.currentTimeMillis();
 	}
 	
-	public void begin(BufferBuilder builder, DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+	public void begin(BufferBuilder builder, GuiGraphics context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
 		this.builder = builder;
 		this.context = context;
-		this.matrixStack = context.getMatrices();
+		this.matrixStack = context.pose();
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
 		this.viewportWidth = viewportWidth;
@@ -113,7 +113,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transformStack.push(transform);
 		transform = new GSTransform2D(transform);
 		
-		matrixStack.push();
+		matrixStack.pushPose();
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Transform stack is empty!");
 		
 		transform = transformStack.pop();
-		matrixStack.pop();
+		matrixStack.popPose();
 		
 		invalidateClipBounds();
 	}
@@ -179,9 +179,9 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	private void setScissor(GSClipRect clip) {
 		if (clip != null) {
-			Window window = MinecraftClient.getInstance().getWindow();
-			double s = window.getScaleFactor();
-			int h = window.getFramebufferHeight();
+			Window window = Minecraft.getInstance().getWindow();
+			double s = window.getGuiScale();
+			int h = window.getHeight();
 			
 			int x = (int)Math.round(clip.x0 * s);
 			int y = h - (int)Math.round(clip.y1 * s);
@@ -243,12 +243,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	                         float rbr, float gbr, float bbr, float abr,
 	                         boolean mirror) {
 		
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (building && buildingDrawMode != Mode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+			build(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		float x0 = (float)x;
 		float y0 = (float)y;
@@ -273,12 +273,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawRect(int x, int y, int width, int height, int color) {
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (building && buildingDrawMode != Mode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+			build(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		drawHLine(x, x + width, y, color);
 		drawHLine(x, x + width, y + height - 1, color);
@@ -310,7 +310,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (building)
 			throw new IllegalStateException("Batches are not supported when drawing textures");
 		
-		build(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+		build(Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
 		RenderSystem.setShaderTexture(0, texture.getTexture().getIdentifier());
 		RenderSystem.setShaderColor(r, g, b, opacity);
@@ -330,11 +330,11 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	public void legacyDrawGuiTexture(Identifier texture, int x, int y, int w, int h) {
+	public void legacyDrawGuiTexture(ResourceLocation texture, int x, int y, int w, int h) {
 		if (building)
 			throw new IllegalStateException("Batches are not supported when drawing gui textures");
 
-		context.drawGuiTexture(texture, x, y, w, h);
+		context.blitSprite(texture, x, y, w, h);
 		// Note: seems to disable scissor test.
 		setScissor(clipStack.peek());
 	}
@@ -351,12 +351,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawDottedVLine(int x, int y0, int y1, int length, int spacing, int color) {
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (building && buildingDrawMode != Mode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+			build(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		int n = (y1 - y0) / (length + spacing);
 		
@@ -372,12 +372,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawDottedHLine(int x0, int x1, int y, int length, int spacing, int color) {
-		if (building && buildingDrawMode != DrawMode.QUADS)
+		if (building && buildingDrawMode != Mode.QUADS)
 			throw new IllegalStateException("Building quads is required!");
 		
 		boolean wasBuilding = building;
 		if (!wasBuilding)
-			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+			build(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		int n = (x1 - x0) / (length + spacing);
 		
@@ -403,7 +403,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (!inWorld)
 			drawPanoramaBackground(x, y, width, height);
 		// Apply blur
-		float blurRadius = 10.0f * (float)client.options.getMenuBackgroundBlurrinessValue();
+		float blurRadius = 10.0f * (float)client.options.getMenuBackgroundBlurriness();
 		applyBlur(x, y, width, height, blurRadius);
 		// Draw darkening texture
 		GSTexture darkening = inWorld ? INWORLD_MENU_BACKGROUND_TEXTURE : MENU_BACKGROUND_TEXTURE;
@@ -431,20 +431,20 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Batches are not supported while blurring!");
 		
 		// See client.gameRenderer.renderBlur(...)
-		PostEffectProcessor blurPostProcessor = ((GSIGameRendererAccess)client.gameRenderer).getBlurPostProcessor();
+		PostChain blurPostProcessor = ((GSIGameRendererAccess)client.gameRenderer).getBlurEffect();
 		if (blurPostProcessor != null && radius >= 1.0f) {
-			blurPostProcessor.setUniforms("Radius", radius);
+			blurPostProcessor.setUniform("Radius", radius);
 			// Finish writing frame buffer.
 			pushClip(x, y, width, height);
-			blurPostProcessor.render(client.getTickDelta());
-			client.getFramebuffer().beginWrite(false);
+			blurPostProcessor.process(client.getFrameTime());
+			client.getMainRenderTarget().bindWrite(false);
 			popClip();
 		}
 	}
 
 	@Override
 	public int getTextAscent() {
-		return client.textRenderer.fontHeight - 2;
+		return client.font.lineHeight - 2;
 	}
 
 	@Override
@@ -465,12 +465,12 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public float getTextWidth(String text) {
-		return client.textRenderer.getWidth(text);
+		return client.font.width(text);
 	}
 
 	@Override
 	public float getTextWidthNoStyle(CharSequence text) {
-		return client.textRenderer.getWidth(new GSCharSequenceOrderedText(text));
+		return client.font.width(new GSFormattedCharSequence(text));
 	}
 
 	@Override
@@ -483,7 +483,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		RenderSystem.depthMask(false);
 		
-		context.drawText(client.textRenderer, text, x, y, color, shadowed);
+		context.drawString(client.font, text, x, y, color, shadowed);
 
 		RenderSystem.depthMask(true);
 		// Note: context.drawText(...) enables depth test.
@@ -493,16 +493,16 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public void drawTextNoStyle(CharSequence text, int x, int y, int color, boolean shadowed) {
-		drawText(new GSCharSequenceOrderedText(text), x, y, color, shadowed);
+		drawText(new GSFormattedCharSequence(text), x, y, color, shadowed);
 	}
 	
 	@Override
-	public float getTextWidth(OrderedText text) {
-		return client.textRenderer.getWidth(text);
+	public float getTextWidth(FormattedCharSequence text) {
+		return client.font.width(text);
 	}
 
 	@Override
-	public void drawText(OrderedText text, int x, int y, int color, boolean shadowed) {
+	public void drawText(FormattedCharSequence text, int x, int y, int color, boolean shadowed) {
 		if (building)
 			throw new IllegalStateException("Batches are not supported for drawing text");
 		
@@ -511,7 +511,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 		RenderSystem.depthMask(false);
 		
-		context.drawText(client.textRenderer, text, x, y, color, shadowed);
+		context.drawString(client.font, text, x, y, color, shadowed);
 
 		RenderSystem.depthMask(true);
 		// Note: context.drawText(...) enables depth test.
@@ -588,38 +588,38 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public OrderedText trimString(Text text, int availableWidth, Text ellipsis) {
+	public FormattedCharSequence trimString(Component text, int availableWidth, Component ellipsis) {
 		if (getTextWidth(text) <= availableWidth)
-			return text.asOrderedText();
+			return text.getVisualOrderText();
 		
 		availableWidth -= (int)Math.ceil(getTextWidth(ellipsis));
 		
-		StringVisitable trimmed = client.textRenderer.trimToWidth(text, availableWidth);
-		StringVisitable result = StringVisitable.concat(trimmed, ellipsis);
+		FormattedText trimmed = client.font.substrByWidth(text, availableWidth);
+		FormattedText result = FormattedText.composite(trimmed, ellipsis);
 		
-		return Language.getInstance().reorder(result);
+		return Language.getInstance().getVisualOrder(result);
 	}
 	
 	@Override
-	public List<OrderedText> splitToLines(Text text, int availableWidth) {
-		return client.textRenderer.wrapLines(text, availableWidth);
+	public List<FormattedCharSequence> splitToLines(Component text, int availableWidth) {
+		return client.font.split(text, availableWidth);
 	}
 	
 	@Override
-	public void build(DrawMode drawMode, VertexFormat format) {
+	public void build(Mode drawMode, VertexFormat format) {
 		if (building)
 			throw new IllegalStateException("Already building!");
 		
-		if (format == VertexFormats.POSITION) {
-			RenderSystem.setShader(GameRenderer::getPositionProgram);
-		} else if (format == VertexFormats.POSITION_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-		} else if (format == VertexFormats.POSITION_COLOR_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
-		} else if (format == VertexFormats.POSITION_TEXTURE) {
-			RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-		} else if (format == VertexFormats.POSITION_TEXTURE_COLOR) {
-			RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+		if (format == DefaultVertexFormat.POSITION) {
+			RenderSystem.setShader(GameRenderer::getPositionShader);
+		} else if (format == DefaultVertexFormat.POSITION_COLOR) {
+			RenderSystem.setShader(GameRenderer::getPositionColorShader);
+		} else if (format == DefaultVertexFormat.POSITION_COLOR_TEX) {
+			RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+		} else if (format == DefaultVertexFormat.POSITION_TEX) {
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		} else if (format == DefaultVertexFormat.POSITION_TEX_COLOR) {
+			RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 		} else {
 			throw new IllegalArgumentException("Unsupported vertex format!");
 		}
@@ -644,13 +644,13 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	@Override
 	public GSBasicRenderer2D tex(float u, float v) {
-		builder.texture(u, v);
+		builder.uv(u, v);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer2D next() {
-		builder.next();
+		builder.endVertex();
 		return this;
 	}
 	
@@ -659,7 +659,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		if (!building)
 			throw new IllegalStateException("Not building!");
 		
-		Tessellator.getInstance().draw();
+		Tesselator.getInstance().end();
 		building = false;
 	}
 

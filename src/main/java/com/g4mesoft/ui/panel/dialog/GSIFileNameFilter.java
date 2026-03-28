@@ -2,13 +2,13 @@ package com.g4mesoft.ui.panel.dialog;
 
 import java.nio.file.Path;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public interface GSIFileNameFilter {
 
 	public boolean filter(Path path, int option);
 	
-	public Text[] getOptions();
+	public Component[] getOptions();
 	
 	public int getDefaultOption();
 

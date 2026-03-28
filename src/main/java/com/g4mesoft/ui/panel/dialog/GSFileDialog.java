@@ -55,8 +55,8 @@ import com.g4mesoft.ui.util.GSPathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 import com.google.common.base.Objects;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
 public class GSFileDialog extends GSParentPanel {
 
@@ -68,14 +68,14 @@ public class GSFileDialog extends GSParentPanel {
 	private static final int TYPE_COLUMN_INDEX;
 	private static final int SIZE_COLUMN_INDEX;
 	/* Titles for the elements shown in the file table */
-	private static final Text[] TABLE_TITLES;
+	private static final Component[] TABLE_TITLES;
 	/* Minimum sizes of each of the columns in the file table */
 	private static final int[] TABLE_WIDTHS;
 	
-	private static final Text[] CONFIRM_TEXTS;
-	private static final Text CANCEL_TEXT       = translatable("cancel");
-	private static final Text FILE_NAME_TEXT    = translatable("fileName");
-	private static final Text CURRENT_PATH_TEXT = translatable("currentPath");
+	private static final Component[] CONFIRM_TEXTS;
+	private static final Component CANCEL_TEXT       = translatable("cancel");
+	private static final Component FILE_NAME_TEXT    = translatable("fileName");
+	private static final Component CURRENT_PATH_TEXT = translatable("currentPath");
 	
 	private static final GSIcon ROOT_DIRECTORY_ICON = GSPanelContext.getIcon( 0, 72, 12, 12);
 	private static final GSIcon DIRECTORY_ICON      = GSPanelContext.getIcon(12, 72, 12, 12);
@@ -85,11 +85,11 @@ public class GSFileDialog extends GSParentPanel {
 	private static final GSIcon GO_TO_PARENT_ICON = GSPanelContext.getIcon(24, 72, 12, 12);
 	private static final GSFileName GO_TO_PARENT_NAME = new GSFileName("..", GO_TO_PARENT_ICON);
 	
-	private static final Text DIRECTORY_TYPE    = translatable("directoryType");
-	private static final Text UNKNOWN_FILE_TYPE = translatable("unknownType");
+	private static final Component DIRECTORY_TYPE    = translatable("directoryType");
+	private static final Component UNKNOWN_FILE_TYPE = translatable("unknownType");
 	
-	private static final Text FILE_ALREADY_EXISTS = translatable("alreadyExists");
-	private static final Text CONFIRM_OVERWRITE   = translatable("confirmOverwrite");
+	private static final Component FILE_ALREADY_EXISTS = translatable("alreadyExists");
+	private static final Component CONFIRM_OVERWRITE   = translatable("confirmOverwrite");
 	
 	private static final int FILE_ICON_SPACING = 5;
 	private static final GSMargin OUTER_MARGIN = new GSMargin(5);
@@ -111,7 +111,7 @@ public class GSFileDialog extends GSParentPanel {
 		TYPE_COLUMN_INDEX     = titleCount++;
 		SIZE_COLUMN_INDEX     = titleCount++;
 		// Compute array with table titles
-		TABLE_TITLES = new Text[titleCount];
+		TABLE_TITLES = new Component[titleCount];
 		TABLE_TITLES[NAME_COLUMN_INDEX]     = translatable("name");
 		TABLE_TITLES[MODIFIED_COLUMN_INDEX] = translatable("modified");
 		TABLE_TITLES[TYPE_COLUMN_INDEX]     = translatable("type");
@@ -124,7 +124,7 @@ public class GSFileDialog extends GSParentPanel {
 		TABLE_WIDTHS[SIZE_COLUMN_INDEX]     = 50;
 		// Asset type value text
 		GSEFileDialogMode[] modes = GSEFileDialogMode.values();
-		CONFIRM_TEXTS = new Text[modes.length];
+		CONFIRM_TEXTS = new Component[modes.length];
 		for (GSEFileDialogMode mode : modes)
 			CONFIRM_TEXTS[mode.getIndex()] = translatable("mode." + mode.getName());
 		// Initialize default file icons
@@ -132,7 +132,7 @@ public class GSFileDialog extends GSParentPanel {
 		initDefaultFileIcons();
 	}
 	
-	private static Text translatable(String key, Object... params) {
+	private static Component translatable(String key, Object... params) {
 		return GSTextUtil.translatable("panel.fileDialog." + key, params);
 	}
 	
@@ -145,7 +145,7 @@ public class GSFileDialog extends GSParentPanel {
 	private final GSTextField nameField;
 	
 	private GSIFileNameFilter fileNameFilter;
-	private final GSDropdownList<Text> filterField;
+	private final GSDropdownList<Component> filterField;
 	
 	private final GSTablePanel fileTable;
 	
@@ -643,7 +643,7 @@ public class GSFileDialog extends GSParentPanel {
 		return model;
 	}
 	
-	private static Text getFileTypeAsText(Path path, BasicFileAttributes attribs) {
+	private static Component getFileTypeAsText(Path path, BasicFileAttributes attribs) {
 		if (attribs.isDirectory()) {
 			return DIRECTORY_TYPE;
 		} else if (attribs.isRegularFile()) {
@@ -654,7 +654,7 @@ public class GSFileDialog extends GSParentPanel {
 		return UNKNOWN_FILE_TYPE;
 	}
 	
-	private static Text getFileSizeAsText(Path path, BasicFileAttributes attribs) {
+	private static Component getFileSizeAsText(Path path, BasicFileAttributes attribs) {
 		if (!attribs.isRegularFile()) {
 			// Only supported for regular files
 			return null;
@@ -671,8 +671,8 @@ public class GSFileDialog extends GSParentPanel {
 			return home;
 		}
 		// Fallback to the game directory (%appdata%/.minecraft on windows)
-		MinecraftClient client = MinecraftClient.getInstance();
-		return (client != null) ? client.runDirectory.toPath() : null;
+		Minecraft client = Minecraft.getInstance();
+		return (client != null) ? client.gameDirectory.toPath() : null;
 	}
 	
 	public void onSelectionChanged() {
@@ -883,7 +883,7 @@ public class GSFileDialog extends GSParentPanel {
 	
 	private static class GSFileName {
 		
-		private final Text name;
+		private final Component name;
 		private final GSIcon icon;
 		
 		public GSFileName(Path path, boolean isRootDirectory) {
@@ -908,7 +908,7 @@ public class GSFileDialog extends GSParentPanel {
 			this(GSTextUtil.literal(name), icon);
 		}
 		
-		public GSFileName(Text name, GSIcon icon) {
+		public GSFileName(Component name, GSIcon icon) {
 			this.name = name;
 			this.icon = icon;
 		}

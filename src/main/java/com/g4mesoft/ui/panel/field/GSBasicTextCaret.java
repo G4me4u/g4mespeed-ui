@@ -16,7 +16,7 @@ import com.g4mesoft.ui.panel.event.GSMouseEvent;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSMathUtil;
 
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 /**
  * A basic text caret used by the user to navigate the text area on which this
