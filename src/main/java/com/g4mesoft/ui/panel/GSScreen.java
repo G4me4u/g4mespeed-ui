@@ -4,12 +4,12 @@ import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.input.CharInput;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.util.NarratorManager;
+import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 
 final class GSScreen extends Screen {
 
@@ -18,7 +18,7 @@ final class GSScreen extends Screen {
 	private boolean visible;
 	
 	GSScreen() {
-		super(NarratorManager.EMPTY);
+		super(GameNarrator.NO_TITLE);
 	
 		rootPanel = new GSRootPanel();
 		
@@ -49,12 +49,12 @@ final class GSScreen extends Screen {
 	}
 	
 	@Override
-	public void renderBackground(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
 		// do nothing.
 	}
 	
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
+	public void render(GuiGraphics context, int mouseX, int mouseY, float partialTicks) {
 		// Execute scheduled tasks (validate panels etc.)
 		// before rendering.
 		GSPanelContext.executeScheduledTasks();
@@ -76,19 +76,19 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseClicked(Click click, boolean doubled) {
+	public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
 		GSPanelContext.getEventDispatcher().mousePressed(click.button(), (float)click.x(), (float)click.y(), click.modifiers());
 		return true;
 	}
 
 	@Override
-	public boolean mouseReleased(Click click) {
+	public boolean mouseReleased(MouseButtonEvent click) {
 		GSPanelContext.getEventDispatcher().mouseReleased(click.button(), (float)click.x(), (float)click.y(), click.modifiers());
 		return true;
 	}
 
 	@Override
-	public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+	public boolean mouseDragged(MouseButtonEvent click, double deltaX, double deltaY) {
 		GSPanelContext.getEventDispatcher().mouseDragged(click.button(), (float)click.x(), (float)click.y(), (float)deltaX, (float)deltaY);
 		return true;
 	}
@@ -100,8 +100,8 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	public boolean keyPressed(KeyInput input) {
-		if (((GSIKeyboardAccess)client.keyboard).gs_isPreviousEventRepeating()) {
+	public boolean keyPressed(KeyEvent input) {
+		if (((GSIKeyboardAccess)minecraft.keyboardHandler).gs_isPreviousEventRepeating()) {
 			GSPanelContext.getEventDispatcher().keyRepeated(input.key(), input.scancode(), input.modifiers());
 		} else {
 			GSPanelContext.getEventDispatcher().keyPressed(input.key(), input.scancode(), input.modifiers());
@@ -110,13 +110,13 @@ final class GSScreen extends Screen {
 	}
 
 	@Override
-	public boolean keyReleased(KeyInput input) {
+	public boolean keyReleased(KeyEvent input) {
 		GSPanelContext.getEventDispatcher().keyReleased(input.key(), input.scancode(), input.modifiers());
 		return true;
 	}
 
 	@Override
-	public boolean charTyped(CharInput input) {
+	public boolean charTyped(CharacterEvent input) {
 		GSPanelContext.getEventDispatcher().keyTyped(input.codepoint());
 		return true;
 	}

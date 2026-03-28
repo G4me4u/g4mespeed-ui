@@ -1,48 +1,48 @@
 package com.g4mesoft.ui.renderer;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.LayeringTransform;
-import net.minecraft.client.render.OutputTarget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderSetup;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public final class GSRenderLayers {
 
 	public static final OutputTarget TRANSLUCENT_TARGET = new OutputTarget(
 		"gs_ui_translucent_target",
-		() -> MinecraftClient.getInstance().worldRenderer.getTranslucentFramebuffer()
+		() -> Minecraft.getInstance().levelRenderer.getTranslucentTarget()
 	);
 	
-	public static final RenderLayer GUI = RenderLayer.of(
+	public static final RenderType GUI = RenderType.create(
 		"gs_gui",
 		RenderSetup.builder(GSRenderPipelines.GUI)
-			.expectedBufferSize(786432)
-			.build()
+			.bufferSize(786432)
+			.createRenderSetup()
 	);
 	
-	public static final RenderLayer POSITION_COLOR_QUADS = RenderLayer.of(
+	public static final RenderType POSITION_COLOR_QUADS = RenderType.create(
 		"gs_ui_position_color_quads",
 		RenderSetup.builder(GSRenderPipelines.POSITION_COLOR_QUADS)
-			.expectedBufferSize(1536)
-			.outputTarget(TRANSLUCENT_TARGET)
-			.build()
+			.bufferSize(1536)
+			.setOutputTarget(TRANSLUCENT_TARGET)
+			.createRenderSetup()
 	);
 
-	public static final RenderLayer POSITION_COLOR_QUADS_NO_DEPTH = RenderLayer.of(
+	public static final RenderType POSITION_COLOR_QUADS_NO_DEPTH = RenderType.create(
 		"gs_ui_position_color_quads",
 		RenderSetup.builder(GSRenderPipelines.POSITION_COLOR_QUADS_NO_DEPTH)
-			.expectedBufferSize(1536)
-			.outputTarget(TRANSLUCENT_TARGET)
-			.build()
+			.bufferSize(1536)
+			.setOutputTarget(TRANSLUCENT_TARGET)
+			.createRenderSetup()
 	);
 	
-	public static final RenderLayer POSITION_COLOR_NORMAL_LINE_WIDTH_LINES = RenderLayer.of(
+	public static final RenderType POSITION_COLOR_NORMAL_LINE_WIDTH_LINES = RenderType.create(
 		"gs_ui_position_color_lines",
 		RenderSetup.builder(GSRenderPipelines.POSITION_COLOR_NORMAL_LINE_WIDTH_LINES)
-			.expectedBufferSize(1536)
-			.layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-			.outputTarget(TRANSLUCENT_TARGET)
-			.build()
+			.bufferSize(1536)
+			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+			.setOutputTarget(TRANSLUCENT_TARGET)
+			.createRenderSetup()
 	);
 	
 	private GSRenderLayers() {

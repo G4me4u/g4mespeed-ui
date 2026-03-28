@@ -3,25 +3,24 @@ package com.g4mesoft.ui.renderer;
 import org.joml.Quaternionf;
 
 import com.g4mesoft.ui.util.GSColorUtil;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
-	private MatrixStack matrixStack;
-	private VertexConsumerProvider.Immediate vertexConsumers;
+	private PoseStack matrixStack;
+	private MultiBufferSource.BufferSource vertexConsumers;
 	
-	private RenderLayer currentRenderLayer;
+	private RenderType currentRenderLayer;
 	private VertexConsumer currentVertexConsumer;
 	
-	public void begin(VertexConsumerProvider.Immediate vertexConsumers, MatrixStack matrixStack) {
+	public void begin(MultiBufferSource.BufferSource vertexConsumers, PoseStack matrixStack) {
 		this.vertexConsumers = vertexConsumers;
 		this.matrixStack = matrixStack;
 	}
@@ -30,7 +29,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		if (isBuilding())
 			throw new IllegalStateException("Renderer is still building");
 
-		vertexConsumers.draw();
+		vertexConsumers.endBatch();
 		
 		vertexConsumers = null;
 		matrixStack = null;
@@ -38,17 +37,17 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	
 	@Override
 	public void pushMatrix() {
-		matrixStack.push();
+		matrixStack.pushPose();
 	}
 
 	@Override
 	public void popMatrix() {
-		matrixStack.pop();
+		matrixStack.popPose();
 	}
 
 	@Override
 	public void identity() {
-		matrixStack.loadIdentity();
+		matrixStack.setIdentity();
 	}
 	
 	@Override
@@ -58,7 +57,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public void rotate(float rx, float ry, float rz) {
-		matrixStack.multiply(new Quaternionf().rotateXYZ(rx, ry, rz));
+		matrixStack.mulPose(new Quaternionf().rotateXYZ(rx, ry, rz));
 	}
 
 	@Override
@@ -71,12 +70,12 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	                       float x1, float y1, float z1,
 	                       float r, float g, float b, float a) {
 
-		if (isBuilding() && !isBuilding(DrawMode.QUADS, VertexFormats.POSITION_COLOR))
+		if (isBuilding() && !isBuilding(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR))
 			throw new IllegalStateException("Building quads is required!");
 		
 		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
-			build(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+			build(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		// Back Face
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -130,14 +129,14 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	                              float x1, float y1, float z1,
 	                              float r, float g, float b, float a) {
 		
-		if (isBuilding() && !isBuilding(DrawMode.LINES, VertexFormats.POSITION_COLOR))
+		if (isBuilding() && !isBuilding(Mode.LINES, DefaultVertexFormat.POSITION_COLOR))
 			throw new IllegalStateException("Building lines is required!");
 		
 		boolean wasBuilding = isBuilding();
 		if (!wasBuilding)
-			build(DrawMode.LINES, VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH);
+			build(Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
 		
-		float lw = MinecraftClient.getInstance().getWindow().getMinimumLineWidth();
+		float lw = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
 		int argb = GSColorUtil.denormalizeRGBA(r, g, b, a);
 
 		// Lines on X-axis
@@ -163,13 +162,13 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 
 	@Override
-	public void build(DrawMode drawMode, VertexFormat format) {
+	public void build(Mode drawMode, VertexFormat format) {
 		if (isBuilding())
 			throw new IllegalStateException("Already building!");
 		
-		if (drawMode == QUADS && format == VertexFormats.POSITION_COLOR) {
+		if (drawMode == QUADS && format == DefaultVertexFormat.POSITION_COLOR) {
 			build(GSRenderLayers.POSITION_COLOR_QUADS);
-		} else if (drawMode == LINES && format == VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH) {
+		} else if (drawMode == LINES && format == DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH) {
 			build(GSRenderLayers.POSITION_COLOR_NORMAL_LINE_WIDTH_LINES);
 		} else {
 			throw new IllegalArgumentException("Unsupported draw mode and vertex format!");
@@ -177,7 +176,7 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 	
 	@Override
-	public void build(RenderLayer renderLayer) {
+	public void build(RenderType renderLayer) {
 		if (isBuilding())
 			throw new IllegalStateException("Already building!");
 	
@@ -188,37 +187,37 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 
 	@Override
 	public GSBasicRenderer3D vert(float x, float y, float z) {
-		currentVertexConsumer.vertex(matrixStack.peek().getPositionMatrix(), x, y, z);
+		currentVertexConsumer.addVertex(matrixStack.last().pose(), x, y, z);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D color(float r, float g, float b, float a) {
-		currentVertexConsumer.color(r, g, b, a);
+		currentVertexConsumer.setColor(r, g, b, a);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D color(int argb) {
-		currentVertexConsumer.color(argb);
+		currentVertexConsumer.setColor(argb);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D tex(float u, float v) {
-		currentVertexConsumer.texture(u, v);
+		currentVertexConsumer.setUv(u, v);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D normal(float nx, float ny, float nz) {
-		currentVertexConsumer.normal(matrixStack.peek(), nx, ny, nz);
+		currentVertexConsumer.setNormal(matrixStack.last(), nx, ny, nz);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D lineWidth(float lw) {
-		currentVertexConsumer.lineWidth(lw);
+		currentVertexConsumer.setLineWidth(lw);
 		return this;
 	}
 
@@ -241,14 +240,14 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	public boolean isBuilding() {
 		return currentRenderLayer != null;
 	}
-	
+		
 	@Override
-	public boolean isBuilding(DrawMode drawMode, VertexFormat format) {
+	public boolean isBuilding(Mode drawMode, VertexFormat format) {
 		if (!isBuilding())
 			return false;
-		if (currentRenderLayer.getDrawMode() != drawMode)
+		if (currentRenderLayer.mode() != drawMode)
 			return false;
-		if (!currentRenderLayer.getVertexFormat().equals(format))
+		if (!currentRenderLayer.format().equals(format))
 			return false;
 		return true;
 	}

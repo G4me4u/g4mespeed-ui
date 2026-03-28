@@ -3,26 +3,26 @@ package com.g4mesoft.ui.renderer;
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.render.state.SimpleGuiElementRenderState;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.texture.TextureSetup;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.renderer.RenderPipelines;
 
-public class GSFilledQuad implements SimpleGuiElementRenderState {
+public class GSFilledQuad implements GuiElementRenderState {
 
 	private final int x0, y0, x1, y1;
 	private final int tlColor, trColor, blColor, brColor;
 	private final boolean mirror;
-	private final @Nullable ScreenRect scissorArea;
-	private final ScreenRect layerBounds;
+	private final @Nullable ScreenRectangle scissorArea;
+	private final ScreenRectangle layerBounds;
 
 	GSFilledQuad(int x, int y, int width, int height,
 	             int tlColor, int trColor, int blColor, int brColor,
 	             boolean mirror,
-	             @Nullable ScreenRect scissorArea,
-	             ScreenRect layerBounds) {
+	             @Nullable ScreenRectangle scissorArea,
+	             ScreenRectangle layerBounds) {
 
 		this.x0 = x;
 		this.y0 = y;
@@ -41,22 +41,22 @@ public class GSFilledQuad implements SimpleGuiElementRenderState {
 	}
 	
 	@Override
-	public void setupVertices(VertexConsumer vertices) {
+	public void buildVertices(VertexConsumer vertices) {
 		if (mirror) {
-			vertices.vertex(x0, y0, 0.0f).color(tlColor);
-			vertices.vertex(x0, y1, 0.0f).color(blColor);
-			vertices.vertex(x1, y1, 0.0f).color(brColor);
-			vertices.vertex(x1, y0, 0.0f).color(trColor);
+			vertices.addVertex(x0, y0, 0.0f).setColor(tlColor);
+			vertices.addVertex(x0, y1, 0.0f).setColor(blColor);
+			vertices.addVertex(x1, y1, 0.0f).setColor(brColor);
+			vertices.addVertex(x1, y0, 0.0f).setColor(trColor);
 		} else {
-			vertices.vertex(x0, y1, 0.0f).color(blColor);
-			vertices.vertex(x1, y1, 0.0f).color(brColor);
-			vertices.vertex(x1, y0, 0.0f).color(trColor);
-			vertices.vertex(x0, y0, 0.0f).color(tlColor);
+			vertices.addVertex(x0, y1, 0.0f).setColor(blColor);
+			vertices.addVertex(x1, y1, 0.0f).setColor(brColor);
+			vertices.addVertex(x1, y0, 0.0f).setColor(trColor);
+			vertices.addVertex(x0, y0, 0.0f).setColor(tlColor);
 		}
 	}
 	
 	@Override
-	public ScreenRect bounds() {
+	public ScreenRectangle bounds() {
 		return layerBounds;
 	}
 	
@@ -67,11 +67,11 @@ public class GSFilledQuad implements SimpleGuiElementRenderState {
 
 	@Override
 	public TextureSetup textureSetup() {
-		return TextureSetup.empty();
+		return TextureSetup.noTexture();
 	}
 
 	@Override
-	public ScreenRect scissorArea() {
+	public ScreenRectangle scissorArea() {
 		return scissorArea;
 	}
 }

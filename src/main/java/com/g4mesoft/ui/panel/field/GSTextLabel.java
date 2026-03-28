@@ -10,7 +10,7 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class GSTextLabel extends GSPanel {
 
@@ -19,7 +19,7 @@ public class GSTextLabel extends GSPanel {
 	private static final int DEFAULT_ICON_SPACING = 2;
 	
 	private GSIcon icon;
-	private Text text;
+	private Component text;
 
 	private GSEIconAlignment iconAlignment;
 	private GSETextAlignment textAlignment;
@@ -36,15 +36,15 @@ public class GSTextLabel extends GSPanel {
 		this(icon, GSTextUtil.literal(text));
 	}
 
-	public GSTextLabel(Text text) {
+	public GSTextLabel(Component text) {
 		this(null, text);
 	}
 
 	public GSTextLabel(GSIcon icon) {
-		this(icon, (Text)null);
+		this(icon, (Component)null);
 	}
 	
-	public GSTextLabel(GSIcon icon, Text text) {
+	public GSTextLabel(GSIcon icon, Component text) {
 		this.icon = icon;
 		this.text = text;
 		
@@ -80,7 +80,7 @@ public class GSTextLabel extends GSPanel {
 		this.icon = icon;
 	}
 	
-	public Text getText() {
+	public Component getText() {
 		return text;
 	}
 
@@ -88,7 +88,7 @@ public class GSTextLabel extends GSPanel {
 		setText((text != null) ? GSTextUtil.literal(text) : null);
 	}
 	
-	public void setText(Text text) {
+	public void setText(Component text) {
 		this.text = text;
 	}
 

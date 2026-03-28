@@ -7,14 +7,14 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 public class GSSliderPanel extends GSAbstractTextActionPanel {
 
-    private static final Identifier TEXTURE = Identifier.of("widget/slider");
-    private static final Identifier HANDLE_TEXTURE = Identifier.of("widget/slider_handle");
-    private static final Identifier HANDLE_HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_handle_highlighted");
+    private static final Identifier TEXTURE = Identifier.parse("widget/slider");
+    private static final Identifier HANDLE_TEXTURE = Identifier.parse("widget/slider_handle");
+    private static final Identifier HANDLE_HIGHLIGHTED_TEXTURE = Identifier.parse("widget/slider_handle_highlighted");
 	
 	public static final int SLIDER_HEIGHT = 20;
 	public static final int MAX_WIDTH = 200;
@@ -25,7 +25,7 @@ public class GSSliderPanel extends GSAbstractTextActionPanel {
 		this(GSTextUtil.literal(text), listener);
 	}
 
-	public GSSliderPanel(Text text, GSIActionListener listener) {
+	public GSSliderPanel(Component text, GSIActionListener listener) {
 		super(text, listener);
 		
 		this.value = 0.0f;

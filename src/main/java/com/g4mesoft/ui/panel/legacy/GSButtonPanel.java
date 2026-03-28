@@ -7,16 +7,16 @@ import com.g4mesoft.ui.renderer.GSBasicRenderer2D;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyListener {
 
-    private static final ButtonTextures TEXTURES = new ButtonTextures(
-		Identifier.of("widget/button"),
-		Identifier.of("widget/button_disabled"),
-		Identifier.of("widget/button_highlighted")
+    private static final WidgetSprites TEXTURES = new WidgetSprites(
+		Identifier.parse("widget/button"),
+		Identifier.parse("widget/button_disabled"),
+		Identifier.parse("widget/button_highlighted")
     );
 	
 	public static final int BUTTON_HEIGHT = 20;
@@ -25,7 +25,7 @@ public class GSButtonPanel extends GSAbstractTextActionPanel implements GSIKeyLi
 		this(GSTextUtil.literal(text), listener);
 	}
 	
-	public GSButtonPanel(Text text, GSIActionListener listener) {
+	public GSButtonPanel(Component text, GSIActionListener listener) {
 		super(text, listener);
 	
 		addKeyEventListener(this);

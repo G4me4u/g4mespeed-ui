@@ -5,37 +5,37 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import com.g4mesoft.ui.mixin.client.GSIDrawContextAccess;
+import com.g4mesoft.ui.mixin.client.GSIGuiGraphicsAccess;
 import com.g4mesoft.ui.panel.GSRectangle;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSMathUtil;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 
 public class GSBasicRenderer2D implements GSIRenderer2D {
 
 	private static final int LINE_SPACING = 2;
 	
-	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND_TEXTURE, 32, 32);
-	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(Identifier.ofVanilla("textures/gui/inworld_menu_background.png"), 32, 32);
+	private static final GSTexture MENU_BACKGROUND_TEXTURE = new GSTexture(Screen.MENU_BACKGROUND, 32, 32);
+	private static final GSTexture INWORLD_MENU_BACKGROUND_TEXTURE = new GSTexture(Identifier.withDefaultNamespace("textures/gui/inworld_menu_background.png"), 32, 32);
 
-	private final MinecraftClient client;
+	private final Minecraft client;
 	
-	private DrawContext context;
+	private GuiGraphics context;
 	private int mouseX;
 	private int mouseY;
 	private int viewportWidth;
 	private int viewportHeight;
-	private ScreenRect viewBounds;
+	private ScreenRectangle viewBounds;
 	
 	private GSTransform2D transform;
 	private final Deque<GSTransform2D> transformStack;
@@ -45,7 +45,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	private GSRectangle cachedClippedBounds;
 	
-	public GSBasicRenderer2D(MinecraftClient client) {
+	public GSBasicRenderer2D(Minecraft client) {
 		this.client = client;
 		
 		transform = new GSTransform2D();
@@ -57,14 +57,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		cachedClippedBounds = null;
 	}
 	
-	public void begin(DrawContext context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
+	public void begin(GuiGraphics context, int mouseX, int mouseY, int viewportWidth, int viewportHeight) {
 		this.context = context;
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
 		this.viewportWidth = viewportWidth;
 		this.viewportHeight = viewportHeight;
 		
-		viewBounds = new ScreenRect(0, 0, viewportWidth, viewportHeight);
+		viewBounds = new ScreenRectangle(0, 0, viewportWidth, viewportHeight);
 	}
 	
 	public void end() {
@@ -80,7 +80,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 
 	public void nextLayer() {
-		context.createNewRootLayer();
+		context.nextStratum();
 	}
 	
 	@Override
@@ -98,7 +98,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transformStack.push(transform);
 		transform = new GSTransform2D(transform);
 		
-		context.getMatrices().pushMatrix();
+		context.pose().pushMatrix();
 	}
 
 	@Override
@@ -107,14 +107,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 			throw new IllegalStateException("Transform stack is empty!");
 		
 		transform = transformStack.pop();
-		context.getMatrices().popMatrix();
+		context.pose().popMatrix();
 		
 		invalidateClipBounds();
 	}
 	
 	@Override
 	public void identity() {
-		context.getMatrices().identity();
+		context.pose().identity();
 		transform.offsetX = transform.offsetY = 0;
 	}
 
@@ -123,7 +123,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		transform.offsetX += x;
 		transform.offsetY += y;
 
-		context.getMatrices().translate(x, y);
+		context.pose().translate(x, y);
 		
 		invalidateClipBounds();
 	}
@@ -147,7 +147,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		
 		invalidateClipBounds();
 		// Compute the clip bounds and update scissor
-		context.scissorStack.push(new ScreenRect(clip.x0, clip.y0, clip.x1 - clip.x0, clip.y1 - clip.y0));
+		context.scissorStack.push(new ScreenRectangle(clip.x0, clip.y0, clip.x1 - clip.x0, clip.y1 - clip.y0));
 	}
 
 	@Override
@@ -217,10 +217,10 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		x += transform.offsetX;
 		y += transform.offsetY;
 		
-		ScreenRect scissorArea = context.scissorStack.peekLast();
-		ScreenRect layerBounds = (scissorArea != null) ? scissorArea : viewBounds;
+		ScreenRectangle scissorArea = context.scissorStack.peek();
+		ScreenRectangle layerBounds = (scissorArea != null) ? scissorArea : viewBounds;
 
-		context.state.addSimpleElement(new GSFilledQuad(x, y, width, height,
+		context.guiRenderState.submitGuiElement(new GSFilledQuad(x, y, width, height,
 		                                                applyOpacity(tlColor),
 		                                                applyOpacity(trColor),
 		                                                applyOpacity(blColor),
@@ -260,14 +260,14 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 		int x1 = x + texture.getRegionWidth();
 		int y1 = y + texture.getRegionHeight();
 		
-		((GSIDrawContextAccess)context).gs_drawTexturedQuad(RenderPipelines.GUI_TEXTURED, sprite,
+		((GSIGuiGraphicsAccess)context).gs_innerBlit(RenderPipelines.GUI_TEXTURED, sprite,
 		                                                    x, x1, y, y1,
 		                                                    texture.getU0(), texture.getU1(), texture.getV0(), texture.getV1(),
 		                                                    applyOpacity(color));
 	}
 
 	public void legacyDrawGuiTexture(Identifier texture, int x, int y, int w, int h) {
-		context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, w, h);
+		context.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, w, h);
 	}
 	
 	@Override
@@ -320,18 +320,18 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	public void drawPanoramaBackground() {
 		pushMatrix();
 		identity();
-		client.gameRenderer.getRotatingPanoramaRenderer().render(context, viewportWidth, viewportHeight, true);
+		client.gameRenderer.getPanorama().render(context, viewportWidth, viewportHeight, true);
 		popMatrix();
 	}
 	
 	@Override
 	public void applyBlur() {
-		context.applyBlur();
+		context.blurBeforeThisStratum();
 	}
 
 	@Override
 	public int getTextAscent() {
-		return client.textRenderer.fontHeight - 2;
+		return client.font.lineHeight - 2;
 	}
 
 	@Override
@@ -352,32 +352,32 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	
 	@Override
 	public float getTextWidth(String text) {
-		return client.textRenderer.getWidth(text);
+		return client.font.width(text);
 	}
 
 	@Override
 	public float getTextWidthNoStyle(CharSequence text) {
-		return client.textRenderer.getWidth(new GSCharSequenceOrderedText(text));
+		return client.font.width(new GSFormattedCharSequence(text));
 	}
 
 	@Override
 	public void drawText(String text, int x, int y, int color, boolean shadowed) {
-		context.drawText(client.textRenderer, text, x, y, applyOpacity(color), shadowed);
+		context.drawString(client.font, text, x, y, applyOpacity(color), shadowed);
 	}
 	
 	@Override
 	public void drawTextNoStyle(CharSequence text, int x, int y, int color, boolean shadowed) {
-		drawText(new GSCharSequenceOrderedText(text), x, y, color, shadowed);
+		drawText(new GSFormattedCharSequence(text), x, y, color, shadowed);
 	}
 	
 	@Override
-	public float getTextWidth(OrderedText text) {
-		return client.textRenderer.getWidth(text);
+	public float getTextWidth(FormattedCharSequence text) {
+		return client.font.width(text);
 	}
 
 	@Override
-	public void drawText(OrderedText text, int x, int y, int color, boolean shadowed) {
-		context.drawText(client.textRenderer, text, x, y, applyOpacity(color), shadowed);
+	public void drawText(FormattedCharSequence text, int x, int y, int color, boolean shadowed) {
+		context.drawString(client.font, text, x, y, applyOpacity(color), shadowed);
 	}
 	
 	@Override
@@ -449,21 +449,21 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	}
 	
 	@Override
-	public OrderedText trimString(Text text, int availableWidth, Text ellipsis) {
+	public FormattedCharSequence trimString(Component text, int availableWidth, Component ellipsis) {
 		if (getTextWidth(text) <= availableWidth)
-			return text.asOrderedText();
+			return text.getVisualOrderText();
 		
 		availableWidth -= (int)Math.ceil(getTextWidth(ellipsis));
 		
-		StringVisitable trimmed = client.textRenderer.trimToWidth(text, availableWidth);
-		StringVisitable result = StringVisitable.concat(trimmed, ellipsis);
+		FormattedText trimmed = client.font.substrByWidth(text, availableWidth);
+		FormattedText result = FormattedText.composite(trimmed, ellipsis);
 		
-		return Language.getInstance().reorder(result);
+		return Language.getInstance().getVisualOrder(result);
 	}
 	
 	@Override
-	public List<OrderedText> splitToLines(Text text, int availableWidth) {
-		return client.textRenderer.wrapLines(text, availableWidth);
+	public List<FormattedCharSequence> splitToLines(Component text, int availableWidth) {
+		return client.font.split(text, availableWidth);
 	}
 
 	private class GSTransform2D {

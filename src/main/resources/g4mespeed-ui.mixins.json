@@ -5,11 +5,11 @@
   "mixins": [
   ],
   "client": [
-    "client.GSMinecraftClientMixin",
-    "client.GSKeyboardMixin",
-    "client.GSWorldRendererMixin",
+    "client.GSMinecraftMixin",
+    "client.GSKeyboardHandlerMixin",
+    "client.GSLevelRendererMixin",
     "client.GSIGameRendererAccess",
-    "client.GSIDrawContextAccess"
+    "client.GSIGuiGraphicsAccess"
   ],
   "injectors": {
     "defaultRequire": 1

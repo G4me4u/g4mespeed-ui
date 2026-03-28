@@ -11,24 +11,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 
-import net.minecraft.client.Keyboard;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
 
-@Mixin(Keyboard.class)
-public class GSKeyboardMixin implements GSIKeyboardAccess {
+@Mixin(KeyboardHandler.class)
+public class GSKeyboardHandlerMixin implements GSIKeyboardAccess {
 	
-	@Shadow @Final private MinecraftClient client;
+	@Shadow @Final private Minecraft minecraft;
 	
 	@Unique
 	private boolean gs_prevEventRepeating;
 	
 	@Inject(
-		method = "onKey(JILnet/minecraft/client/input/KeyInput;)V",
+		method = "keyPress(JILnet/minecraft/client/input/KeyEvent;)V",
 		at = @At("HEAD")
 	)
-	private void onOnKey(long windowHandle, int action, KeyInput input, CallbackInfo ci) {
-		if (windowHandle == client.getWindow().getHandle())
+	private void onOnKey(long windowHandle, int action, KeyEvent input, CallbackInfo ci) {
+		if (windowHandle == minecraft.getWindow().handle())
 			gs_prevEventRepeating = (action == GLFW.GLFW_REPEAT);
 	}
 	

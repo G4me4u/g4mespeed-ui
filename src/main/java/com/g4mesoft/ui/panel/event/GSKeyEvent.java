@@ -2,8 +2,9 @@ package com.g4mesoft.ui.panel.event;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.InputUtil;
+import com.mojang.blaze3d.platform.InputConstants;
+
+import net.minecraft.client.Minecraft;
 
 public final class GSKeyEvent extends GSEvent {
 
@@ -252,7 +253,7 @@ public final class GSKeyEvent extends GSEvent {
 	}
 
 	public static boolean isKeyHeld(int keyCode) {
-		return InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow(), keyCode);
+		return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), keyCode);
 	}
 
 	public static GSKeyEvent createKeyPressedEvent(int keyCode, int scanCode, int modifiers) {

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.g4mesoft.ui.panel.GSDimension;
 import com.g4mesoft.ui.panel.GSPanelUtil;
 import com.g4mesoft.ui.renderer.GSIRenderer2D;
+
 public final class GSLocalDateCellRenderer implements GSICellRenderer<LocalDate> {
 
 	public static final GSLocalDateCellRenderer INSTANCE = new GSLocalDateCellRenderer();

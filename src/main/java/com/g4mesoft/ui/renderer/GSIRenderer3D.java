@@ -1,17 +1,17 @@
 package com.g4mesoft.ui.renderer;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public interface GSIRenderer3D extends GSIRenderer {
 
-	public static final DrawMode LINES          = DrawMode.LINES;
-	public static final DrawMode LINE_STRIP     = DrawMode.DEBUG_LINE_STRIP;
-	public static final DrawMode TRIANGLES      = DrawMode.TRIANGLES;
-	public static final DrawMode TRIANGLE_STRIP = DrawMode.TRIANGLE_STRIP;
-	public static final DrawMode QUADS          = DrawMode.QUADS;
+	public static final Mode LINES          = Mode.LINES;
+	public static final Mode LINE_STRIP     = Mode.DEBUG_LINE_STRIP;
+	public static final Mode TRIANGLES      = Mode.TRIANGLES;
+	public static final Mode TRIANGLE_STRIP = Mode.TRIANGLE_STRIP;
+	public static final Mode QUADS          = Mode.QUADS;
 
 	public void pushMatrix();
 	
@@ -79,9 +79,9 @@ public interface GSIRenderer3D extends GSIRenderer {
 
 	public void drawCuboidOutline(float x0, float y0, float z0, float x1, float y1, float z1, float r, float g, float b, float a);
 	
-	public void build(DrawMode drawMode, VertexFormat format);
+	public void build(Mode drawMode, VertexFormat format);
 	
-	public void build(RenderLayer layer);
+	public void build(RenderType layer);
 	
 	public GSIRenderer3D vert(float x, float y, float z);
 	
@@ -105,6 +105,6 @@ public interface GSIRenderer3D extends GSIRenderer {
 	
 	public boolean isBuilding();
 	
-	public boolean isBuilding(DrawMode drawMode, VertexFormat format);
+	public boolean isBuilding(Mode drawMode, VertexFormat format);
 
 }
