@@ -11,23 +11,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.access.client.GSIKeyboardAccess;
 
-import net.minecraft.client.Keyboard;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
 
-@Mixin(Keyboard.class)
-public class GSKeyboardMixin implements GSIKeyboardAccess {
+@Mixin(KeyboardHandler.class)
+public class GSKeyboardHandlerMixin implements GSIKeyboardAccess {
 	
-	@Shadow @Final private MinecraftClient client;
+	@Shadow @Final private Minecraft minecraft;
 	
 	@Unique
 	private boolean gs_prevEventRepeating;
 	
 	@Inject(
-		method = "onKey(JIIII)V",
+		method = "keyPress(JIIII)V",
 		at = @At("HEAD")
 	)
 	private void onKeyEvent(long windowHandle, int key, int scancode, int action, int mods, CallbackInfo ci) {
-		if (windowHandle == client.getWindow().getHandle())
+		if (windowHandle == minecraft.getWindow().getWindow())
 			gs_prevEventRepeating = (action == GLFW.GLFW_REPEAT);
 	}
 	

@@ -1,17 +1,17 @@
 package com.g4mesoft.ui.renderer;
 
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormat.DrawMode;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 
 public abstract interface GSIRenderer {
 
-	public static final DrawMode LINES          = DrawMode.LINES;
-	public static final DrawMode LINE_STRIP     = DrawMode.LINE_STRIP;
-	public static final DrawMode TRIANGLES      = DrawMode.TRIANGLES;
-	public static final DrawMode TRIANGLE_STRIP = DrawMode.TRIANGLE_STRIP;
-	public static final DrawMode QUADS          = DrawMode.QUADS;
+	public static final Mode LINES          = Mode.LINES;
+	public static final Mode LINE_STRIP     = Mode.LINE_STRIP;
+	public static final Mode TRIANGLES      = Mode.TRIANGLES;
+	public static final Mode TRIANGLE_STRIP = Mode.TRIANGLE_STRIP;
+	public static final Mode QUADS          = Mode.QUADS;
 	
-	public void build(DrawMode drawMode, VertexFormat format);
+	public void build(Mode drawMode, VertexFormat format);
 
 	public GSIRenderer vert(float x, float y, float z);
 	

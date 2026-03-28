@@ -11,7 +11,7 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class GSCellRendererRegistry {
 
@@ -28,7 +28,7 @@ public class GSCellRendererRegistry {
 	
 	private void initDefaultCellRenderers() {
 		setCellRenderer(String.class, GSStringCellRenderer.INSTANCE);
-		setCellRenderer(Text.class, GSTextCellRenderer.INSTANCE);
+		setCellRenderer(Component.class, GSTextCellRenderer.INSTANCE);
 		setCellRenderer(Date.class, GSDateCellRenderer.INSTANCE);
 		setCellRenderer(Instant.class, GSInstantCellRenderer.INSTANCE);
 		setCellRenderer(LocalDate.class, GSLocalDateCellRenderer.INSTANCE);

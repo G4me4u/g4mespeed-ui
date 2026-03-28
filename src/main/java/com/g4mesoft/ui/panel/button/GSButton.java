@@ -20,11 +20,11 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSColorUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 
 public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListener {
 
@@ -48,7 +48,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	private static final int VERTICAL_PADDING = 2;
 	
 	private GSIcon icon;
-	private Text text;
+	private Component text;
 
 	private GSIcon hoveredIcon;
 	private GSIcon disabledIcon;
@@ -86,15 +86,15 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		this(icon, GSTextUtil.literal(text));
 	}
 
-	public GSButton(Text text) {
+	public GSButton(Component text) {
 		this(null, text);
 	}
 
 	public GSButton(GSIcon icon) {
-		this(icon, (Text)null);
+		this(icon, (Component)null);
 	}
 	
-	public GSButton(GSIcon icon, Text text) {
+	public GSButton(GSIcon icon, Component text) {
 		this.icon = icon;
 		this.text = text;
 		
@@ -219,7 +219,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 	
 	protected void playClickSound() {
 		if (clickSound != null)
-			GSPanelContext.playSound(PositionedSoundInstance.master(clickSound, 1.0F));
+			GSPanelContext.playSound(SimpleSoundInstance.forUI(clickSound, 1.0F));
 	}
 	
 	public GSIcon getIcon() {
@@ -230,7 +230,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		this.icon = icon;
 	}
 	
-	public Text getText() {
+	public Component getText() {
 		return text;
 	}
 
@@ -238,7 +238,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		setText((text != null) ? GSTextUtil.literal(text) : null);
 	}
 	
-	public void setText(Text text) {
+	public void setText(Component text) {
 		this.text = text;
 	}
 
@@ -408,7 +408,7 @@ public class GSButton extends GSPanel implements GSIMouseListener, GSIKeyListene
 		return clickSound;
 	}
 
-	public void setClickSound(RegistryEntry<SoundEvent> clickSound) {
+	public void setClickSound(Holder<SoundEvent> clickSound) {
 		setClickSound(clickSound.value());
 	}
 

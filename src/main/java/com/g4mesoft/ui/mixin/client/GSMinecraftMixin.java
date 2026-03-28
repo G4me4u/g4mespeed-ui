@@ -8,21 +8,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.panel.GSPanelContext;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
-@Mixin(value = MinecraftClient.class, priority = -1000)
-public class GSMinecraftClientMixin {
+@Mixin(value = Minecraft.class, priority = -1000)
+public class GSMinecraftMixin {
 
 	@Inject(
 		method = "run",
 		at = @At("HEAD")
 	)
 	private void onInit(CallbackInfo ci) {
-		GSPanelContext.init((MinecraftClient)(Object)this);
+		GSPanelContext.init((Minecraft)(Object)this);
 	}
 	
 	@Inject(
-		method = "stop",
+		method = "destroy",
 		at = @At(
 			value = "CONSTANT",
 			args = "stringValue=Stopping!",

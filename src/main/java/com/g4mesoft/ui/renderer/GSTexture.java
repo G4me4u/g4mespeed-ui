@@ -1,20 +1,20 @@
 package com.g4mesoft.ui.renderer;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class GSTexture implements GSITextureRegion {
 
-	private final Identifier identifier;
+	private final ResourceLocation identifier;
 	private final int width;
 	private final int height;
 	
-	public GSTexture(Identifier identifier, int width, int height) {
+	public GSTexture(ResourceLocation identifier, int width, int height) {
 		this.identifier = identifier;
 		this.width = width;
 		this.height = height;
 	}
 
-	public Identifier getIdentifier() {
+	public ResourceLocation getIdentifier() {
 		return identifier;
 	}
 	

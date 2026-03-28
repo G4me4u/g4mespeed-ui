@@ -7,14 +7,14 @@ import com.g4mesoft.ui.renderer.GSIRenderer2D;
 import com.g4mesoft.ui.util.GSMathUtil;
 import com.g4mesoft.ui.util.GSTextUtil;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class GSSliderPanel extends GSAbstractTextActionPanel {
 
-    private static final Identifier TEXTURE = new Identifier("widget/slider");
-    private static final Identifier HANDLE_TEXTURE = new Identifier("widget/slider_handle");
-    private static final Identifier HANDLE_HIGHLIGHTED_TEXTURE = new Identifier("widget/slider_handle_highlighted");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("widget/slider");
+    private static final ResourceLocation HANDLE_TEXTURE = new ResourceLocation("widget/slider_handle");
+    private static final ResourceLocation HANDLE_HIGHLIGHTED_TEXTURE = new ResourceLocation("widget/slider_handle_highlighted");
 	
 	public static final int SLIDER_HEIGHT = 20;
 	public static final int MAX_WIDTH = 200;
@@ -25,7 +25,7 @@ public class GSSliderPanel extends GSAbstractTextActionPanel {
 		this(GSTextUtil.literal(text), listener);
 	}
 
-	public GSSliderPanel(Text text, GSIActionListener listener) {
+	public GSSliderPanel(Component text, GSIActionListener listener) {
 		super(text, listener);
 		
 		this.value = 0.0f;
@@ -39,7 +39,7 @@ public class GSSliderPanel extends GSAbstractTextActionPanel {
 		GSBasicRenderer2D br = (GSBasicRenderer2D)renderer;
 		
 		int vx = Math.round(value * (width - 8));
-		Identifier handleTex = (isEnabled() && renderer.isMouseInside(0, 0, width, height)) ?
+		ResourceLocation handleTex = (isEnabled() && renderer.isMouseInside(0, 0, width, height)) ?
 				HANDLE_HIGHLIGHTED_TEXTURE : HANDLE_TEXTURE;
 
 		br.legacyDrawGuiTexture(TEXTURE, 0, 0, width, height);

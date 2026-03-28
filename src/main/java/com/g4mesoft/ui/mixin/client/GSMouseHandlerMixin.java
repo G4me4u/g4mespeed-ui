@@ -10,23 +10,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.g4mesoft.ui.access.client.GSIMouseAccess;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.Mouse;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 
-@Mixin(Mouse.class)
-public class GSMouseMixin implements GSIMouseAccess {
+@Mixin(MouseHandler.class)
+public class GSMouseHandlerMixin implements GSIMouseAccess {
 
-	@Shadow @Final private MinecraftClient client;
+	@Shadow @Final private Minecraft minecraft;
 
 	@Unique
 	private int gs_prevEventModifiers;
 
 	@Inject(
-		method="onMouseButton(JIII)V",
+		method="onPress(JIII)V",
 		at = @At("HEAD")
 	)
 	private void onMouseEvent(long windowHandle, int button, int action, int mods, CallbackInfo ci) {
-		if (windowHandle == client.getWindow().getHandle())
+		if (windowHandle == minecraft.getWindow().getWindow())
 			gs_prevEventModifiers = mods;
 	}
 	
