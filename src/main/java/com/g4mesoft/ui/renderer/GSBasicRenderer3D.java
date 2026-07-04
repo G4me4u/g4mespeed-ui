@@ -3,66 +3,55 @@ package com.g4mesoft.ui.renderer;
 import org.joml.Quaternionf;
 
 import com.g4mesoft.ui.util.GSColorUtil;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class GSBasicRenderer3D implements GSIRenderer3D {
 
-	private PoseStack matrixStack;
-	private MultiBufferSource.BufferSource vertexConsumers;
-	
-	private RenderType currentRenderLayer;
-	private VertexConsumer currentVertexConsumer;
-	
-	public void begin(MultiBufferSource.BufferSource vertexConsumers, PoseStack matrixStack) {
-		this.vertexConsumers = vertexConsumers;
-		this.matrixStack = matrixStack;
-	}
-	
-	public void end() {
-		if (isBuilding())
-			throw new IllegalStateException("Renderer is still building");
+	private RenderType renderType;
+	private PoseStack poseStack;
+	private VertexConsumer buffer;
 
-		vertexConsumers.endBatch();
-		
-		vertexConsumers = null;
-		matrixStack = null;
+	public GSBasicRenderer3D(RenderType renderType, PoseStack poseStack, VertexConsumer buffer) {
+		this.renderType = renderType;
+		this.poseStack = poseStack;
+		this.buffer = buffer;
 	}
-	
+
 	@Override
 	public void pushMatrix() {
-		matrixStack.pushPose();
+		poseStack.pushPose();
 	}
 
 	@Override
 	public void popMatrix() {
-		matrixStack.popPose();
+		poseStack.popPose();
 	}
 
 	@Override
 	public void identity() {
-		matrixStack.setIdentity();
+		poseStack.setIdentity();
 	}
 	
 	@Override
 	public void translate(float tx, float ty, float tz) {
-		matrixStack.translate(tx, ty, tz);
+		poseStack.translate(tx, ty, tz);
 	}
 
 	@Override
 	public void rotate(float rx, float ry, float rz) {
-		matrixStack.mulPose(new Quaternionf().rotateXYZ(rx, ry, rz));
+		poseStack.mulPose(new Quaternionf().rotateXYZ(rx, ry, rz));
 	}
 
 	@Override
 	public void scale(float sx, float sy, float sz) {
-		matrixStack.scale(sx, sy, sz);
+		poseStack.scale(sx, sy, sz);
 	}
 	
 	@Override
@@ -70,12 +59,8 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	                       float x1, float y1, float z1,
 	                       float r, float g, float b, float a) {
 
-		if (isBuilding() && !isBuilding(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR))
+		if (!isBuilding(PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_COLOR))
 			throw new IllegalStateException("Building quads is required!");
-		
-		boolean wasBuilding = isBuilding();
-		if (!wasBuilding)
-			build(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		
 		// Back Face
 		vert(x0, y0, z0).color(r, g, b, a).next();
@@ -112,9 +97,6 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		vert(x0, y1, z1).color(r, g, b, a).next();
 		vert(x1, y1, z1).color(r, g, b, a).next();
 		vert(x1, y1, z0).color(r, g, b, a).next();
-		
-		if (!wasBuilding)
-			finish();
 	}
 
 	private final void drawLine(float x0, float y0, float z0,
@@ -129,12 +111,8 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	                              float x1, float y1, float z1,
 	                              float r, float g, float b, float a) {
 		
-		if (isBuilding() && !isBuilding(Mode.LINES, DefaultVertexFormat.POSITION_COLOR))
+		if (!isBuilding(PrimitiveTopology.LINES, DefaultVertexFormat.POSITION_COLOR))
 			throw new IllegalStateException("Building lines is required!");
-		
-		boolean wasBuilding = isBuilding();
-		if (!wasBuilding)
-			build(Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
 		
 		float lw = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
 		int argb = GSColorUtil.denormalizeRGBA(r, g, b, a);
@@ -156,68 +134,41 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 		drawLine(x1, y0, z0, x1, y0, z1, argb, lw);
 		drawLine(x1, y1, z0, x1, y1, z1, argb, lw);
 		drawLine(x0, y1, z0, x0, y1, z1, argb, lw);
-		
-		if (!wasBuilding)
-			finish();
-	}
-
-	@Override
-	public void build(Mode drawMode, VertexFormat format) {
-		if (isBuilding())
-			throw new IllegalStateException("Already building!");
-		
-		if (drawMode == QUADS && format == DefaultVertexFormat.POSITION_COLOR) {
-			build(GSRenderLayers.POSITION_COLOR_QUADS);
-		} else if (drawMode == LINES && format == DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH) {
-			build(GSRenderLayers.POSITION_COLOR_NORMAL_LINE_WIDTH_LINES);
-		} else {
-			throw new IllegalArgumentException("Unsupported draw mode and vertex format!");
-		}
-	}
-	
-	@Override
-	public void build(RenderType renderLayer) {
-		if (isBuilding())
-			throw new IllegalStateException("Already building!");
-	
-		currentRenderLayer = renderLayer;
-		// Retrieve appropriate buffer for render layer.
-		currentVertexConsumer = vertexConsumers.getBuffer(renderLayer);
 	}
 
 	@Override
 	public GSBasicRenderer3D vert(float x, float y, float z) {
-		currentVertexConsumer.addVertex(matrixStack.last().pose(), x, y, z);
+		buffer.addVertex(poseStack.last().pose(), x, y, z);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D color(float r, float g, float b, float a) {
-		currentVertexConsumer.setColor(r, g, b, a);
+		buffer.setColor(r, g, b, a);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D color(int argb) {
-		currentVertexConsumer.setColor(argb);
+		buffer.setColor(argb);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D tex(float u, float v) {
-		currentVertexConsumer.setUv(u, v);
+		buffer.setUv(u, v);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D normal(float nx, float ny, float nz) {
-		currentVertexConsumer.setNormal(matrixStack.last(), nx, ny, nz);
+		buffer.setNormal(poseStack.last(), nx, ny, nz);
 		return this;
 	}
 
 	@Override
 	public GSBasicRenderer3D lineWidth(float lw) {
-		currentVertexConsumer.setLineWidth(lw);
+		buffer.setLineWidth(lw);
 		return this;
 	}
 
@@ -228,26 +179,10 @@ public class GSBasicRenderer3D implements GSIRenderer3D {
 	}
 	
 	@Override
-	public void finish() {
-		if (!isBuilding())
-			throw new IllegalStateException("Not building!");
-	
-		currentRenderLayer = null;
-		currentVertexConsumer = null;
-	}
-	
-	@Override
-	public boolean isBuilding() {
-		return currentRenderLayer != null;
-	}
-		
-	@Override
-	public boolean isBuilding(Mode drawMode, VertexFormat format) {
-		if (!isBuilding())
+	public boolean isBuilding(PrimitiveTopology drawMode, VertexFormat format) {
+		if (renderType.primitiveTopology() != drawMode)
 			return false;
-		if (currentRenderLayer.mode() != drawMode)
-			return false;
-		if (!currentRenderLayer.format().equals(format))
+		if (!renderType.format().equals(format))
 			return false;
 		return true;
 	}

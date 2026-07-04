@@ -320,7 +320,7 @@ public class GSBasicRenderer2D implements GSIRenderer2D {
 	public void drawPanoramaBackground() {
 		pushMatrix();
 		identity();
-		client.gameRenderer.getPanorama().extractRenderState(context, viewportWidth, viewportHeight, true);
+		client.gameRenderer.panorama().extractRenderState(context, viewportWidth, viewportHeight);
 		popMatrix();
 	}
 	

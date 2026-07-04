@@ -8,7 +8,6 @@
     "client.GSMinecraftMixin",
     "client.GSKeyboardHandlerMixin",
     "client.GSLevelRendererMixin",
-    "client.GSIGameRendererAccess",
     "client.GSIGuiGraphicsAccess"
   ],
   "injectors": {

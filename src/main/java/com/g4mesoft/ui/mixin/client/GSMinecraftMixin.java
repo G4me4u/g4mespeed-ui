@@ -22,7 +22,7 @@ public class GSMinecraftMixin {
 	}
 	
 	@Inject(
-		method = "destroy",
+		method = "exitWorldAndClose",
 		at = @At(
 			value = "CONSTANT",
 			args = "stringValue=Stopping!",

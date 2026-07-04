@@ -26,7 +26,7 @@
     "g4mespeed-ui.mixins.json"
   ],
   "depends": {
-    "minecraft": "26.1.x",
+    "minecraft": "26.2.x",
     "fabric-resource-loader-v0": "*",
     "fabric-transitive-access-wideners-v1": ">=6.3.17"
   },

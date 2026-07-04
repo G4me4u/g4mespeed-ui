@@ -166,7 +166,7 @@ public final class GSPanelContext {
 	
 	private void disposeImpl() {
 		// If the screen is currently visible, hide it.
-		if (client.screen == screen)
+		if (client.gui.screen() == screen)
 			openContent(null);
 		// Destroy the standard cursors
 		for (Long cursorPtr : standardCursors.values())
@@ -188,11 +188,11 @@ public final class GSPanelContext {
 		setContentImpl(content);
 		
 		if (content != null) {
-			if (client.screen != screen)
-				client.setScreen(screen);
+			if (client.gui.screen() != screen)
+				client.setScreenAndShow(screen);
 		} else {
-			if (client.screen != null)
-				client.setScreen(null);
+			if (client.gui.screen() != null)
+				client.setScreenAndShow(null);
 		}
 	}
 	
