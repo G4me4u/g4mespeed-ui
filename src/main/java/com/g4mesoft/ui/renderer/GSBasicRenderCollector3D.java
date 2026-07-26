@@ -8,20 +8,19 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class GSBasicRenderCollector3D implements GSIRenderCollector3D {
 
 	private final SubmitNodeStorage nodeStorage;
-	private final PoseStack.Pose dummyPose;
+	private final PoseStack dummyPoseStack;
 
 	public GSBasicRenderCollector3D(SubmitNodeStorage nodeStorage) {
 		if (nodeStorage == null)
 			throw new NullPointerException("nodeCollector is null");
 
 		this.nodeStorage = nodeStorage;
-		this.dummyPose = new PoseStack.Pose();
+		this.dummyPoseStack = new PoseStack();
 	}
 
 	@Override
@@ -37,8 +36,8 @@ public class GSBasicRenderCollector3D implements GSIRenderCollector3D {
 
 	@Override
 	public void submit(RenderType renderType, Consumer<GSIRenderer3D> builder) {
-		nodeStorage.order(0).alwaysOnTop.submit(new CustomFeatureRenderer.Submit(dummyPose, renderType, (_, buffer) -> {
+		nodeStorage.submitCustomGeometry(dummyPoseStack, renderType, (_, buffer) -> {
 			builder.accept(new GSBasicRenderer3D(renderType, new PoseStack(), buffer));
-		}));
+		});
 	}
 }
