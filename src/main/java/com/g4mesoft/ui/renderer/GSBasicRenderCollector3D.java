@@ -2,6 +2,7 @@ package com.g4mesoft.ui.renderer;
 
 import java.util.function.Consumer;
 
+import com.g4mesoft.ui.access.client.GSISubmitNodeCollectionAccess;
 import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -9,6 +10,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
+import net.minecraft.client.renderer.feature.phase.SimpleFeatureRenderPhase;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class GSBasicRenderCollector3D implements GSIRenderCollector3D {
@@ -37,7 +39,8 @@ public class GSBasicRenderCollector3D implements GSIRenderCollector3D {
 
 	@Override
 	public void submit(RenderType renderType, Consumer<GSIRenderer3D> builder) {
-		nodeStorage.order(0).alwaysOnTop.submit(new CustomFeatureRenderer.Submit(dummyPose, renderType, (_, buffer) -> {
+		SimpleFeatureRenderPhase phase = ((GSISubmitNodeCollectionAccess)nodeStorage.order(0)).gs_getTransparentLastPhase();
+		phase.submit(new CustomFeatureRenderer.Submit(dummyPose, renderType, (_, buffer) -> {
 			builder.accept(new GSBasicRenderer3D(renderType, new PoseStack(), buffer));
 		}));
 	}

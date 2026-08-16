@@ -8,7 +8,9 @@
     "client.GSMinecraftMixin",
     "client.GSKeyboardHandlerMixin",
     "client.GSLevelRendererMixin",
-    "client.GSIGuiGraphicsAccess"
+    "client.GSIGuiGraphicsAccess",
+	"client.GSSubmitNodeCollectionMixin",
+	"client.GSPreparedFrameMixin"
   ],
   "injectors": {
     "defaultRequire": 1
